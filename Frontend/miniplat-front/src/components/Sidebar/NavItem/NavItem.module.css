@@ -1,0 +1,14 @@
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--enmGrayDark);
+}
+
+.navItem a {
+  color: var(--enmGrayDark);
+  text-decoration: none;
+}
+.navItem a:hover {
+  text-decoration: underline;
+}

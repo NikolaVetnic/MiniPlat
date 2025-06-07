@@ -1,0 +1,26 @@
+.container {
+  padding: 2rem;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.cardGrid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.addTopicButton {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+.addTopicButton:hover {
+  opacity: 0.9;
+}

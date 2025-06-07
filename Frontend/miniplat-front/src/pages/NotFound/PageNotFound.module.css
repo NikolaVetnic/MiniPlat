@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--enmWhiteDark);
+}
+
+.contentWrapper {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.main {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 400px;
+  box-shadow: 0 2px 8px #aaa;
+}
+
+.main h1 {
+  font-size: 2rem;
+  color: var(--enmGrayDark);
+  margin-bottom: 1rem;
+}
+
+.main p {
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.backLink {
+  background-color: #5cb85c;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  display: inline-block;
+}
+.backLink:hover {
+  background-color: #4da94d;
+  color: white;
+}

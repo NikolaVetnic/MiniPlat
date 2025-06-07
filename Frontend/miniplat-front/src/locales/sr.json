@@ -1,0 +1,84 @@
+{
+  "captions": {
+    "companyName": "MF Solutions",
+    "title": "eVŠOVNS Portal",
+    "institution": "Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad"
+  },
+  "components": {
+    "cards": {
+      "user": {
+        "firstName": "Ime",
+        "lastName": "Prezime"
+      },
+      "topic": {
+        "buttons": {
+          "addMaterial": "Dodaj materijal",
+          "cancel": "Odustani",
+          "delete": "Obriši",
+          "edit": "Ažuriraj",
+          "hide": "Sakrij",
+          "putBack": "Vrati",
+          "save": "Sačuvaj izmene",
+          "show": "Prikaži"
+        },
+        "description": "Opis",
+        "materials": "Materijali",
+        "status": {
+          "active": "Tema je aktivna. Svi izloženi materijali su vidljivi svim studentima.",
+          "hidden": "Tema je sakrivena. Izloženi materijali nisu vidljivi studentima, ali tema ostaje sačuvana.",
+          "deleted": "Tema je obeležena za brisanje. Izloženi materijali nisu vidljivi studentima ali se tema još uvek može vratiti. Nakon brisanja tema nestaje zauvek.",
+          "hiddenAndDeleted": "Tema je sakrivena i obeležena za brisanje. Izloženi materijali nisu vidljivi studentima."
+        },
+        "titles": {
+          "create": "Nova tema",
+          "update": "Ažuriraj temu"
+        },
+        "updatedAt": "Poslednji put ažurirano na dan"
+      }
+    },
+    "navbar": {
+      "buttons": {
+        "login": "Prijavite se",
+        "logout": "Odjavite se"
+      },
+      "loggedInAs": "Ulogovani ste kao"
+    },
+    "sidebar": {
+      "mainMenu": "Glavni meni",
+      "subjects": "Predmeti",
+      "home": "Početna"
+    }
+  },
+  "pages": {
+    "home": {
+      "greetings": {
+        "lecturers": "Poštovani profesori",
+        "students": "Poštovani studenti"
+      }
+    },
+    "login": {
+      "buttons": {
+        "login": "Prijava"
+      },
+      "footer": "© 2025 - eVSOVNS portal",
+      "error": "Neispravno korisničko ime ili lozinka",
+      "header": "PRIJAVA NA SISTEM",
+      "placeholders": {
+        "username": "Korisničko ime (email)",
+        "password": "Lozinka"
+      }
+    },
+    "notFound": {
+      "buttons": {
+        "return": "Povratak na početnu"
+      },
+      "description": "Izgleda da stranica koju tražite ne postoji.",
+      "title": "404 - Stranica nije pronađena"
+    },
+    "subject": {
+      "buttons": {
+        "addTopic": "Dodaj temu"
+      }
+    }
+  }
+}

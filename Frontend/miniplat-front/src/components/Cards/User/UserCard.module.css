@@ -1,0 +1,19 @@
+.userCard {
+  background-color: #fff;
+  color: var(--enmGrayDark);
+  border: 1px solid var(--enmGrayLight);
+  border-top: 4px solid #888;
+  border-radius: 8px;
+  padding: 0 1rem;
+  margin-top: 1.5rem;
+}
+
+.userCard ul {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.userCard li {
+  margin-bottom: 0.5rem;
+}

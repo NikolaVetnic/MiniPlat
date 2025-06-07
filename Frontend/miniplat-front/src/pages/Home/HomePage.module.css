@@ -1,0 +1,60 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--enmWhiteDark);
+}
+
+.contentWrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.pageHeader {
+  background-color: var(--enmWhiteDark);
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--enmGrayLight);
+}
+
+.pageHeader h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: normal;
+  color: var(--enmGrayDark);
+}
+
+.pageContent {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: normal;
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.header p {
+  margin-bottom: 1rem;
+  color: var(--enmGrayDark);
+  line-height: 1.5;
+}
+
+.footer {
+  border-top: 1px solid var(--enmGrayLight);
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--enmGrayDark);
+}
