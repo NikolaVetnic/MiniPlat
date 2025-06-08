@@ -1,0 +1,27 @@
+# This override file uses environment variables defined in a .env file.
+# Do not commit actual .env files with secrets.
+
+services:
+  mp-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS}
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=${ASPNETCORE_Kestrel__Certificates__Default__Path}
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${ASPNETCORE_Kestrel__Certificates__Default__Password}
+      - ConnectionStrings__DefaultConnection=${DEFAULT_CONNECTION}
+    ports:
+      - "5001:8080"
+      - "5101:8081"
+    volumes:
+      - ./certs:/https:ro
+
+  mp-database:
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    restart: unless-stopped
+    ports:
+      - "4099:5432"
+    volumes:
+      - miniplat_vol:/var/lib/postgresql/data

@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniPlat.Api", "MiniPlat.Api\MiniPlat.Api.csproj", "{58E124D8-A5AE-441F-A458-4BAFAECFFEB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniPlat.Application", "MiniPlat.Application\MiniPlat.Application.csproj", "{937EC8FC-CAE7-4CD7-8624-4E41841E3EA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniPlat.Domain", "MiniPlat.Domain\MiniPlat.Domain.csproj", "{F137654B-6C20-4624-B132-DE1BAF146DE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniPlat.Infrastructure", "MiniPlat.Infrastructure\MiniPlat.Infrastructure.csproj", "{68AA272C-1282-49BB-B811-CF0971A9E51A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{58E124D8-A5AE-441F-A458-4BAFAECFFEB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58E124D8-A5AE-441F-A458-4BAFAECFFEB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58E124D8-A5AE-441F-A458-4BAFAECFFEB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58E124D8-A5AE-441F-A458-4BAFAECFFEB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{937EC8FC-CAE7-4CD7-8624-4E41841E3EA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{937EC8FC-CAE7-4CD7-8624-4E41841E3EA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{937EC8FC-CAE7-4CD7-8624-4E41841E3EA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{937EC8FC-CAE7-4CD7-8624-4E41841E3EA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F137654B-6C20-4624-B132-DE1BAF146DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F137654B-6C20-4624-B132-DE1BAF146DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F137654B-6C20-4624-B132-DE1BAF146DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F137654B-6C20-4624-B132-DE1BAF146DE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68AA272C-1282-49BB-B811-CF0971A9E51A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68AA272C-1282-49BB-B811-CF0971A9E51A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68AA272C-1282-49BB-B811-CF0971A9E51A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68AA272C-1282-49BB-B811-CF0971A9E51A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
