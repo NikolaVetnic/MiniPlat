@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
 using MiniPlat.Application.Entities.Subject.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subject.Queries.GetSubjectById;
+using MiniPlat.Application.Entities.Subject.Queries.ListSubjects;
+using MiniPlat.Application.Pagination;
+using MiniPlat.Domain.Dtos;
 using OpenIddict.Validation.AspNetCore;
 
 namespace MiniPlat.Api.Controllers.Subjects;
@@ -42,6 +45,34 @@ public class SubjectController(ISender sender) : ControllerBase
             Lecturer = result.Subject.Lecturer,
             Assistant = result.Subject.Assistant
         };
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ListSubjectsResponse>> Get([FromQuery] PaginationRequest query)
+    {
+        var result = await sender.Send(new ListSubjectsQuery(query));
+
+        var dtoResult = new PaginatedResult<SubjectDto>(
+            query.PageIndex,
+            query.PageSize,
+            result.Subjects.Count,
+            result.Subjects.Data.Select(s => new SubjectDto
+            {
+                Code = s.Code,
+                Title = s.Title,
+                Description = s.Description,
+                Level = s.Level,
+                Year = s.Year,
+                Lecturer = s.Lecturer,
+                Assistant = s.Assistant
+            })
+        );
+
+        var response = new ListSubjectsResponse(dtoResult);
 
         return Ok(response);
     }

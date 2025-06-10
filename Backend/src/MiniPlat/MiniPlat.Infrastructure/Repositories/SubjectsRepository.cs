@@ -22,6 +22,15 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
                throw new SubjectNotFoundException(subjectId.ToString());
     }
 
+    public async Task<List<Subject>> ListSubjectsAsync(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    {
+        return await appDbContext.Subjects
+            .AsNoTracking()
+            .Skip(pageSize * pageIndex)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+    }
+
     public async Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken)
     {
         var subject = await appDbContext.Subjects

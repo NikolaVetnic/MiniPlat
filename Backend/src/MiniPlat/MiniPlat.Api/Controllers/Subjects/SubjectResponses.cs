@@ -1,5 +1,7 @@
-﻿using MiniPlat.Domain.ValueObjects;
+﻿using MiniPlat.Application.Pagination;
+using MiniPlat.Domain.Dtos;
 using MiniPlat.Domain.Models;
+using MiniPlat.Domain.ValueObjects;
 
 namespace MiniPlat.Api.Controllers.Subjects;
 
@@ -15,5 +17,7 @@ public record GetSubjectByIdResponse
     public string Lecturer { get; set; } = string.Empty;
     public string Assistant { get; set; } = string.Empty;
 }
+
+public record ListSubjectsResponse(PaginatedResult<SubjectDto> Subjects);
 
 public record DeleteSubjectResponse(bool SubjectDeleted);

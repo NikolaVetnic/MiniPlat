@@ -7,5 +7,6 @@ public interface ISubjectsRepository
 {
     Task CreateSubjectAsync(Subject subject, CancellationToken cancellationToken);
     Task<Subject> GetSubjectById(SubjectId subjectId, CancellationToken cancellationToken);
+    Task<List<Subject>> ListSubjectsAsync(int pageIndex, int pageSize, CancellationToken cancellationToken);
     Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken);
 }
