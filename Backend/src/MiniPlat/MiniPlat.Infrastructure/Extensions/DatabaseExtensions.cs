@@ -90,7 +90,7 @@ public static class DatabaseExtensions
         foreach (var seededSubject in InitialData.SeededSubjects)
         {
             if (await context.Subjects.AnyAsync(s =>
-                    s.LecturerId == seededSubject.LecturerId || s.AssistantId == seededSubject.AssistantId))
+                    s.Lecturer == seededSubject.Lecturer || s.Assistant == seededSubject.Assistant))
                 continue;
 
             var subject = new Subject()
@@ -101,8 +101,8 @@ public static class DatabaseExtensions
                 Description = seededSubject.Description,
                 Level = seededSubject.Level,
                 Year = seededSubject.Year,
-                LecturerId = seededSubject.LecturerId,
-                AssistantId = seededSubject.AssistantId
+                Lecturer = seededSubject.Lecturer,
+                Assistant = seededSubject.Assistant
             };
 
             await context.Subjects.AddAsync(subject);

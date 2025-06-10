@@ -67,8 +67,8 @@ internal static class InitialData
                 Description = "Strukture podataka i algoritmi",
                 Level = Level.Undergraduate,
                 Year = 1,
-                LecturerId = "11111111-1111-1111-1111-111111111111",
-                AssistantId = "33333333-3333-3333-3333-333333333333"
+                Lecturer = "USRa",
+                Assistant = "USRc"
             },
 
             new()
@@ -79,8 +79,8 @@ internal static class InitialData
                 Description = "Single Variable Calculus",
                 Level = Level.Undergraduate,
                 Year = 2,
-                LecturerId = "22222222-2222-2222-2222-222222222222",
-                AssistantId = "33333333-3333-3333-3333-333333333333"
+                Lecturer = "USRb",
+                Assistant = "USRc"
             }
         };
 }
@@ -111,6 +111,6 @@ public class SeededSubject
     public required string Description { get; init; }
     public required Level Level { get; init; }
     public required int Year { get; init; }
-    public required string LecturerId { get; init; }
-    public required string AssistantId { get; init; }
+    public required string Lecturer { get; init; }
+    public required string Assistant { get; init; }
 }

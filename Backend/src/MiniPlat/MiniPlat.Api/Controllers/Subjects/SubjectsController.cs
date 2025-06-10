@@ -14,7 +14,7 @@ namespace MiniPlat.Api.Controllers.Subjects;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SubjectController(ISender sender, ICurrentUser currentUser) : ControllerBase
+public class SubjectsController(ISender sender, ICurrentUser currentUser) : ControllerBase
 {
     [HttpPost]
     [RequireApiKey]
