@@ -1,0 +1,121 @@
+﻿using Mapster;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
+using MiniPlat.Application.Entities.Subject.Commands.DeleteSubject;
+using MiniPlat.Application.Entities.Subject.Queries.GetSubjectById;
+using MiniPlat.Application.Entities.Subject.Queries.ListSubjects;
+using MiniPlat.Application.Entities.Subject.Queries.ListSubjectsByUserId;
+using MiniPlat.Application.Pagination;
+using MiniPlat.Domain.Dtos;
+using OpenIddict.Validation.AspNetCore;
+
+namespace MiniPlat.Api.Controllers.Subjects;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+public class SubjectController(ISender sender) : ControllerBase
+{
+    [HttpPost]
+    public async Task<IActionResult> CreateSubject([FromBody] CreateSubjectRequest request)
+    {
+        var command = request.Adapt<CreateSubjectCommand>();
+        var result = await sender.Send(command);
+        var response = result.Adapt<CreateSubjectResponse>();
+
+        return CreatedAtAction(nameof(CreateSubject), new { id = response.SubjectId }, response);
+    }
+
+    [HttpGet("{subjectId}")]
+    [ProducesResponseType(typeof(GetSubjectByIdResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GetSubjectByIdResponse>> GetById([FromRoute] string subjectId)
+    {
+        var result = await sender.Send(new GetSubjectByIdQuery(subjectId));
+
+        var response = new GetSubjectByIdResponse
+        {
+            Code = result.Subject.Code,
+            Title = result.Subject.Title,
+            Description = result.Subject.Description,
+            Level = result.Subject.Level,
+            Year = result.Subject.Year,
+            Lecturer = result.Subject.Lecturer,
+            Assistant = result.Subject.Assistant
+        };
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ListSubjectsResponse>> Get([FromQuery] PaginationRequest query)
+    {
+        var result = await sender.Send(new ListSubjectsQuery(query));
+
+        var dtoResult = new PaginatedResult<SubjectDto>(
+            query.PageIndex,
+            query.PageSize,
+            result.Subjects.Count,
+            result.Subjects.Data.Select(s => new SubjectDto
+            {
+                Code = s.Code,
+                Title = s.Title,
+                Description = s.Description,
+                Level = s.Level,
+                Year = s.Year,
+                Lecturer = s.Lecturer,
+                Assistant = s.Assistant
+            })
+        );
+
+        var response = new ListSubjectsResponse(dtoResult);
+
+        return Ok(response);
+    }
+
+    [HttpGet("user/{userId}")]
+    [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ListSubjectsResponse>> GetByUserId(
+        [FromRoute] string userId,
+        [FromQuery] PaginationRequest query)
+    {
+        var result = await sender.Send(new ListSubjectsByUserIdQuery(userId, query));
+
+        var dtoResult = new PaginatedResult<SubjectDto>(
+            query.PageIndex,
+            query.PageSize,
+            result.Subjects.Count,
+            result.Subjects.Data.Select(s => new SubjectDto
+            {
+                Code = s.Code,
+                Title = s.Title,
+                Description = s.Description,
+                Level = s.Level,
+                Year = s.Year,
+                Lecturer = s.Lecturer,
+                Assistant = s.Assistant
+            }));
+
+        var response = new ListSubjectsResponse(dtoResult);
+
+        return Ok(response);
+    }
+
+    [HttpDelete("{subjectId}")]
+    [ProducesResponseType(typeof(DeleteSubjectResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DeleteSubjectResponse>> Delete([FromRoute] string subjectId)
+    {
+        var result = await sender.Send(new DeleteSubjectCommand(subjectId));
+        var response = result.Adapt<DeleteSubjectResponse>();
+
+        return Ok(response);
+    }
+}

@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
             .AddDefaultTokenProviders();
 
         services.AddScoped<ILecturersRepository, LecturersRepository>();
+        services.AddScoped<ISubjectsRepository, SubjectsRepository>();
 
         return services;
     }
