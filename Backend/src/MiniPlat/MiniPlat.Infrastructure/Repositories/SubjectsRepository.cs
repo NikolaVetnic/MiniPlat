@@ -35,7 +35,7 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
     {
         return await appDbContext.Subjects
             .AsNoTracking()
-            .Where(s => s.LecturerId == userId || s.AssistantId == userId)
+            .Where(s => s.Lecturer == userId || s.Assistant == userId)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);
