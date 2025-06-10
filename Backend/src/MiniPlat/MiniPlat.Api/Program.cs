@@ -24,10 +24,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
 await app.Services.MigrateAndSeedDatabaseAsync();
+
+app.UseExceptionHandler(_ => { }); // ToDo: To be removed as it eats up any exceptions on startup
 
 app.MapHealthChecks("/health");
 
