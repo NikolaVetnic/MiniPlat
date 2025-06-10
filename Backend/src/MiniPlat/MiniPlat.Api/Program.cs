@@ -27,6 +27,8 @@ app.UseRouting();
 
 app.MapControllers();
 
+await app.Services.MigrateAndSeedDatabaseAsync();
+
 app.MapHealthChecks("/health");
 
 app.Run();
