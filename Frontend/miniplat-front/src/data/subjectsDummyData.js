@@ -1,6 +1,7 @@
 const subjectsDummmyData = [
   {
     id: "eggw",
+    code: "ST101", // jedinstvena sifra predmeta ali ne zelimo da to bude ID
     title: "Pedagogija",
     description: "Opis predmeta.",
     level: "undergrad",
