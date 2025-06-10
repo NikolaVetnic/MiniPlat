@@ -1,5 +1,4 @@
 ﻿using MiniPlat.Application.Pagination;
-using MiniPlat.Domain.Dtos;
 using MiniPlat.Domain.Models;
 using MiniPlat.Domain.ValueObjects;
 
