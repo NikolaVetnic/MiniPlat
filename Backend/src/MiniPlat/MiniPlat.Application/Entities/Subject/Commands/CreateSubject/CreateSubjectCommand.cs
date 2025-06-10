@@ -7,6 +7,7 @@ namespace MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
 public class CreateSubjectCommand : ICommand<CreateSubjectResult>
 {
     public string Title { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public Level Level { get; set; }
     public int Year { get; set; }

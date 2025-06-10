@@ -9,6 +9,7 @@ internal class CreateSubjectHandler : IRequestHandler<CreateSubjectCommand, Crea
         var subject = new Domain.Models.Subject
         {
             Title = request.Title,
+            Code = request.Code,
             Description = request.Description,
             Level = request.Level,
             Year = request.Year,
