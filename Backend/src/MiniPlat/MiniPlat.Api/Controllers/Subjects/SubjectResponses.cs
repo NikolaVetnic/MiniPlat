@@ -15,3 +15,5 @@ public record GetSubjectByIdResponse
     public string Lecturer { get; set; } = string.Empty;
     public string Assistant { get; set; } = string.Empty;
 }
+
+public record DeleteSubjectResponse(bool SubjectDeleted);

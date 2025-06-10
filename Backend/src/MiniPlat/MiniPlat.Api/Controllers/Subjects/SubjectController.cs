@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
+using MiniPlat.Application.Entities.Subject.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subject.Queries.GetSubjectById;
 using OpenIddict.Validation.AspNetCore;
 
@@ -41,6 +42,18 @@ public class SubjectController(ISender sender) : ControllerBase
             Lecturer = result.Subject.Lecturer,
             Assistant = result.Subject.Assistant
         };
+
+        return Ok(response);
+    }
+
+    [HttpDelete("{subjectId}")]
+    [ProducesResponseType(typeof(DeleteSubjectResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DeleteSubjectResponse>> Delete([FromRoute] string subjectId)
+    {
+        var result = await sender.Send(new DeleteSubjectCommand(subjectId));
+        var response = result.Adapt<DeleteSubjectResponse>();
 
         return Ok(response);
     }

@@ -21,4 +21,13 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
                    .SingleOrDefaultAsync(x => x.Id == subjectId, cancellationToken) ??
                throw new SubjectNotFoundException(subjectId.ToString());
     }
+
+    public async Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken)
+    {
+        var subject = await appDbContext.Subjects
+            .FirstAsync(s => s.Id == subjectId, cancellationToken);
+
+        appDbContext.Subjects.Remove(subject);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
 }
