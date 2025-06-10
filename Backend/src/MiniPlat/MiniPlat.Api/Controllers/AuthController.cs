@@ -1,8 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Application.Data.Abstractions;
+using MiniPlat.Application.Entities.Lecturers.Queries.GetLecturerByUserId;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
@@ -13,7 +15,7 @@ namespace MiniPlat.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(ITokenService tokenService)
+public class AuthController(ISender sender, ITokenService tokenService)
     : ControllerBase
 {
     [HttpPost("Token")]
@@ -48,16 +50,26 @@ public class AuthController(ITokenService tokenService)
 
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     [HttpPost("UserInfo"), Produces("application/json")]
-    public Task<IActionResult> UserInfo()
+    public async Task<IActionResult> UserInfo()
     {
         var principal = HttpContext.User;
 
-        return Task.FromResult<IActionResult>(Ok(new
+        var sub = principal.GetClaim(OpenIddictConstants.Claims.Subject);
+
+        var query = new GetLecturerByUserIdQuery(sub);
+        var result = await sender.Send(query);
+        var lecturer = result.Lecturer;
+
+        return Ok(new
         {
             sub = principal.GetClaim(OpenIddictConstants.Claims.Subject),
             username = principal.GetClaim(OpenIddictConstants.Claims.Username),
-            fullName = principal.GetClaim("fullName"),
             email = principal.GetClaim(OpenIddictConstants.Claims.Email),
-        }));
+            
+            firstName = principal.GetClaim("firstName"),
+            lastName = principal.GetClaim("lastName"),
+            title = lecturer.Title,
+            department = lecturer.Department
+        });
     }
 }

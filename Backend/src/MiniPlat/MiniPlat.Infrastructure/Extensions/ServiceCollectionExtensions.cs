@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MiniPlat.Application.Data.Abstractions;
 using MiniPlat.Domain.Models;
+using MiniPlat.Infrastructure.Interceptors;
+using MiniPlat.Infrastructure.Repositories;
 using OpenIddict.Abstractions;
 
 namespace MiniPlat.Infrastructure.Extensions;
@@ -19,6 +23,8 @@ public static class ServiceCollectionExtensions
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+        services.AddScoped<ILecturersRepository, LecturersRepository>();
+
         return services;
     }
 
@@ -31,10 +37,10 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(connectionString);
             options.UseOpenIddict();
         });
-        
+
         return services;
     }
-    
+
     private static IServiceCollection AddOpenIddictServer(this IServiceCollection services)
     {
         services.AddOpenIddict()
@@ -60,7 +66,8 @@ public static class ServiceCollectionExtensions
                 options.RegisterClaims(
                     OpenIddictConstants.Claims.Email,
                     OpenIddictConstants.Claims.Name,
-                    "fullName");
+                    "firstName",
+                    "lastName");
 
                 options.SetTokenEndpointUris("/api/Auth/Token");
                 options.SetUserInfoEndpointUris("/api/Auth/UserInfo");
@@ -81,6 +88,13 @@ public static class ServiceCollectionExtensions
                 options.UseLocalServer();
                 options.UseAspNetCore();
             });
+
+        return services;
+    }
+    
+    public static IServiceCollection AddInterceptors(this IServiceCollection services)
+    {
+        services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
 
         return services;
     }

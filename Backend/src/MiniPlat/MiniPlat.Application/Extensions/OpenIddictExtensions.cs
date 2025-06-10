@@ -29,8 +29,14 @@ public static class OpenIddictExtensions
                 OpenIddictConstants.Destinations.AccessToken
             ],
 
-            // Custom fullName if profile → only access token
-            "fullName" when principal.HasScope(OpenIddictConstants.Scopes.Profile) =>
+            // Custom firstName if profile → only access token
+            "firstName" when principal.HasScope(OpenIddictConstants.Scopes.Profile) =>
+            [
+                OpenIddictConstants.Destinations.AccessToken
+            ],
+
+            // Custom lastName if profile → only access token
+            "lastName" when principal.HasScope(OpenIddictConstants.Scopes.Profile) =>
             [
                 OpenIddictConstants.Destinations.AccessToken
             ],

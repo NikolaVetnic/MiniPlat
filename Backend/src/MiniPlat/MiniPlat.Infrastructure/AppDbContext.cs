@@ -2,21 +2,59 @@ using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MiniPlat.Domain.Models;
+using MiniPlat.Domain.ValueObjects;
 
 namespace MiniPlat.Infrastructure;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser, IdentityRole, string>(options)
+public class AppDbContext(
+    DbContextOptions<AppDbContext> options,
+    IEnumerable<ISaveChangesInterceptor> saveChangesInterceptors)
+    : IdentityDbContext<ApplicationUser, IdentityRole, string>(options)
 {
-    public DbSet<Subject> Subjects { get; init; }
+    private readonly IEnumerable<ISaveChangesInterceptor> _saveChangesInterceptors = saveChangesInterceptors;
+
+    public DbSet<Lecturer> Lecturers { get; set; } = null!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        foreach (var interceptor in _saveChangesInterceptors)
+        {
+            optionsBuilder.AddInterceptors(interceptor);
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        
-        // Apply all configurations taken from classes that implement IEntityTypeConfiguration<>
-        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         builder.UseOpenIddict();
+
+        var lecturerIdConverter = new ValueConverter<LecturerId, Guid>(
+            id => id.Value,
+            value => LecturerId.Of(value)
+        );
+
+        builder.Entity<Lecturer>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+
+            entity.Property(l => l.Id)
+                .HasConversion(lecturerIdConverter)
+                .ValueGeneratedNever();
+
+            entity.HasOne(l => l.User)
+                .WithOne()
+                .HasForeignKey<Lecturer>(l => l.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(l => l.UserId)
+                .IsRequired();
+        });
     }
 }
