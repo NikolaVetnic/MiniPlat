@@ -1,7 +1,16 @@
+using MiniPlat.Api.Extensions;
+using MiniPlat.Application.Extensions;
+using MiniPlat.Infrastructure.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+builder.Services
+    .AddApiServices(builder.Configuration)
+    .AddApplicationServices()
+    .AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException());
