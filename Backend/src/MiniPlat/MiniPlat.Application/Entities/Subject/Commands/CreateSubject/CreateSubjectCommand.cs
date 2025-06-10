@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MiniPlat.Application.Cqrs;
 using MiniPlat.Domain.Models;
+using MiniPlat.Domain.ValueObjects;
 
 namespace MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
 
@@ -15,7 +16,7 @@ public class CreateSubjectCommand : ICommand<CreateSubjectResult>
     public string Assistant { get; set; } = string.Empty;
 }
 
-public record CreateSubjectResult(Guid SubjectId);
+public record CreateSubjectResult(SubjectId SubjectId);
 
 public class CreateSubjectCommandValidator : AbstractValidator<CreateSubjectCommand>
 {

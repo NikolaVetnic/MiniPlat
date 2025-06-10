@@ -1,3 +1,5 @@
-﻿namespace MiniPlat.Api.Controllers.Subjects;
+﻿using MiniPlat.Domain.ValueObjects;
 
-public record CreateSubjectResponse(Guid SubjectId);
+namespace MiniPlat.Api.Controllers.Subjects;
+
+public record CreateSubjectResponse(SubjectId SubjectId);
