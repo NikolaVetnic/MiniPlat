@@ -2,6 +2,8 @@ const subjectsDummmyData = [
   {
     id: "eggw",
     title: "Pedagogija",
+    level: "undergrad",
+    year: 1,
     owners: ["USRa"],
     topics: [
       {
@@ -53,6 +55,8 @@ const subjectsDummmyData = [
   {
     id: "zuak",
     title: "Psihologija",
+    level: "undergrad",
+    year: 2,
     owners: ["USRa", "USRb"],
     topics: [
       {
@@ -104,6 +108,8 @@ const subjectsDummmyData = [
   {
     id: "w72u",
     title: "Filozofija sa etikom",
+    level: "master",
+    year: 1,
     owners: ["USRb"],
     topics: [
       {
