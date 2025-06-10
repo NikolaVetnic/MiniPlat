@@ -32,3 +32,12 @@ public class SeededUser
     public required string FullName { get; init; }
     public required string Password { get; init; }
 }
+
+public class SeededSubject
+{
+    public required string Id { get; init; }
+    public required string Username { get; init; }
+    public required string Email { get; init; }
+    public required string FullName { get; init; }
+    public required string Password { get; init; }
+}
