@@ -24,7 +24,8 @@ public class TokenService(UserManager<ApplicationUser> userManager) : ITokenServ
         identity.AddClaim(OpenIddictConstants.Claims.Subject, user.Id);
         identity.AddClaim(OpenIddictConstants.Claims.Username, user.UserName ?? "");
         identity.AddClaim(OpenIddictConstants.Claims.Email, user.Email ?? "");
-        identity.AddClaim("fullName", user.FullName ?? "");
+        identity.AddClaim("firstName", user.FirstName ?? "");
+        identity.AddClaim("lastName", user.LastName ?? "");
 
         var principal = new ClaimsPrincipal(identity);
 
