@@ -1,4 +1,5 @@
-const USE_MOCK = true;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const USE_MOCK = false;
 
 const users = {
   USRa: {
@@ -32,17 +33,28 @@ export const login = async (username, password) => {
       throw new Error("Login failed: Invalid credentials");
     }
   } else {
-    const response = await fetch("/api/login", {
+    const response = await fetch(`${API_BASE_URL}/api/Auth/Token`, {
       method: "POST",
-      body: JSON.stringify({ username, password }),
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "password",
+        username,
+        password,
+      }),
     });
 
     if (!response.ok) {
-      throw new Error("Login failed");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error_description || "Login failed");
     }
 
     const data = await response.json();
-    return data;
+
+    return {
+      token: data.access_token,
+      user: data.user || { username }, // fallback if user object is not provided
+    };
   }
 };
