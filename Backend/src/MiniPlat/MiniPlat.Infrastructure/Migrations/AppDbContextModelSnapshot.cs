@@ -224,7 +224,7 @@ namespace MiniPlat.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MiniPlat.Domain.Models.Lecturer.Lecturer", b =>
+            modelBuilder.Entity("MiniPlat.Domain.Models.Lecturer", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -524,11 +524,11 @@ namespace MiniPlat.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MiniPlat.Domain.Models.Lecturer.Lecturer", b =>
+            modelBuilder.Entity("MiniPlat.Domain.Models.Lecturer", b =>
                 {
                     b.HasOne("MiniPlat.Domain.Models.ApplicationUser", "User")
                         .WithOne()
-                        .HasForeignKey("MiniPlat.Domain.Models.Lecturer.Lecturer", "UserId")
+                        .HasForeignKey("MiniPlat.Domain.Models.Lecturer", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

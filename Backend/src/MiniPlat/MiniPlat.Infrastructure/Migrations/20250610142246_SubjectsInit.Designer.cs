@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MiniPlat.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250610135127_SubjectsInit")]
+    [Migration("20250610142246_SubjectsInit")]
     partial class SubjectsInit
     {
         /// <inheritdoc />
@@ -176,7 +176,10 @@ namespace MiniPlat.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
                         .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
@@ -224,41 +227,45 @@ namespace MiniPlat.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MiniPlat.Domain.Models.Subject", b =>
+            modelBuilder.Entity("MiniPlat.Domain.Models.Lecturer", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Assistant")
-                        .IsRequired()
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("Code")
-                        .IsRequired()
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
+                    b.Property<string>("Department")
                         .HasColumnType("text");
 
-                    b.Property<string>("Lecturer")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Subjects");
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Lecturers");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>
@@ -518,6 +525,17 @@ namespace MiniPlat.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MiniPlat.Domain.Models.Lecturer", b =>
+                {
+                    b.HasOne("MiniPlat.Domain.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("MiniPlat.Domain.Models.Lecturer", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>
