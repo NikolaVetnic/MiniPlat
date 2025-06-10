@@ -76,6 +76,35 @@ internal static class InitialData
                 UserId = "22222222-2222-2222-2222-222222222222"
             }
         };
+
+    public static IEnumerable<SeededTopic> SeededTopics =>
+        new List<SeededTopic>
+        {
+            new()
+            {
+                Id = TopicId.Of(Guid.Parse("47acc4e5-659b-4ed2-9f5f-8ba6606416a7")),
+                Title = "Uvod u algoritme",
+                Description = "Osnovni koncepti algoritama, sortiranje i pretraga",
+                IsHidden = false,
+                UserId = "11111111-1111-1111-1111-111111111111"
+            },
+            new()
+            {
+                Id = TopicId.Of(Guid.Parse("b6416381-eeb9-4b84-8936-8c73772f7f4c")),
+                Title = "Rekurzija",
+                Description = "Tehnike i primena rekurzije u programiranju",
+                IsHidden = false,
+                UserId = "11111111-1111-1111-1111-111111111111"
+            },
+            new()
+            {
+                Id = TopicId.Of(Guid.Parse("26718d3b-235f-4ff1-97fe-5c172f114bb0")),
+                Title = "Integralni račun",
+                Description = "Primena integralnog računa u rešavanju problema",
+                IsHidden = false,
+                UserId = "22222222-2222-2222-2222-222222222222"
+            }
+        };
 }
 
 public class SeededUser
@@ -106,5 +135,14 @@ public class SeededSubject
     public required int Year { get; init; }
     public required string Lecturer { get; init; }
     public required string Assistant { get; init; }
+    public required string UserId { get; init; }
+}
+
+public class SeededTopic
+{
+    public required TopicId Id { get; init; }
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+    public required bool IsHidden { get; init; }
     public required string UserId { get; init; }
 }

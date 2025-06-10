@@ -23,6 +23,7 @@ public static class DatabaseExtensions
         await services.SeedUsersAsync();
         await services.SeedLecturersAsync();
         await services.SeedSubjectsAsync();
+        await services.SeedTopicsAsync();
     }
 
     private static async Task SeedUsersAsync(this IServiceProvider services)
@@ -106,6 +107,31 @@ public static class DatabaseExtensions
             };
 
             await context.Subjects.AddAsync(subject);
+        }
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedTopicsAsync(this IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        foreach (var seededTopic in InitialData.SeededTopics)
+        {
+            if (await context.Topics.AnyAsync(s => s.UserId == seededTopic.UserId))
+                continue;
+
+            var topic = new Topic()
+            {
+                Id = seededTopic.Id,
+                Title = seededTopic.Title,
+                Description = seededTopic.Description,
+                UserId = seededTopic.UserId
+            };
+
+            await context.Topics.AddAsync(topic);
         }
 
         await context.SaveChangesAsync();

@@ -18,6 +18,7 @@ public class AppDbContext(
 
     public DbSet<Lecturer> Lecturers { get; set; } = null!;
     public DbSet<Subject> Subjects { get; set; } = null!;
+    public DbSet<Topic> Topics { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -46,6 +47,11 @@ public class AppDbContext(
             value => SubjectId.Of(value)
         );
 
+        var topicIdConverter = new ValueConverter<TopicId, Guid>(
+            id => id.Value,
+            value => TopicId.Of(value)
+        );
+
         builder.Entity<Lecturer>(entity =>
         {
             entity.HasKey(l => l.Id);
@@ -71,7 +77,19 @@ public class AppDbContext(
                 .HasConversion(subjectIdConverter)
                 .ValueGeneratedNever();
 
-            entity.Property(l => l.UserId)
+            entity.Property(s => s.UserId)
+                .IsRequired();
+        });
+
+        builder.Entity<Topic>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Id)
+                .HasConversion(topicIdConverter)
+                .ValueGeneratedNever();
+
+            entity.Property(t => t.UserId)
                 .IsRequired();
         });
     }
