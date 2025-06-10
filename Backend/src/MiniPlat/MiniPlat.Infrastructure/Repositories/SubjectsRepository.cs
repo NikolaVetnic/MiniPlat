@@ -31,6 +31,16 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
+    public async Task<List<Subject>> ListSubjectsByUserIdAsync(string userId, int pageIndex, int pageSize, CancellationToken cancellationToken)
+    {
+        return await appDbContext.Subjects
+            .AsNoTracking()
+            .Where(s => s.UserId == userId)
+            .Skip(pageSize * pageIndex)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+    }
+
     public async Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken)
     {
         var subject = await appDbContext.Subjects

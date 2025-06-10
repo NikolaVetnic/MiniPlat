@@ -6,6 +6,7 @@ using MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
 using MiniPlat.Application.Entities.Subject.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subject.Queries.GetSubjectById;
 using MiniPlat.Application.Entities.Subject.Queries.ListSubjects;
+using MiniPlat.Application.Entities.Subject.Queries.ListSubjectsByUserId;
 using MiniPlat.Application.Pagination;
 using MiniPlat.Domain.Dtos;
 using OpenIddict.Validation.AspNetCore;
@@ -71,6 +72,35 @@ public class SubjectController(ISender sender) : ControllerBase
                 Assistant = s.Assistant
             })
         );
+
+        var response = new ListSubjectsResponse(dtoResult);
+
+        return Ok(response);
+    }
+
+    [HttpGet("user/{userId}")]
+    [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ListSubjectsResponse>> GetByUserId(
+        [FromRoute] string userId,
+        [FromQuery] PaginationRequest query)
+    {
+        var result = await sender.Send(new ListSubjectsByUserIdQuery(userId, query));
+
+        var dtoResult = new PaginatedResult<SubjectDto>(
+            query.PageIndex,
+            query.PageSize,
+            result.Subjects.Count,
+            result.Subjects.Data.Select(s => new SubjectDto
+            {
+                Code = s.Code,
+                Title = s.Title,
+                Description = s.Description,
+                Level = s.Level,
+                Year = s.Year,
+                Lecturer = s.Lecturer,
+                Assistant = s.Assistant
+            }));
 
         var response = new ListSubjectsResponse(dtoResult);
 
