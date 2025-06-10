@@ -17,6 +17,7 @@ public class AppDbContext(
     private readonly IEnumerable<ISaveChangesInterceptor> _saveChangesInterceptors = saveChangesInterceptors;
 
     public DbSet<Lecturer> Lecturers { get; set; } = null!;
+    public DbSet<Subject> Subjects { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -40,6 +41,11 @@ public class AppDbContext(
             value => LecturerId.Of(value)
         );
 
+        var subjectIdConverter = new ValueConverter<SubjectId, Guid>(
+            id => id.Value,
+            value => SubjectId.Of(value)
+        );
+
         builder.Entity<Lecturer>(entity =>
         {
             entity.HasKey(l => l.Id);
@@ -52,6 +58,18 @@ public class AppDbContext(
                 .WithOne()
                 .HasForeignKey<Lecturer>(l => l.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(l => l.UserId)
+                .IsRequired();
+        });
+
+        builder.Entity<Subject>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+
+            entity.Property(s => s.Id)
+                .HasConversion(subjectIdConverter)
+                .ValueGeneratedNever();
 
             entity.Property(l => l.UserId)
                 .IsRequired();

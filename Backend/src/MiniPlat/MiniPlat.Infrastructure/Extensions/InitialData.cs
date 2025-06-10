@@ -1,3 +1,4 @@
+using MiniPlat.Domain.Models;
 using MiniPlat.Domain.ValueObjects;
 
 namespace MiniPlat.Infrastructure.Extensions;
@@ -45,6 +46,36 @@ internal static class InitialData
                 Department = "Matematika",
             }
         };
+
+    public static IEnumerable<SeededSubject> SeededSubjects =>
+        new List<SeededSubject>
+        {
+            new()
+            {
+                Id = SubjectId.Of(Guid.Parse("112f020b-f871-47ee-a1f4-b4cc8aa2dd53")),
+                Code = "CS101",
+                Title = "SPA",
+                Description = "Strukture podataka i algoritmi",
+                Level = Level.Undergraduate,
+                Year = 1,
+                Lecturer = "Nikola Dmitrašinović",
+                Assistant = "Miloš Stojaković",
+                UserId = "11111111-1111-1111-1111-111111111111"
+            },
+
+            new()
+            {
+                Id = SubjectId.Of(Guid.Parse("88e05977-cbd8-413c-a83f-869d4e9e2a63")),
+                Code = "MAT123",
+                Title = "Analiza 1",
+                Description = "Single Variable Calculus",
+                Level = Level.Undergraduate,
+                Year = 2,
+                Lecturer = "Aleksandar Pavlović",
+                Assistant = "Milica Žigić",
+                UserId = "22222222-2222-2222-2222-222222222222"
+            }
+        };
 }
 
 public class SeededUser
@@ -63,4 +94,17 @@ public class SeededLecturer
     public required string UserId { get; init; }
     public required string Title { get; init; }
     public required string Department { get; init; }
+}
+
+public class SeededSubject
+{
+    public required SubjectId Id { get; init; }
+    public required string Code { get; init; }
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+    public required Level Level { get; init; }
+    public required int Year { get; init; }
+    public required string Lecturer { get; init; }
+    public required string Assistant { get; init; }
+    public required string UserId { get; init; }
 }
