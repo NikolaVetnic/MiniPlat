@@ -16,15 +16,3 @@ public class RegisterUserRequest
     public string Title { get; set; } = string.Empty;
     public string Department { get; set; } = string.Empty;
 }
-
-public class RegisterMultipleUsersResponse
-{
-    public bool Succeeded { get; set; }
-    public List<FailedUserResponse> FailedUsers { get; set; } = [];
-}
-
-public class FailedUserResponse
-{
-    public string Username { get; set; } = string.Empty;
-    public IEnumerable<string> Errors { get; set; } = [];
-}

@@ -19,6 +19,7 @@ const users = {
 export const login = async (username, password) => {
   if (USE_MOCK) {
     await new Promise((resolve) => setTimeout(resolve, 500));
+
     if (username === "USRa" && password === "a") {
       return {
         token: "mock-token-USRa",

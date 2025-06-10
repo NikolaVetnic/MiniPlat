@@ -55,7 +55,7 @@ public static class DatabaseExtensions
             throw new InvalidOperationException($"Seeding {seededUser.Username} failed: {errors}");
         }
     }
-    
+
     private static async Task SeedLecturersAsync(this IServiceProvider services)
     {
         using var scope = services.CreateScope();
@@ -89,7 +89,8 @@ public static class DatabaseExtensions
 
         foreach (var seededSubject in InitialData.SeededSubjects)
         {
-            if (await context.Subjects.AnyAsync(s => s.UserId == seededSubject.UserId))
+            if (await context.Subjects.AnyAsync(s =>
+                    s.LecturerId == seededSubject.LecturerId || s.AssistantId == seededSubject.AssistantId))
                 continue;
 
             var subject = new Subject()
@@ -100,9 +101,8 @@ public static class DatabaseExtensions
                 Description = seededSubject.Description,
                 Level = seededSubject.Level,
                 Year = seededSubject.Year,
-                Lecturer = seededSubject.Lecturer,
-                Assistant = seededSubject.Assistant,
-                UserId = seededSubject.UserId
+                LecturerId = seededSubject.LecturerId,
+                AssistantId = seededSubject.AssistantId
             };
 
             await context.Subjects.AddAsync(subject);
