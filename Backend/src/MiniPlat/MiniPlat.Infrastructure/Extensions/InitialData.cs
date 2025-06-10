@@ -60,7 +60,8 @@ internal static class InitialData
                 Year = 1,
                 Lecturer = "Nikola Dmitrašinović",
                 Assistant = "Miloš Stojaković",
-                UserId = "11111111-1111-1111-1111-111111111111"
+                UserId = "11111111-1111-1111-1111-111111111111",
+                TopicIds = [TopicId.Of(Guid.Parse("47acc4e5-659b-4ed2-9f5f-8ba6606416a7")), TopicId.Of(Guid.Parse("b6416381-eeb9-4b84-8936-8c73772f7f4c"))]
             },
 
             new()
@@ -73,7 +74,8 @@ internal static class InitialData
                 Year = 2,
                 Lecturer = "Aleksandar Pavlović",
                 Assistant = "Milica Žigić",
-                UserId = "22222222-2222-2222-2222-222222222222"
+                UserId = "22222222-2222-2222-2222-222222222222",
+                TopicIds = [TopicId.Of(Guid.Parse("26718d3b-235f-4ff1-97fe-5c172f114bb0"))]
             }
         };
 
@@ -86,7 +88,8 @@ internal static class InitialData
                 Title = "Uvod u algoritme",
                 Description = "Osnovni koncepti algoritama, sortiranje i pretraga",
                 IsHidden = false,
-                UserId = "11111111-1111-1111-1111-111111111111"
+                UserId = "11111111-1111-1111-1111-111111111111",
+                SubjectId = SubjectId.Of(Guid.Parse("112f020b-f871-47ee-a1f4-b4cc8aa2dd53"))
             },
             new()
             {
@@ -94,7 +97,8 @@ internal static class InitialData
                 Title = "Rekurzija",
                 Description = "Tehnike i primena rekurzije u programiranju",
                 IsHidden = false,
-                UserId = "11111111-1111-1111-1111-111111111111"
+                UserId = "11111111-1111-1111-1111-111111111111",
+                SubjectId = SubjectId.Of(Guid.Parse("112f020b-f871-47ee-a1f4-b4cc8aa2dd53"))
             },
             new()
             {
@@ -102,7 +106,8 @@ internal static class InitialData
                 Title = "Integralni račun",
                 Description = "Primena integralnog računa u rešavanju problema",
                 IsHidden = false,
-                UserId = "22222222-2222-2222-2222-222222222222"
+                UserId = "22222222-2222-2222-2222-222222222222",
+                SubjectId = SubjectId.Of(Guid.Parse("88e05977-cbd8-413c-a83f-869d4e9e2a63"))
             }
         };
 }
@@ -136,6 +141,7 @@ public class SeededSubject
     public required string Lecturer { get; init; }
     public required string Assistant { get; init; }
     public required string UserId { get; init; }
+    public List<TopicId> TopicIds { get; init; } = [];
 }
 
 public class SeededTopic
@@ -145,4 +151,5 @@ public class SeededTopic
     public required string Description { get; init; }
     public required bool IsHidden { get; init; }
     public required string UserId { get; init; }
+    public required SubjectId SubjectId { get; init; }
 }

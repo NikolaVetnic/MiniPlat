@@ -128,7 +128,9 @@ public static class DatabaseExtensions
                 Id = seededTopic.Id,
                 Title = seededTopic.Title,
                 Description = seededTopic.Description,
-                UserId = seededTopic.UserId
+                isHidden = seededTopic.IsHidden,
+                UserId = seededTopic.UserId,
+                SubjectId = seededTopic.SubjectId
             };
 
             await context.Topics.AddAsync(topic);

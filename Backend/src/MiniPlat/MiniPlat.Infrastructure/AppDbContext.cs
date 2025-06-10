@@ -79,6 +79,11 @@ public class AppDbContext(
 
             entity.Property(s => s.UserId)
                 .IsRequired();
+
+            entity.Property(e => e.TopicIds)
+                .HasConversion(new TopicIdListConverter())
+                .HasColumnName("TopicIds")
+                .IsRequired(false);
         });
 
         builder.Entity<Topic>(entity =>
@@ -90,6 +95,12 @@ public class AppDbContext(
                 .ValueGeneratedNever();
 
             entity.Property(t => t.UserId)
+                .IsRequired();
+
+            entity.Property(r => r.SubjectId).IsRequired();
+
+            entity.Property(t => t.SubjectId)
+                .HasConversion(subjectIdConverter)
                 .IsRequired();
         });
     }
