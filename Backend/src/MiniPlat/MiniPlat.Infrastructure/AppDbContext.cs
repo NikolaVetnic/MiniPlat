@@ -8,6 +8,8 @@ namespace MiniPlat.Infrastructure;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser, IdentityRole, string>(options)
 {
+    public DbSet<Subject> Subjects { get; init; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
