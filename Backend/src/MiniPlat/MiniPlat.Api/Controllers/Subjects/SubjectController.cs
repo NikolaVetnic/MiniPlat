@@ -1,12 +1,15 @@
 ﻿using Mapster;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
+using OpenIddict.Validation.AspNetCore;
 
 namespace MiniPlat.Api.Controllers.Subjects;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 public class SubjectController(ISender sender) : ControllerBase
 {
     [HttpPost]
