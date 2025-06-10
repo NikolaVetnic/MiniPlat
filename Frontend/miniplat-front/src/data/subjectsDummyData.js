@@ -1,16 +1,22 @@
 const subjectsDummmyData = [
   {
     id: "eggw",
+    code: "ST101", // jedinstvena sifra predmeta ali ne zelimo da to bude ID
     title: "Pedagogija",
+    description: "Opis predmeta.",
     level: "undergrad",
-    year: 1,
-    owners: ["USRa"],
+    year: 1, // undergrad: [1, 3], master [1, 2], must validate according to type
+    lecturer: "USRa",
+    assistant: null,
+    owners: ["USRa"], // this will be deleted
     topics: [
       {
+        id: "asdw",
         title: "Prvo predavanje iz Pedagogije",
         description: "Video snimak prvog predavanja.",
         materials: [
           {
+            id: "asdx",
             description: "Video snimak predavanja",
             link: "https://www.youtube.com/watch?v=zi69pFkawQA",
             isHidden: false,
@@ -23,10 +29,13 @@ const subjectsDummmyData = [
             isDeleted: false,
           },
         ],
+        isHidden: false,
         createdAt: "2023-05-10T14:30:00Z",
         createdBy: "admin",
         updatedAt: "2023-09-10T14:30:00Z",
         updatedBy: "admin",
+        deletedAt: null, // TimeDate
+        deletedBy: null,
       },
       {
         title: "Prve vežbe iz Pedagogije",
@@ -55,8 +64,11 @@ const subjectsDummmyData = [
   {
     id: "zuak",
     title: "Psihologija",
+    description: "Opis predmeta.",
     level: "undergrad",
     year: 2,
+    lecturer: "USRa",
+    assistant: "USRb",
     owners: ["USRa", "USRb"],
     topics: [
       {
@@ -108,8 +120,11 @@ const subjectsDummmyData = [
   {
     id: "w72u",
     title: "Filozofija sa etikom",
+    description: "Opis predmeta.",
     level: "master",
     year: 1,
+    lecturer: "USRb",
+    assistant: null,
     owners: ["USRb"],
     topics: [
       {
