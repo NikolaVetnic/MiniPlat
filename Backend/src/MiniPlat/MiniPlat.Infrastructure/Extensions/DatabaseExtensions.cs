@@ -22,6 +22,7 @@ public static class DatabaseExtensions
         await services.MigrateDatabaseAsync();
         await services.SeedUsersAsync();
         await services.SeedLecturersAsync();
+        await services.SeedSubjectsAsync();
     }
 
     private static async Task SeedUsersAsync(this IServiceProvider services)
@@ -75,6 +76,36 @@ public static class DatabaseExtensions
             };
 
             await context.Lecturers.AddAsync(lecturer);
+        }
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedSubjectsAsync(this IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        foreach (var seededSubject in InitialData.SeededSubjects)
+        {
+            if (await context.Subjects.AnyAsync(s => s.UserId == seededSubject.UserId))
+                continue;
+
+            var subject = new Subject()
+            {
+                Id = seededSubject.Id,
+                Code = seededSubject.Code,
+                Title = seededSubject.Title,
+                Description = seededSubject.Description,
+                Level = seededSubject.Level,
+                Year = seededSubject.Year,
+                Lecturer = seededSubject.Lecturer,
+                Assistant = seededSubject.Assistant,
+                UserId = seededSubject.UserId
+            };
+
+            await context.Subjects.AddAsync(subject);
         }
 
         await context.SaveChangesAsync();
