@@ -71,7 +71,10 @@ public class AppDbContext(
                 .HasConversion(subjectIdConverter)
                 .ValueGeneratedNever();
 
-            entity.Property(l => l.UserId)
+            entity.Property(l => l.LecturerId)
+                .IsRequired();
+            
+            entity.Property(l => l.AssistantId)
                 .IsRequired();
         });
     }

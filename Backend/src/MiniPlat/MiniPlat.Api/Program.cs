@@ -1,4 +1,5 @@
 using MiniPlat.Api.Extensions;
+using MiniPlat.Api.Middlewares;
 using MiniPlat.Application.Exceptions.Handlers;
 using MiniPlat.Application.Extensions;
 using MiniPlat.Infrastructure.Extensions;
@@ -49,6 +50,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseMiddleware<ApiKeyMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

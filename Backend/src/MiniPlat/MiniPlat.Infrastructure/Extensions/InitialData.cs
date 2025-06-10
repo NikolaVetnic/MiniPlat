@@ -25,6 +25,15 @@ internal static class InitialData
                 FirstName = "User",
                 LastName = "Beta",
                 Password = "P@ssw0rd?456"
+            },
+            new()
+            {
+                Id = "33333333-3333-3333-3333-333333333333",
+                Username = "USRc",
+                Email = "USRc@email.com",
+                FirstName = "User",
+                LastName = "Gamma",
+                Password = "P@ssw0rd.789"
             }
         };
 
@@ -58,9 +67,8 @@ internal static class InitialData
                 Description = "Strukture podataka i algoritmi",
                 Level = Level.Undergraduate,
                 Year = 1,
-                Lecturer = "Nikola Dmitrašinović",
-                Assistant = "Miloš Stojaković",
-                UserId = "11111111-1111-1111-1111-111111111111"
+                LecturerId = "11111111-1111-1111-1111-111111111111",
+                AssistantId = "33333333-3333-3333-3333-333333333333"
             },
 
             new()
@@ -71,9 +79,8 @@ internal static class InitialData
                 Description = "Single Variable Calculus",
                 Level = Level.Undergraduate,
                 Year = 2,
-                Lecturer = "Aleksandar Pavlović",
-                Assistant = "Milica Žigić",
-                UserId = "22222222-2222-2222-2222-222222222222"
+                LecturerId = "22222222-2222-2222-2222-222222222222",
+                AssistantId = "33333333-3333-3333-3333-333333333333"
             }
         };
 }
@@ -104,7 +111,6 @@ public class SeededSubject
     public required string Description { get; init; }
     public required Level Level { get; init; }
     public required int Year { get; init; }
-    public required string Lecturer { get; init; }
-    public required string Assistant { get; init; }
-    public required string UserId { get; init; }
+    public required string LecturerId { get; init; }
+    public required string AssistantId { get; init; }
 }

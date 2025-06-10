@@ -8,13 +8,13 @@ namespace MiniPlat.Infrastructure.Repositories;
 
 public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
 {
-    public async Task CreateSubjectAsync(Subject subject, CancellationToken cancellationToken)
+    public async Task CreateAsync(Subject subject, CancellationToken cancellationToken)
     {
         appDbContext.Subjects.Add(subject);
         await appDbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Subject> GetSubjectById(SubjectId subjectId, CancellationToken cancellationToken)
+    public async Task<Subject> GetById(SubjectId subjectId, CancellationToken cancellationToken)
     {
         return await appDbContext.Subjects
                    .AsNoTracking()
@@ -22,7 +22,7 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
                throw new SubjectNotFoundException(subjectId.ToString());
     }
 
-    public async Task<List<Subject>> ListSubjectsAsync(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    public async Task<List<Subject>> ListAsync(int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         return await appDbContext.Subjects
             .AsNoTracking()
@@ -31,11 +31,11 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<List<Subject>> ListSubjectsByUserIdAsync(string userId, int pageIndex, int pageSize, CancellationToken cancellationToken)
+    public async Task<List<Subject>> ListByUserIdAsync(string userId, int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         return await appDbContext.Subjects
             .AsNoTracking()
-            .Where(s => s.UserId == userId)
+            .Where(s => s.LecturerId == userId || s.AssistantId == userId)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);
