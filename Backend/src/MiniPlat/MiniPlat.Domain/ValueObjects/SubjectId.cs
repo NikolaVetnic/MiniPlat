@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MiniPlat.Domain.Abstractions;
 
 namespace MiniPlat.Domain.ValueObjects;
@@ -21,6 +22,16 @@ public class SubjectId : StronglyTypedId
     public override int GetHashCode()
     {
         return Value.GetHashCode();
+    }
+}
+
+public class SubjectIdValueConverter : ValueConverter<SubjectId, Guid>
+{
+    public SubjectIdValueConverter()
+        : base(
+            subjectId => subjectId.Value, // Convert from NodeId to Guid
+            guid => SubjectId.Of(guid)) // Convert from Guid to NodeId
+    {
     }
 }
 

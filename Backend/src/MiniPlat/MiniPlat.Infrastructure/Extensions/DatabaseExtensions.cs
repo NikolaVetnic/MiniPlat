@@ -103,7 +103,8 @@ public static class DatabaseExtensions
                 Level = seededSubject.Level,
                 Year = seededSubject.Year,
                 LecturerId = seededSubject.LecturerId,
-                AssistantId = seededSubject.AssistantId
+                AssistantId = seededSubject.AssistantId,
+                UserId = seededSubject.UserId
             };
 
             await context.Subjects.AddAsync(subject);

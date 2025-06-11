@@ -87,6 +87,9 @@ public class AppDbContext(
             entity.Property(s => s.UserId)
                 .IsRequired();
 
+            entity.Ignore(n => n.TopicIds); // This prevents EF from expecting a navigation property
+            entity.Property(n => n.Id).ValueGeneratedNever();
+
             entity.Property(e => e.TopicIds)
                 .HasConversion(new TopicIdListConverter())
                 .HasColumnName("TopicIds")
@@ -107,7 +110,7 @@ public class AppDbContext(
             entity.Property(r => r.SubjectId).IsRequired();
 
             entity.Property(t => t.SubjectId)
-                .HasConversion(subjectIdConverter)
+                .HasConversion(new SubjectIdValueConverter())
                 .IsRequired();
         });
     }
