@@ -103,7 +103,7 @@ public static class DatabaseExtensions
                 Level = seededSubject.Level,
                 Year = seededSubject.Year,
                 Lecturer = seededSubject.Lecturer,
-                Assistant = seededSubject.Assistant
+                Assistant = seededSubject.Assistant,
                 UserId = seededSubject.UserId,
                 TopicIds = seededSubject.TopicIds
             };
