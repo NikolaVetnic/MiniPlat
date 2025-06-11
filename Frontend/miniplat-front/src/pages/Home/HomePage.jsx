@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 
+import { fetchSubjects } from "../../services/subjectsService";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import styles from "./HomePage.module.css";
@@ -8,7 +9,6 @@ import UserCard from "../../components/Cards/User/UserCard";
 
 import footerText from "../../utils/footerText";
 import placeholderTexts from "./homeText";
-import subjectsDummyData from "../../data/subjectsDummyData";
 import { useUser } from "../../contexts/UserContext";
 import sr from "../../locales/sr.json";
 
@@ -19,12 +19,19 @@ const HomePage = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSubjects = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500)); // simulate fetching
-      setSubjects(subjectsDummyData);
-      setLoading(false);
+    const getSubjects = async () => {
+      setLoading(true);
+      try {
+        const subjectsData = await fetchSubjects();
+        setSubjects(subjectsData);
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchSubjects();
+
+    getSubjects();
   }, []);
 
   // if route has username param but no user is logged in → redirect to /home
