@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
-using MiniPlat.Application.Data.Abstractions;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
 using MiniPlat.Application.Entities.Subjects.Queries.ListSubjects;
@@ -14,7 +13,7 @@ namespace MiniPlat.Api.Controllers.Subjects;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SubjectsController(ISender sender, ICurrentUser currentUser) : ControllerBase
+public class SubjectsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [RequireApiKey]
