@@ -52,7 +52,7 @@ const HomePage = ({ onLogout }) => {
 
         <main className={styles.main}>
           <div className={styles.pageHeader}>
-            <h1>Početna</h1>
+            <h1>{sr.pages.home.home}</h1>
           </div>
 
           <div className={styles.pageContent}>
@@ -67,7 +67,7 @@ const HomePage = ({ onLogout }) => {
               ))}
             </header>
 
-            {user && <UserCard user={user} />}
+            {user && <UserCard />}
           </div>
 
           <footer className={styles.footer}>{footerText}</footer>
