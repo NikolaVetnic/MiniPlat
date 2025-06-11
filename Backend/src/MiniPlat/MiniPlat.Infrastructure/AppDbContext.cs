@@ -107,8 +107,6 @@ public class AppDbContext(
             entity.Property(t => t.UserId)
                 .IsRequired();
 
-            entity.Property(r => r.SubjectId).IsRequired();
-
             entity.Property(t => t.SubjectId)
                 .HasConversion(new SubjectIdValueConverter())
                 .IsRequired();
