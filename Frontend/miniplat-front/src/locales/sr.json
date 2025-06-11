@@ -58,7 +58,8 @@
       "greetings": {
         "lecturers": "Poštovani profesori",
         "students": "Poštovani studenti"
-      }
+      },
+      "home": "Početna"
     },
     "login": {
       "buttons": {
