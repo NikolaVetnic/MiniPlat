@@ -21,4 +21,14 @@ public class TopicsRepository(AppDbContext appDbContext) : ITopicsRepository
                    .SingleOrDefaultAsync(x => x.Id == topicId, cancellationToken) ??
                throw new SubjectNotFoundException(topicId.ToString());
     }
+
+    public async Task<List<Topic>> ListAsync(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    {
+        return await appDbContext.Topics
+            .AsNoTracking()
+            .Include(t => t.Materials)
+            .Skip(pageSize * pageIndex)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+    }
 }

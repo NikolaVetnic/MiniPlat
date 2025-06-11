@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
 using MiniPlat.Application.Entities.Topics.Queries.GetTopicById;
+using MiniPlat.Application.Entities.Topics.Queries.ListTopics;
+using MiniPlat.Application.Pagination;
 
 namespace MiniPlat.Api.Controllers.Topics;
 
@@ -28,6 +30,18 @@ public class TopicsController(ISender sender) : ControllerBase
     {
         var result = await sender.Send(new GetTopicByIdQuery(topicId));
         var response = new GetTopicByIdResponse(result.Topic);
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(ListTopicsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [RequireApiKey]
+    public async Task<ActionResult<ListTopicsResponse>> List([FromQuery] PaginationRequest query)
+    {
+        var result = await sender.Send(new ListTopicsQuery(query));
+        var response = new ListTopicsResponse(result.Topics);
 
         return Ok(response);
     }
