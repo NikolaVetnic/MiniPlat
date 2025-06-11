@@ -67,6 +67,7 @@ public class AppDbContext(
 
             entity.Property(l => l.UserId)
                 .IsRequired();
+
         });
 
         builder.Entity<Subject>(entity =>
@@ -81,6 +82,32 @@ public class AppDbContext(
                 .IsRequired();
             
             entity.Property(l => l.AssistantId)
+                .IsRequired();
+
+            entity.Property(s => s.UserId)
+                .IsRequired();
+
+            entity.Property(e => e.TopicIds)
+                .HasConversion(new TopicIdListConverter())
+                .HasColumnName("TopicIds")
+                .IsRequired(false);
+        });
+
+        builder.Entity<Topic>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Id)
+                .HasConversion(topicIdConverter)
+                .ValueGeneratedNever();
+
+            entity.Property(t => t.UserId)
+                .IsRequired();
+
+            entity.Property(r => r.SubjectId).IsRequired();
+
+            entity.Property(t => t.SubjectId)
+                .HasConversion(subjectIdConverter)
                 .IsRequired();
         });
     }
