@@ -10,4 +10,6 @@ public interface ISubjectsRepository
     Task<List<Subject>> ListAsync(int pageIndex, int pageSize, CancellationToken cancellationToken);
     Task<List<Subject>> ListByUsernameAsync(string username, int pageIndex, int pageSize, CancellationToken cancellationToken);
     Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken);
+
+    Task AddTopic(SubjectId subjectId, TopicId topicId, CancellationToken cancellationToken);
 }

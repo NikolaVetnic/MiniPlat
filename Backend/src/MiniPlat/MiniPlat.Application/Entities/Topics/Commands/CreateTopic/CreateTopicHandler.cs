@@ -11,6 +11,7 @@ internal class CreateTopicHandler(ICurrentUser currentUser, ITopicsRepository to
         var topic = command.ToTopic(userId);
 
         await topicsRepository.CreateAsync(topic, cancellationToken);
+        await subjectRepository.AddTopic(topic.SubjectId, topic.Id, cancellationToken);
 
         return new CreateTopicResult(topic.Id);
     }

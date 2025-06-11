@@ -49,4 +49,13 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         appDbContext.Subjects.Remove(subject);
         await appDbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task AddTopic(SubjectId subjectId, TopicId topicId, CancellationToken cancellationToken)
+    {
+        var subject = await GetById(subjectId, cancellationToken);
+
+        subject.TopicIds.Add(topicId);
+        appDbContext.Subjects.Update(subject);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
 }
