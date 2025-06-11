@@ -51,8 +51,15 @@ internal static class InitialData
             {
                 Id = LecturerId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")),
                 UserId = "22222222-2222-2222-2222-222222222222",
-                Title = "MA",
+                Title = "dr",
                 Department = "Matematika",
+            },
+            new()
+            {
+                Id = LecturerId.Of(Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc")),
+                UserId = "33333333-3333-3333-3333-333333333333",
+                Title = "MA",
+                Department = "Teorijsko računarstvo",
             }
         };
 
@@ -70,7 +77,6 @@ internal static class InitialData
                 Lecturer = "USRa",
                 Assistant = "USRc"
             },
-
             new()
             {
                 Id = SubjectId.Of(Guid.Parse("88e05977-cbd8-413c-a83f-869d4e9e2a63")),
