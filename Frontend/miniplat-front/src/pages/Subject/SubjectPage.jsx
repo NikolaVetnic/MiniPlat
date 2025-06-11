@@ -129,7 +129,7 @@ const SubjectPage = ({ user, onLogout }) => {
                 <p>{subject.description}</p>
               </div>
 
-            <div className={styles.pageContent}>
+              <div className={subjectPageStyles.pageContent}>
                 {loading ? (
                   <div />
                 ) : (
