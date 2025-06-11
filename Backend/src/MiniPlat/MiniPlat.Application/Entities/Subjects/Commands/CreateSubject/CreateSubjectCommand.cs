@@ -22,6 +22,6 @@ public class CreateSubjectCommandValidator : AbstractValidator<CreateSubjectComm
 {
     public CreateSubjectCommandValidator()
     {
-        // ToDo: Add remaining RegisterUser command validators
+        // ToDo: Add remaining CreateSubject command validators
     }
 }
