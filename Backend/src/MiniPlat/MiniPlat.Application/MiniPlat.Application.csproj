@@ -21,6 +21,7 @@
 
     <ItemGroup>
       <Folder Include="Cqrs\" />
+      <Folder Include="Entities\Topics\Queries\" />
     </ItemGroup>
 
 </Project>
