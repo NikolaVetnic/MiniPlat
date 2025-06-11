@@ -69,10 +69,9 @@ public class SubjectsController(ISender sender, ICurrentUser currentUser) : Cont
     [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public async Task<ActionResult<ListSubjectsResponse>> GetByUserId([FromQuery] PaginationRequest query)
+    public async Task<ActionResult<ListSubjectsResponse>> GetByUsername([FromQuery] PaginationRequest query)
     {
-        var result = await sender.Send(new ListSubjectsByUserIdQuery(currentUser.UserId ?? throw new
-            InvalidOperationException(), query));
+        var result = await sender.Send(new ListSubjectsByUserIdQuery(query));
         var response = new ListSubjectsResponse(result.Subjects);
 
         return Ok(response);
