@@ -46,11 +46,11 @@ const SubjectPage = ({ user, onLogout }) => {
   useEffect(() => {
     const fetchTopics = async () => {
       setLoading(true); // immediately activate spinner on subject change
+
       await new Promise((resolve) => setTimeout(resolve, 500));
-      const subject = subjectsDummyData.find(
-        (subj) => subj.id === decodeURIComponent(subjectId)
-      );
+
       const subjectData = subject ? subject.topics : [];
+
       setTopics(subjectData);
       setLoading(false);
     };
