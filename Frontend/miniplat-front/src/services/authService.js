@@ -59,3 +59,22 @@ export const login = async (username, password) => {
     };
   }
 };
+
+export const fetchUserInfo = async (token) => {
+  const response = await fetch(`${API_BASE_URL}/api/Auth/UserInfo`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    // You can also parse error response if needed
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch user info: ${response.status} - ${errorText}`
+    );
+  }
+
+  return await response.json();
+};
