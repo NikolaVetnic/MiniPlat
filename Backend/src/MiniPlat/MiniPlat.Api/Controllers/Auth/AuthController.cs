@@ -11,7 +11,7 @@ using OpenIddict.Validation.AspNetCore;
 
 // ReSharper disable InvertIf
 
-namespace MiniPlat.Api.Controllers;
+namespace MiniPlat.Api.Controllers.Auth;
 
 [ApiController]
 [Route("api/[controller]")]
