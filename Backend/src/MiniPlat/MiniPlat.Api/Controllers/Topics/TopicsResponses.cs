@@ -9,3 +9,5 @@ public record CreateTopicResponse(TopicId TopicId);
 public record GetTopicByIdResponse(Topic Topic);
 
 public record ListTopicsResponse(PaginatedResult<Topic> Topics);
+
+public record DeleteTopicResponse(bool IsTopicDeleted);
