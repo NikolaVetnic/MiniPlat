@@ -68,7 +68,7 @@ internal static class InitialData
                 Level = Level.Undergraduate,
                 Year = 1,
                 LecturerId = "11111111-1111-1111-1111-111111111111",
-                AssistantId = "33333333-3333-3333-3333-333333333333"
+                AssistantId = "33333333-3333-3333-3333-333333333333",
                 UserId = "11111111-1111-1111-1111-111111111111",
                 TopicIds = [TopicId.Of(Guid.Parse("47acc4e5-659b-4ed2-9f5f-8ba6606416a7")), TopicId.Of(Guid.Parse("b6416381-eeb9-4b84-8936-8c73772f7f4c"))]
             },
@@ -82,7 +82,7 @@ internal static class InitialData
                 Level = Level.Undergraduate,
                 Year = 2,
                 LecturerId = "11111111-1111-1111-1111-111111111111",
-                AssistantId = "33333333-3333-3333-3333-333333333333"
+                AssistantId = "33333333-3333-3333-3333-333333333333",
                 UserId = "22222222-2222-2222-2222-222222222222",
                 TopicIds = [TopicId.Of(Guid.Parse("26718d3b-235f-4ff1-97fe-5c172f114bb0"))]
             }
