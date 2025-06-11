@@ -16,8 +16,10 @@ public class AppDbContext(
 {
     private readonly IEnumerable<ISaveChangesInterceptor> _saveChangesInterceptors = saveChangesInterceptors;
 
-    public DbSet<Lecturer> Lecturers { get; set; } = null!;
+    public DbSet<Lecturer> Lecturers { get; set; } = null!; 
     public DbSet<Subject> Subjects { get; set; } = null!;
+    public DbSet<Topic> Topics { get; set; } = null!;
+    public DbSet<Material> Materials { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -36,6 +38,7 @@ public class AppDbContext(
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         builder.UseOpenIddict();
 
+        // Value converters for strongly-typed IDs
         var lecturerIdConverter = new ValueConverter<LecturerId, Guid>(
             id => id.Value,
             value => LecturerId.Of(value)
@@ -46,6 +49,17 @@ public class AppDbContext(
             value => SubjectId.Of(value)
         );
 
+        var topicIdConverter = new ValueConverter<TopicId, Guid>(
+            id => id.Value,
+            value => TopicId.Of(value)
+        );
+
+        var materialIdConverter = new ValueConverter<MaterialId, Guid>(
+            id => id.Value,
+            value => MaterialId.Of(value)
+        );
+
+        // Lecturer
         builder.Entity<Lecturer>(entity =>
         {
             entity.HasKey(l => l.Id);
@@ -63,6 +77,7 @@ public class AppDbContext(
                 .IsRequired();
         });
 
+        // Subject
         builder.Entity<Subject>(entity =>
         {
             entity.HasKey(s => s.Id);
@@ -71,10 +86,52 @@ public class AppDbContext(
                 .HasConversion(subjectIdConverter)
                 .ValueGeneratedNever();
 
-            entity.Property(l => l.Lecturer)
+            entity.Property(s => s.Lecturer)
                 .IsRequired();
 
-            entity.Property(l => l.Assistant)
+            entity.Property(s => s.Assistant)
+                .IsRequired();
+
+            // One-to-many: Subject ➡️ Topics
+            entity.HasMany(s => s.Topics)
+                  .WithOne()
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Topic
+        builder.Entity<Topic>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Id)
+                .HasConversion(topicIdConverter)
+                .ValueGeneratedNever();
+
+            entity.Property(t => t.Title)
+                .IsRequired();
+
+            entity.Property(t => t.Description)
+                .IsRequired();
+
+            // One-to-many: Topic ➡️ Materials
+            entity.HasMany(t => t.Materials)
+                  .WithOne()
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Material
+        builder.Entity<Material>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+
+            entity.Property(m => m.Id)
+                .HasConversion(materialIdConverter)
+                .ValueGeneratedNever();
+
+            entity.Property(m => m.Description)
+                .IsRequired();
+
+            entity.Property(m => m.Link)
                 .IsRequired();
         });
     }

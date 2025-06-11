@@ -12,6 +12,7 @@ public class Subject : Entity<SubjectId>
     public int Year { get; set; }
     public string Lecturer { get; set; } = string.Empty;
     public string Assistant { get; set; } = string.Empty;
+    public List<Topic> Topics { get; set; } = [];
 
     public static Subject Create(SubjectId id, string title, string description, string code, Level level, int year,
         string lecturerId, string assistantId)

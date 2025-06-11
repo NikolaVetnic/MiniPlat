@@ -75,7 +75,46 @@ internal static class InitialData
                 Level = Level.Undergraduate,
                 Year = 1,
                 Lecturer = "USRa",
-                Assistant = "USRc"
+                Assistant = "USRc",
+                Topics = new List<SeededTopic>
+                {
+                    new()
+                    {
+                        Id = TopicId.Of(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-000000000001")),
+                        Title = "Introduction to Data Structures",
+                        Description = "Overview of data structures.",
+                        Materials = new List<SeededMaterial>
+                        {
+                            new()
+                            {
+                                Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000001")),
+                                Description = "Lecture Slides",
+                                Link = "https://example.com/slides.pdf"
+                            },
+                            new()
+                            {
+                                Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000002")),
+                                Description = "Sample Code",
+                                Link = "https://example.com/code.zip"
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = TopicId.Of(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-000000000002")),
+                        Title = "Algorithms Basics",
+                        Description = "Introduction to algorithms.",
+                        Materials = new List<SeededMaterial>
+                        {
+                            new()
+                            {
+                                Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000003")),
+                                Description = "Lecture Notes",
+                                Link = "https://example.com/notes.pdf"
+                            }
+                        }
+                    }
+                }
             },
             new()
             {
@@ -86,7 +125,25 @@ internal static class InitialData
                 Level = Level.Undergraduate,
                 Year = 2,
                 Lecturer = "USRb",
-                Assistant = "USRc"
+                Assistant = "USRc",
+                Topics = new List<SeededTopic>
+                {
+                    new()
+                    {
+                        Id = TopicId.Of(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-000000000003")),
+                        Title = "Limits and Continuity",
+                        Description = "Understanding limits.",
+                        Materials = new List<SeededMaterial>
+                        {
+                            new()
+                            {
+                                Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000004")),
+                                Description = "Limit Problems",
+                                Link = "https://example.com/limits.pdf"
+                            }
+                        }
+                    }
+                }
             }
         };
 }
@@ -119,4 +176,20 @@ public class SeededSubject
     public required int Year { get; init; }
     public required string Lecturer { get; init; }
     public required string Assistant { get; init; }
+    public List<SeededTopic> Topics { get; init; } = [];
+}
+
+public class SeededTopic
+{
+    public required TopicId Id { get; init; }
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+    public List<SeededMaterial> Materials { get; init; } = [];
+}
+
+public class SeededMaterial
+{
+    public required MaterialId Id { get; init; }
+    public required string Description { get; init; }
+    public required string Link { get; init; }
 }

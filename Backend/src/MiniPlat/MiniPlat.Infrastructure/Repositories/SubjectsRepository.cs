@@ -26,6 +26,8 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
     {
         return await appDbContext.Subjects
             .AsNoTracking()
+            .Include(s => s.Topics)
+            .ThenInclude(t => t.Materials)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);
