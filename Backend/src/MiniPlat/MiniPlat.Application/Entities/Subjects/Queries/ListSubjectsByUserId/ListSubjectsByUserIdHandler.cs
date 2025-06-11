@@ -5,14 +5,15 @@ using MiniPlat.Domain.Models;
 
 namespace MiniPlat.Application.Entities.Subjects.Queries.ListSubjectsByUserId;
 
-internal class ListSubjectsByUserIdHandler(ISubjectsRepository subjectsRepository) : IQueryHandler<ListSubjectsByUserIdQuery, ListSubjectsByUserIdResult>
+internal class ListSubjectsByUserIdHandler(ICurrentUser currentUser, ISubjectsRepository subjectsRepository) : IQueryHandler<ListSubjectsByUserIdQuery, ListSubjectsByUserIdResult>
 {
     public async Task<ListSubjectsByUserIdResult> Handle(ListSubjectsByUserIdQuery query, CancellationToken cancellationToken)
     {
         var pageIndex = query.PaginationRequest.PageIndex;
         var pageSize = query.PaginationRequest.PageSize;
 
-        var subjects = await subjectsRepository.ListByUserIdAsync(query.UserId, pageIndex, pageSize, cancellationToken);
+        var subjects = await subjectsRepository.ListByUsernameAsync(currentUser.Username ?? throw new
+            InvalidOperationException(), pageIndex, pageSize, cancellationToken);
 
         return new ListSubjectsByUserIdResult(
             new PaginatedResult<Subject>(
