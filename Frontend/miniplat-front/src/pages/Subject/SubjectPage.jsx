@@ -120,48 +120,53 @@ const SubjectPage = ({ user, onLogout }) => {
         <div className={styles.contentWrapper}>
           <Sidebar subjects={subjects} user={user} loading={loading} />
 
-          <main className={styles.main}>
-            <div className={styles.pageHeader}>
-              <h1>{subjectTitle}</h1>
-            </div>
+          {loading ? (
+            <div />
+          ) : (
+            <main className={styles.main}>
+              <div className={styles.pageHeader}>
+                <h1>{subject.title}</h1>
+                <p>{subject.description}</p>
+              </div>
 
             <div className={styles.pageContent}>
-              {loading ? (
-                <div />
-              ) : (
-                <>
-                  <div className={subjectPageStyles.cardGrid}>
-                    {topics.map((topic, index) => (
-                      <TopicCard
-                        key={index}
-                        topic={topic}
-                        index={index}
-                        total={topics.length}
-                        onMoveUp={handleMoveUp}
-                        onMoveDown={handleMoveDown}
-                      />
-                    ))}
-                  </div>
+                {loading ? (
+                  <div />
+                ) : (
+                  <>
+                    <div className={subjectPageStyles.cardGrid}>
+                      {topics.map((topic, index) => (
+                        <TopicCard
+                          key={index}
+                          topic={topic}
+                          index={index}
+                          total={topics.length}
+                          onMoveUp={handleMoveUp}
+                          onMoveDown={handleMoveDown}
+                        />
+                      ))}
+                    </div>
 
-                  {user && (
-                    <button
-                      className={subjectPageStyles.addTopicButton}
-                      onClick={() => {
-                        setNewTitle("");
-                        setNewDescription("");
-                        setNewMaterials([]);
-                        setShowAddModal(true);
-                      }}
-                    >
-                      {sr.pages.subject.buttons.addTopic}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
+                    {user && (
+                      <button
+                        className={subjectPageStyles.addTopicButton}
+                        onClick={() => {
+                          setNewTitle("");
+                          setNewDescription("");
+                          setNewMaterials([]);
+                          setShowAddModal(true);
+                        }}
+                      >
+                        {sr.pages.subject.buttons.addTopic}
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
 
-            <footer className={styles.footer}>{footerText}</footer>
-          </main>
+              <footer className={styles.footer}>{footerText}</footer>
+            </main>
+          )}
         </div>
       </div>
 
