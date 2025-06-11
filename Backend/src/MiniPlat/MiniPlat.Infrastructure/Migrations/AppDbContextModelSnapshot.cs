@@ -270,7 +270,7 @@ namespace MiniPlat.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Assistant")
+                    b.Property<string>("AssistantId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -300,7 +300,7 @@ namespace MiniPlat.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("Lecturer")
+                    b.Property<string>("LecturerId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -308,14 +308,6 @@ namespace MiniPlat.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TopicIds")
-                        .HasColumnType("text")
-                        .HasColumnName("TopicIds");
-
-                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 

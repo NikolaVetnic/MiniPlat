@@ -77,30 +77,10 @@ public class AppDbContext(
                 .HasConversion(subjectIdConverter)
                 .ValueGeneratedNever();
 
-            entity.Property(s => s.UserId)
+            entity.Property(l => l.LecturerId)
                 .IsRequired();
-
-            entity.Property(e => e.TopicIds)
-                .HasConversion(new TopicIdListConverter())
-                .HasColumnName("TopicIds")
-                .IsRequired(false);
-        });
-
-        builder.Entity<Topic>(entity =>
-        {
-            entity.HasKey(t => t.Id);
-
-            entity.Property(t => t.Id)
-                .HasConversion(topicIdConverter)
-                .ValueGeneratedNever();
-
-            entity.Property(t => t.UserId)
-                .IsRequired();
-
-            entity.Property(r => r.SubjectId).IsRequired();
-
-            entity.Property(t => t.SubjectId)
-                .HasConversion(subjectIdConverter)
+            
+            entity.Property(l => l.AssistantId)
                 .IsRequired();
         });
     }

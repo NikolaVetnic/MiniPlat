@@ -1,51 +1,40 @@
-﻿using Mapster;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniPlat.Application.Entities.Subject.Commands.CreateSubject;
-using MiniPlat.Application.Entities.Subject.Commands.DeleteSubject;
-using MiniPlat.Application.Entities.Subject.Queries.GetSubjectById;
-using MiniPlat.Application.Entities.Subject.Queries.ListSubjects;
-using MiniPlat.Application.Entities.Subject.Queries.ListSubjectsByUserId;
+using MiniPlat.Api.Attributes;
+using MiniPlat.Application.Data.Abstractions;
+using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
+using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
+using MiniPlat.Application.Entities.Subjects.Queries.ListSubjects;
+using MiniPlat.Application.Entities.Subjects.Queries.ListSubjectsByUserId;
 using MiniPlat.Application.Pagination;
-using MiniPlat.Domain.Dtos;
 using OpenIddict.Validation.AspNetCore;
 
 namespace MiniPlat.Api.Controllers.Subjects;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-public class SubjectController(ISender sender) : ControllerBase
+public class SubjectController(ISender sender, ICurrentUser currentUser) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> CreateSubject([FromBody] CreateSubjectRequest request)
+    [RequireApiKey]
+    public async Task<IActionResult> Create([FromBody] CreateSubjectRequest request)
     {
-        var command = request.Adapt<CreateSubjectCommand>();
-        var result = await sender.Send(command);
-        var response = result.Adapt<CreateSubjectResponse>();
+        var result = await sender.Send(request.ToCommand());
+        var response = new CreateSubjectResponse(result.SubjectId);
 
-        return CreatedAtAction(nameof(CreateSubject), new { id = response.SubjectId }, response);
+        return CreatedAtAction(nameof(Create), new { id = response.SubjectId }, response);
     }
 
     [HttpGet("{subjectId}")]
     [ProducesResponseType(typeof(GetSubjectByIdResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [RequireApiKey]
     public async Task<ActionResult<GetSubjectByIdResponse>> GetById([FromRoute] string subjectId)
     {
         var result = await sender.Send(new GetSubjectByIdQuery(subjectId));
-
-        var response = new GetSubjectByIdResponse
-        {
-            Code = result.Subject.Code,
-            Title = result.Subject.Title,
-            Description = result.Subject.Description,
-            Level = result.Subject.Level,
-            Year = result.Subject.Year,
-            Lecturer = result.Subject.Lecturer,
-            Assistant = result.Subject.Assistant
-        };
+        var response = new GetSubjectByIdResponse(result.Subject);
 
         return Ok(response);
     }
@@ -53,27 +42,11 @@ public class SubjectController(ISender sender) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ListSubjectsResponse>> Get([FromQuery] PaginationRequest query)
+    [RequireApiKey]
+    public async Task<ActionResult<ListSubjectsResponse>> List([FromQuery] PaginationRequest query)
     {
         var result = await sender.Send(new ListSubjectsQuery(query));
-
-        var dtoResult = new PaginatedResult<SubjectDto>(
-            query.PageIndex,
-            query.PageSize,
-            result.Subjects.Count,
-            result.Subjects.Data.Select(s => new SubjectDto
-            {
-                Code = s.Code,
-                Title = s.Title,
-                Description = s.Description,
-                Level = s.Level,
-                Year = s.Year,
-                Lecturer = s.Lecturer,
-                Assistant = s.Assistant
-            })
-        );
-
-        var response = new ListSubjectsResponse(dtoResult);
+        var response = new ListSubjectsResponse(result.Subjects);
 
         return Ok(response);
     }
@@ -81,28 +54,26 @@ public class SubjectController(ISender sender) : ControllerBase
     [HttpGet("user/{userId}")]
     [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ListSubjectsResponse>> GetByUserId(
+    [RequireApiKey]
+    public async Task<ActionResult<ListSubjectsResponse>> GetByUserIdPublic(
         [FromRoute] string userId,
         [FromQuery] PaginationRequest query)
     {
         var result = await sender.Send(new ListSubjectsByUserIdQuery(userId, query));
+        var response = new ListSubjectsResponse(result.Subjects);
 
-        var dtoResult = new PaginatedResult<SubjectDto>(
-            query.PageIndex,
-            query.PageSize,
-            result.Subjects.Count,
-            result.Subjects.Data.Select(s => new SubjectDto
-            {
-                Code = s.Code,
-                Title = s.Title,
-                Description = s.Description,
-                Level = s.Level,
-                Year = s.Year,
-                Lecturer = s.Lecturer,
-                Assistant = s.Assistant
-            }));
+        return Ok(response);
+    }
 
-        var response = new ListSubjectsResponse(dtoResult);
+    [HttpGet("user")]
+    [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    public async Task<ActionResult<ListSubjectsResponse>> GetByUserId([FromQuery] PaginationRequest query)
+    {
+        var result = await sender.Send(new ListSubjectsByUserIdQuery(currentUser.UserId ?? throw new
+            InvalidOperationException(), query));
+        var response = new ListSubjectsResponse(result.Subjects);
 
         return Ok(response);
     }
@@ -111,10 +82,11 @@ public class SubjectController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(DeleteSubjectResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [RequireApiKey]
     public async Task<ActionResult<DeleteSubjectResponse>> Delete([FromRoute] string subjectId)
     {
         var result = await sender.Send(new DeleteSubjectCommand(subjectId));
-        var response = result.Adapt<DeleteSubjectResponse>();
+        var response = new DeleteSubjectResponse(result.IsSubjectDeleted);
 
         return Ok(response);
     }

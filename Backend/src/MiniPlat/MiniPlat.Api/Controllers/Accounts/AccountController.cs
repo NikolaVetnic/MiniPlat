@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MiniPlat.Api.Attributes;
 using MiniPlat.Application.Entities.User.Commands.RegisterUser;
 using MiniPlat.Application.Entities.User.Commands.RegisterUsers;
 using MiniPlat.Domain.Models;
@@ -9,6 +10,7 @@ namespace MiniPlat.Api.Controllers.Accounts;
 
 [ApiController]
 [Route("api/[controller]")]
+[RequireApiKey]
 public class AccountController(ISender sender, UserManager<ApplicationUser> userManager) : ControllerBase
 {
     [HttpPost("Register")]
@@ -21,7 +23,7 @@ public class AccountController(ISender sender, UserManager<ApplicationUser> user
 
         return Ok("User registered successfully.");
     }
-    
+
     [HttpPost("RegisterMultiple")]
     public async Task<IActionResult> RegisterMultipleUsers(
         [FromBody] RegisterMultipleUsersRequest request)

@@ -2,14 +2,14 @@
 using MiniPlat.Application.Cqrs;
 using MiniPlat.Domain.ValueObjects;
 
-namespace MiniPlat.Application.Entities.Subject.Commands.DeleteSubject;
+namespace MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 
 public record DeleteSubjectCommand(SubjectId Id) : ICommand<DeleteSubjectResult>
 {
     public DeleteSubjectCommand(string Id) : this(SubjectId.Of(Guid.Parse(Id))) { }
 }
 
-public record DeleteSubjectResult(bool SubjectDeleted);
+public record DeleteSubjectResult(bool IsSubjectDeleted);
 
 public class DeleteSubjectCommandValidator : AbstractValidator<DeleteSubjectCommand>
 {

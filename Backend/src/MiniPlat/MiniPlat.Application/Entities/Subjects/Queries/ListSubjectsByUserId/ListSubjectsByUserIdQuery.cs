@@ -1,8 +1,9 @@
 ﻿using MiniPlat.Application.Cqrs;
 using MiniPlat.Application.Pagination;
+using MiniPlat.Domain.Models;
 
-namespace MiniPlat.Application.Entities.Subject.Queries.ListSubjectsByUserId;
+namespace MiniPlat.Application.Entities.Subjects.Queries.ListSubjectsByUserId;
 
 public record ListSubjectsByUserIdQuery(string UserId, PaginationRequest PaginationRequest) : IQuery<ListSubjectsByUserIdResult>;
 
-public record ListSubjectsByUserIdResult(PaginatedResult<Domain.Models.Subject> Subjects);
+public record ListSubjectsByUserIdResult(PaginatedResult<Subject> Subjects);
