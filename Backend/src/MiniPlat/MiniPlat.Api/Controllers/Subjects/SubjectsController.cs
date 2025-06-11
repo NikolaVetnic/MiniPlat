@@ -50,20 +50,6 @@ public class SubjectsController(ISender sender) : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("user/{userId}")]
-    [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [RequireApiKey]
-    public async Task<ActionResult<ListSubjectsResponse>> GetByUserIdPublic(
-        [FromRoute] string userId,
-        [FromQuery] PaginationRequest query)
-    {
-        var result = await sender.Send(new ListSubjectsByUserIdQuery(userId, query));
-        var response = new ListSubjectsResponse(result.Subjects);
-
-        return Ok(response);
-    }
-
     [HttpGet("user")]
     [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
