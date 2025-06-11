@@ -18,7 +18,7 @@ public class TopicsRepository(AppDbContext appDbContext) : ITopicsRepository
     {
         return await appDbContext.Topics
                    .AsNoTracking()
-                   .SingleOrDefaultAsync(x => x.Id == topicId, cancellationToken) ??
+                   .SingleOrDefaultAsync(x => x.Id == topicId && x.IsHidden == false, cancellationToken) ??
                throw new SubjectNotFoundException(topicId.ToString());
     }
 
@@ -26,6 +26,7 @@ public class TopicsRepository(AppDbContext appDbContext) : ITopicsRepository
     {
         return await appDbContext.Topics
             .AsNoTracking()
+            .Where(x => x.IsHidden == false)
             .Include(t => t.Materials)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
