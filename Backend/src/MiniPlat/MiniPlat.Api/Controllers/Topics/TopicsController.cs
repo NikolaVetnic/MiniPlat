@@ -1,8 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
-using MiniPlat.Api.Controllers.Subjects;
-using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Topics.Commands.DeleteTopic;
 using MiniPlat.Application.Entities.Topics.Queries.GetTopicById;
 using MiniPlat.Application.Entities.Topics.Queries.ListTopics;
@@ -45,6 +43,19 @@ public class TopicsController(ISender sender) : ControllerBase
     {
         var result = await sender.Send(new ListTopicsQuery(query));
         var response = new ListTopicsResponse(result.Topics);
+
+        return Ok(response);
+    }
+
+    [HttpPut("{topicId}")]
+    [ProducesResponseType(typeof(UpdateTopicResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [RequireApiKey]
+    public async Task<ActionResult<UpdateTopicResponse>> Update([FromRoute] string topicId, [FromBody] UpdateTopicRequest request)
+    {
+        var result = await sender.Send(request.ToCommand(topicId));
+        var response = new UpdateTopicResponse(result.Topic);
 
         return Ok(response);
     }

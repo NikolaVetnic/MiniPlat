@@ -10,4 +10,6 @@ public record GetTopicByIdResponse(Topic Topic);
 
 public record ListTopicsResponse(PaginatedResult<Topic> Topics);
 
+public record UpdateTopicResponse(Topic Topic);
+
 public record DeleteTopicResponse(bool IsTopicDeleted);

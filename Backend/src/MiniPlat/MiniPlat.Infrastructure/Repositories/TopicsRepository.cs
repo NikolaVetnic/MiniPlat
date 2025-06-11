@@ -33,6 +33,12 @@ public class TopicsRepository(AppDbContext appDbContext) : ITopicsRepository
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
+    public async Task UpdateTopic(Topic topic, CancellationToken cancellationToken)
+    {
+        appDbContext.Topics.Update(topic);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task MarkAsDeletedAsync(TopicId topicId, CancellationToken cancellationToken)
     {
         var topic = await GetById(topicId, cancellationToken);
