@@ -6,4 +6,5 @@ public interface ICurrentUser
 {
     ClaimsPrincipal? Principal { get; }
     string? UserId { get; }
+    string? Username { get; }
 }
