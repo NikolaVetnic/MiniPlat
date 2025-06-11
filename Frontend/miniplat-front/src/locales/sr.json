@@ -8,7 +8,11 @@
     "cards": {
       "user": {
         "firstName": "Ime",
-        "lastName": "Prezime"
+        "lastName": "Prezime",
+        "email": "Email",
+        "lecturer": "Nastavnik",
+        "department": "Odsek",
+        "loading": "Podaci o korisniku se učitavaju..."
       },
       "topic": {
         "buttons": {
@@ -54,7 +58,8 @@
       "greetings": {
         "lecturers": "Poštovani profesori",
         "students": "Poštovani studenti"
-      }
+      },
+      "home": "Početna"
     },
     "login": {
       "buttons": {

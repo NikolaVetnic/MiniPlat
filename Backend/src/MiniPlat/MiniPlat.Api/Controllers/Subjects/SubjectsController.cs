@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
-using MiniPlat.Application.Data.Abstractions;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
 using MiniPlat.Application.Entities.Subjects.Queries.ListSubjects;
@@ -14,7 +13,7 @@ namespace MiniPlat.Api.Controllers.Subjects;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SubjectController(ISender sender, ICurrentUser currentUser) : ControllerBase
+public class SubjectsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [RequireApiKey]
@@ -51,28 +50,13 @@ public class SubjectController(ISender sender, ICurrentUser currentUser) : Contr
         return Ok(response);
     }
 
-    [HttpGet("user/{userId}")]
-    [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [RequireApiKey]
-    public async Task<ActionResult<ListSubjectsResponse>> GetByUserIdPublic(
-        [FromRoute] string userId,
-        [FromQuery] PaginationRequest query)
-    {
-        var result = await sender.Send(new ListSubjectsByUserIdQuery(userId, query));
-        var response = new ListSubjectsResponse(result.Subjects);
-
-        return Ok(response);
-    }
-
     [HttpGet("user")]
     [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public async Task<ActionResult<ListSubjectsResponse>> GetByUserId([FromQuery] PaginationRequest query)
+    public async Task<ActionResult<ListSubjectsResponse>> GetByUsername([FromQuery] PaginationRequest query)
     {
-        var result = await sender.Send(new ListSubjectsByUserIdQuery(currentUser.UserId ?? throw new
-            InvalidOperationException(), query));
+        var result = await sender.Send(new ListSubjectsByUserIdQuery(query));
         var response = new ListSubjectsResponse(result.Subjects);
 
         return Ok(response);

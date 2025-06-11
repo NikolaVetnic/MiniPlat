@@ -31,11 +31,11 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<List<Subject>> ListByUserIdAsync(string userId, int pageIndex, int pageSize, CancellationToken cancellationToken)
+    public async Task<List<Subject>> ListByUsernameAsync(string username, int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         return await appDbContext.Subjects
             .AsNoTracking()
-            .Where(s => s.LecturerId == userId || s.AssistantId == userId)
+            .Where(s => s.Lecturer == username || s.Assistant == username)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);

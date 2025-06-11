@@ -50,12 +50,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+
+app.UseCors("AllowSpecificOrigins");
+
 app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors("AllowSpecificOrigins");
 app.MapControllers();
 
 await app.Services.MigrateAndSeedDatabaseAsync();

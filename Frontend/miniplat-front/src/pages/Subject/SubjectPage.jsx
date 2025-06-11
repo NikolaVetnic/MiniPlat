@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { fetchSubjects } from "../../services/subjectsService";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import sr from "../../locales/sr.json";
@@ -10,13 +11,13 @@ import TopicCard from "../../components/Cards/Topic/TopicCard";
 import TopicModal from "../../components/Modals/Topic/TopicModal";
 
 import footerText from "../../utils/footerText";
-import subjectsDummyData from "../../data/subjectsDummyData";
 
 const SubjectPage = ({ user, onLogout }) => {
   const { subjectId } = useParams();
+  const [subject, setSubject] = useState(null);
+  const [subjects, setSubjects] = useState([]);
 
   const [topics, setTopics] = useState([]);
-  const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -24,29 +25,32 @@ const SubjectPage = ({ user, onLogout }) => {
   const [newDescription, setNewDescription] = useState("");
   const [newMaterials, setNewMaterials] = useState([]);
 
-  // Fetch subjects on mount (mock API call)
   useEffect(() => {
-    const fetchSubjects = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setSubjects(subjectsDummyData);
+    const getSubjects = async () => {
+      setLoading(true);
+      try {
+        const subjectsData = await fetchSubjects();
+        setSubjects(subjectsData);
+        setSubject(subjectsData.find((s) => s.id === subjectId));
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchSubjects();
-  }, []);
 
-  const subject = subjectsDummyData.find(
-    (subj) => subj.id === decodeURIComponent(subjectId)
-  );
-  const subjectTitle = subject ? subject.title : decodeURIComponent(subjectId);
+    getSubjects();
+  }, [subjectId]);
 
   // Fetch topics whenever subjectId changes
   useEffect(() => {
     const fetchTopics = async () => {
       setLoading(true); // immediately activate spinner on subject change
+
       await new Promise((resolve) => setTimeout(resolve, 500));
-      const subject = subjectsDummyData.find(
-        (subj) => subj.id === decodeURIComponent(subjectId)
-      );
+
       const subjectData = subject ? subject.topics : [];
+
       setTopics(subjectData);
       setLoading(false);
     };
@@ -116,48 +120,53 @@ const SubjectPage = ({ user, onLogout }) => {
         <div className={styles.contentWrapper}>
           <Sidebar subjects={subjects} user={user} loading={loading} />
 
-          <main className={styles.main}>
-            <div className={styles.pageHeader}>
-              <h1>{subjectTitle}</h1>
-            </div>
+          {loading ? (
+            <div />
+          ) : (
+            <main className={styles.main}>
+              <div className={styles.pageHeader}>
+                <h1>{subject.title}</h1>
+                <p>{subject.description}</p>
+              </div>
 
-            <div className={styles.pageContent}>
-              {loading ? (
-                <div />
-              ) : (
-                <>
-                  <div className={subjectPageStyles.cardGrid}>
-                    {topics.map((topic, index) => (
-                      <TopicCard
-                        key={index}
-                        topic={topic}
-                        index={index}
-                        total={topics.length}
-                        onMoveUp={handleMoveUp}
-                        onMoveDown={handleMoveDown}
-                      />
-                    ))}
-                  </div>
+              <div className={subjectPageStyles.pageContent}>
+                {loading ? (
+                  <div />
+                ) : (
+                  <>
+                    <div className={subjectPageStyles.cardGrid}>
+                      {topics.map((topic, index) => (
+                        <TopicCard
+                          key={index}
+                          topic={topic}
+                          index={index}
+                          total={topics.length}
+                          onMoveUp={handleMoveUp}
+                          onMoveDown={handleMoveDown}
+                        />
+                      ))}
+                    </div>
 
-                  {user && (
-                    <button
-                      className={subjectPageStyles.addTopicButton}
-                      onClick={() => {
-                        setNewTitle("");
-                        setNewDescription("");
-                        setNewMaterials([]);
-                        setShowAddModal(true);
-                      }}
-                    >
-                      {sr.pages.subject.buttons.addTopic}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
+                    {user && (
+                      <button
+                        className={subjectPageStyles.addTopicButton}
+                        onClick={() => {
+                          setNewTitle("");
+                          setNewDescription("");
+                          setNewMaterials([]);
+                          setShowAddModal(true);
+                        }}
+                      >
+                        {sr.pages.subject.buttons.addTopic}
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
 
-            <footer className={styles.footer}>{footerText}</footer>
-          </main>
+              <footer className={styles.footer}>{footerText}</footer>
+            </main>
+          )}
         </div>
       </div>
 

@@ -51,8 +51,15 @@ internal static class InitialData
             {
                 Id = LecturerId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")),
                 UserId = "22222222-2222-2222-2222-222222222222",
-                Title = "MA",
+                Title = "dr",
                 Department = "Matematika",
+            },
+            new()
+            {
+                Id = LecturerId.Of(Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc")),
+                UserId = "33333333-3333-3333-3333-333333333333",
+                Title = "MA",
+                Department = "Teorijsko računarstvo",
             }
         };
 
@@ -67,12 +74,11 @@ internal static class InitialData
                 Description = "Strukture podataka i algoritmi",
                 Level = Level.Undergraduate,
                 Year = 1,
-                LecturerId = "11111111-1111-1111-1111-111111111111",
-                AssistantId = "33333333-3333-3333-3333-333333333333",
+                Lecturer = "USRa",
+                Assistant = "USRc"
                 UserId = "22222222-2222-2222-2222-222222222222",
                 TopicIds = [TopicId.Of(Guid.Parse("47acc4e5-659b-4ed2-9f5f-8ba6606416a7")), TopicId.Of(Guid.Parse("b6416381-eeb9-4b84-8936-8c73772f7f4c"))]
             },
-
             new()
             {
                 Id = SubjectId.Of(Guid.Parse("88e05977-cbd8-413c-a83f-869d4e9e2a63")),
@@ -81,8 +87,8 @@ internal static class InitialData
                 Description = "Single Variable Calculus",
                 Level = Level.Undergraduate,
                 Year = 2,
-                LecturerId = "11111111-1111-1111-1111-111111111111",
-                AssistantId = "33333333-3333-3333-3333-333333333333",
+                Lecturer = "USRa",
+                Assistant = "USRc"
                 UserId = "22222222-2222-2222-2222-222222222222",
                 TopicIds = [TopicId.Of(Guid.Parse("26718d3b-235f-4ff1-97fe-5c172f114bb0"))]
             }
@@ -147,8 +153,8 @@ public class SeededSubject
     public required string Description { get; init; }
     public required Level Level { get; init; }
     public required int Year { get; init; }
-    public required string LecturerId { get; init; }
-    public required string AssistantId { get; init; }
+    public required string Lecturer { get; init; }
+    public required string Assistant { get; init; }
     public required string UserId { get; init; }
     public List<TopicId> TopicIds { get; init; } = [];  
 }

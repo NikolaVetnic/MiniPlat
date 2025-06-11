@@ -17,8 +17,12 @@ const Sidebar = ({ subjects = [], loading = false }) => {
     );
   }
 
-  const userSubjects = user
-    ? subjects.filter((subject) => subject.owners.includes(user.username))
+  const subjectsToDisplay = user
+    ? subjects.filter(
+        (subject) =>
+          subject.lecturer == user.username ||
+          subject.assistant == user.username
+      )
     : subjects;
 
   return (
@@ -40,7 +44,7 @@ const Sidebar = ({ subjects = [], loading = false }) => {
       <h2>{cpt.subjects}</h2>
       <nav className={styles.nav}>
         <ul>
-          {userSubjects.map((subject) => (
+          {subjectsToDisplay.map((subject) => (
             <NavItem
               icon={PiNotePencil}
               key={subject.id}

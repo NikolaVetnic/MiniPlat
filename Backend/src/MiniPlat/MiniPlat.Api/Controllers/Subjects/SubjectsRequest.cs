@@ -25,8 +25,8 @@ public static class SubjectRequestExtensions
             Description = request.Description,
             Level = request.Level,
             Year = request.Year,
-            LecturerId = request.Lecturer,
-            AssistantId = request.Assistant
+            Lecturer = request.Lecturer,
+            Assistant = request.Assistant
         };
     }
 }

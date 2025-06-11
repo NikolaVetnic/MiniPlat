@@ -49,7 +49,7 @@ public class AuthController(ISender sender, ITokenService tokenService)
     }
 
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    [HttpPost("UserInfo"), Produces("application/json")]
+    [HttpGet("UserInfo"), Produces("application/json")]
     public async Task<IActionResult> UserInfo()
     {
         var principal = HttpContext.User;

@@ -9,8 +9,9 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
 {
     public ClaimsPrincipal? Principal { get; } = httpContextAccessor.HttpContext?.User;
 
-    // Pick “sub” or NameIdentifier claim
     public string? UserId =>
         Principal?.FindFirst(OpenIddictConstants.Claims.Subject)?.Value ??
         Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    public string? Username => Principal?.FindFirst("username")?.Value;
 }
