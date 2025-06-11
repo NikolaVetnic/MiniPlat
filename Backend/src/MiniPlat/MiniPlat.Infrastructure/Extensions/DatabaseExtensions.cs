@@ -104,7 +104,8 @@ public static class DatabaseExtensions
                 Year = seededSubject.Year,
                 LecturerId = seededSubject.LecturerId,
                 AssistantId = seededSubject.AssistantId,
-                UserId = seededSubject.UserId
+                UserId = seededSubject.UserId,
+                TopicIds = seededSubject.TopicIds
             };
 
             await context.Subjects.AddAsync(subject);
