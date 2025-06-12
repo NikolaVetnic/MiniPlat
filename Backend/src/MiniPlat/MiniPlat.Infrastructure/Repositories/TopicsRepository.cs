@@ -1,0 +1,50 @@
+﻿using Microsoft.EntityFrameworkCore;
+using MiniPlat.Application.Data.Abstractions;
+using MiniPlat.Application.Exceptions;
+using MiniPlat.Domain.Models;
+using MiniPlat.Domain.ValueObjects;
+
+namespace MiniPlat.Infrastructure.Repositories;
+
+public class TopicsRepository(AppDbContext appDbContext) : ITopicsRepository
+{
+    public async Task CreateAsync(Topic topic, CancellationToken cancellationToken)
+    {
+        appDbContext.Topics.Add(topic);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Topic> GetById(TopicId topicId, CancellationToken cancellationToken)
+    {
+        return await appDbContext.Topics
+                   .AsNoTracking()
+                   .SingleOrDefaultAsync(x => x.Id == topicId && x.IsHidden == false, cancellationToken) ??
+               throw new SubjectNotFoundException(topicId.ToString());
+    }
+
+    public async Task<List<Topic>> ListAsync(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    {
+        return await appDbContext.Topics
+            .AsNoTracking()
+            .Where(x => x.IsHidden == false)
+            .Include(t => t.Materials)
+            .Skip(pageSize * pageIndex)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+    }
+
+    public async Task UpdateTopic(Topic topic, CancellationToken cancellationToken)
+    {
+        appDbContext.Topics.Update(topic);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task MarkAsDeletedAsync(TopicId topicId, CancellationToken cancellationToken)
+    {
+        var topic = await GetById(topicId, cancellationToken);
+        topic.IsHidden = true;
+
+        appDbContext.Topics.Update(topic);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+}
