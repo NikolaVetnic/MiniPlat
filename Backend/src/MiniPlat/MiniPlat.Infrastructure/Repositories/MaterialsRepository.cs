@@ -21,4 +21,19 @@ public class MaterialsRepository(AppDbContext appDbContext) : IMaterialsReposito
                    .SingleOrDefaultAsync(x => x.Id == materialId, cancellationToken) ??
                throw new MaterialNotFoundException(materialId.ToString());
     }
+
+    public async Task<List<Material>> ListAsync(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    {
+        return await appDbContext.Materials
+            .AsNoTracking()
+            .Skip(pageSize * pageIndex)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+    }
+
+    public async Task UpdateMaterial(Material material, CancellationToken cancellationToken)
+    {
+        appDbContext.Materials.Update(material);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
 }

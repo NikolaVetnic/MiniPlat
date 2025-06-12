@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
 using MiniPlat.Application.Entities.Materials.Queries.GetMaterialById;
+using MiniPlat.Application.Entities.Materials.Queries.ListMaterials;
+using MiniPlat.Application.Pagination;
 
 namespace MiniPlat.Api.Controllers.Materials;
 
@@ -28,6 +30,31 @@ public class MaterialsController(ISender sender) : ControllerBase
     {
         var result = await sender.Send(new GetMaterialByIdQuery(materialId));
         var response = new GetMaterialByIdResponse(result.Material);
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(ListMaterialsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [RequireApiKey]
+    public async Task<ActionResult<ListMaterialsResponse>> List([FromQuery] PaginationRequest query)
+    {
+        var result = await sender.Send(new ListMaterialsQuery(query));
+        var response = new ListMaterialsResponse(result.Materials);
+
+        return Ok(response);
+    }
+
+    [HttpPut("{materialId}")]
+    [ProducesResponseType(typeof(UpdateMaterialResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [RequireApiKey]
+    public async Task<ActionResult<UpdateMaterialResponse>> Update([FromRoute] string materialId, [FromBody] UpdateMaterialRequest request)
+    {
+        var result = await sender.Send(request.ToCommand(materialId));
+        var response = new UpdateMaterialResponse(result.Material);
 
         return Ok(response);
     }
