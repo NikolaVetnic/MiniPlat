@@ -9,8 +9,8 @@ internal class UpdateTopicHandler(ITopicsRepository topicsRepository) : ICommand
     {
         var topic = await topicsRepository.GetById(command.Id, cancellationToken);
 
-        topic.Title = command.Title ?? topic.Title;
-        topic.Description = command.Description ?? topic.Description;
+        topic.Title = command.Title;
+        topic.Description = command.Description;
 
         await topicsRepository.UpdateTopic(topic, cancellationToken);
 
