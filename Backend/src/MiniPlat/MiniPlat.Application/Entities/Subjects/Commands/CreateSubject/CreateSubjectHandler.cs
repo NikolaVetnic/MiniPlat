@@ -20,7 +20,7 @@ internal static class CreateSubjectCommandExtensions
 {
     public static Subject ToSubject(this CreateSubjectCommand command)
     {
-        return Subject.Create(
+        var subject = Subject.Create(
             SubjectId.Of(Guid.NewGuid()),
             command.Title,
             command.Description,
@@ -30,5 +30,25 @@ internal static class CreateSubjectCommandExtensions
             command.Lecturer,
             command.Assistant
         );
+
+        subject.Topics = command.Topics
+            .OrderBy(t => t.Order)
+            .Select(t => new Topic
+            {
+                Id = TopicId.Of(t.Id),
+                Title = t.Title,
+                Description = t.Description,
+                IsHidden = t.IsHidden,
+                Materials = t.Materials
+                    .OrderBy(m => m.Order)
+                    .Select(m => new Material
+                    {
+                        Id = MaterialId.Of(m.Id),
+                        Description = m.Description,
+                        Link = m.Link
+                    }).ToList()
+            }).ToList();
+
+        return subject;
     }
 }

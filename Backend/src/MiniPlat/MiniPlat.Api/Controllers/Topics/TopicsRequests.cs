@@ -1,4 +1,5 @@
-﻿using MiniPlat.Application.Entities.Topics.Commands.CreateTopic;
+﻿using MiniPlat.Api.Controllers.Materials;
+using MiniPlat.Application.Entities.Topics.Commands.CreateTopic;
 using MiniPlat.Application.Entities.Topics.Commands.UpdateTopic;
 using MiniPlat.Domain.ValueObjects;
 
@@ -8,6 +9,7 @@ public class CreateTopicRequest
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public List<CreateMaterialRequest> Materials { get; set; } = [];
 }
 
 public class UpdateTopicRequest
