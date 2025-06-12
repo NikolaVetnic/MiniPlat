@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
+using MiniPlat.Application.Entities.Materials.Commands.DeleteMaterial;
 using MiniPlat.Application.Entities.Materials.Queries.GetMaterialById;
 using MiniPlat.Application.Entities.Materials.Queries.ListMaterials;
 using MiniPlat.Application.Pagination;
@@ -55,6 +56,19 @@ public class MaterialsController(ISender sender) : ControllerBase
     {
         var result = await sender.Send(request.ToCommand(materialId));
         var response = new UpdateMaterialResponse(result.Material);
+
+        return Ok(response);
+    }
+
+    [HttpDelete("{materialId}")]
+    [ProducesResponseType(typeof(DeleteMaterialResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [RequireApiKey]
+    public async Task<ActionResult<DeleteMaterialResponse>> Delete([FromRoute] string materialId)
+    {
+        var result = await sender.Send(new DeleteMaterialCommand(materialId));
+        var response = new DeleteMaterialResponse(result.IsMaterialDeleted);
 
         return Ok(response);
     }

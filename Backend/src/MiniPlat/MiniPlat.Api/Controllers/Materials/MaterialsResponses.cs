@@ -11,3 +11,5 @@ public record GetMaterialByIdResponse(Material Material);
 public record ListMaterialsResponse(PaginatedResult<Material> Materials);
 
 public record UpdateMaterialResponse(Material Material);
+
+public record DeleteMaterialResponse(bool IsMaterialDeleted);

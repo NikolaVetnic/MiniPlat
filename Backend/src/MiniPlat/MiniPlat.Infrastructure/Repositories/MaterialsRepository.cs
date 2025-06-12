@@ -36,4 +36,12 @@ public class MaterialsRepository(AppDbContext appDbContext) : IMaterialsReposito
         appDbContext.Materials.Update(material);
         await appDbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task DeleteMaterial(MaterialId materialId, CancellationToken cancellationToken)
+    {
+        var material = await GetById(materialId, cancellationToken);
+
+        appDbContext.Materials.Remove(material);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
 }
