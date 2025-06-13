@@ -9,12 +9,12 @@ public class Subject : Entity<SubjectId>
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public Level Level { get; set; }
-    public int Year { get; set; }
+    public int Semester { get; set; }
     public string Lecturer { get; set; } = string.Empty;
-    public string Assistant { get; set; } = string.Empty;
+    public string? Assistant { get; set; } = string.Empty;
     public List<Topic> Topics { get; set; } = [];
 
-    public static Subject Create(SubjectId id, string title, string description, string code, Level level, int year,
+    public static Subject Create(SubjectId id, string title, string description, string code, Level level, int semester,
         string lecturerId, string assistantId)
     {
         var subject = new Subject
@@ -24,7 +24,7 @@ public class Subject : Entity<SubjectId>
             Description = description,
             Code = code,
             Level = level,
-            Year = year,
+            Semester = semester,
             Lecturer = lecturerId,
             Assistant = assistantId
         };

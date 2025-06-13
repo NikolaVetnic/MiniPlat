@@ -89,9 +89,6 @@ public class AppDbContext(
             entity.Property(s => s.Lecturer)
                 .IsRequired();
 
-            entity.Property(s => s.Assistant)
-                .IsRequired();
-
             // One-to-many: Subject ➡️ Topics
             entity.HasMany(s => s.Topics)
                   .WithOne()
