@@ -32,3 +32,9 @@ public class Subject : Entity<SubjectId>
         return subject;
     }
 }
+
+public enum Level
+{
+    Undergraduate = 1,
+    Master = 2
+}
