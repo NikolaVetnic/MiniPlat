@@ -72,7 +72,10 @@
     "sidebar": {
       "mainMenu": "Glavni meni",
       "subjects": "Predmeti",
-      "home": "Početna"
+      "home": "Početna",
+      "levels": ["OSS", "MSS"],
+      "semester": ["zimski semestar", "letnji semestar"],
+      "years": ["I", "II", "III"]
     }
   },
   "pages": {
