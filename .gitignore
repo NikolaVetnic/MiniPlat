@@ -7,6 +7,9 @@ appsettings.override.json
 **/.env
 .editorconfig
 
+# Ignore actual data
+Backend/src/MiniPlat/MiniPlat.Infrastructure/Data/SeedData/actualData.yml
+
 # Ignore generated certs
 */certs/
 
