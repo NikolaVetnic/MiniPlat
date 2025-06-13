@@ -14,6 +14,13 @@
         "department": "Odsek",
         "loading": "Podaci o korisniku se učitavaju..."
       },
+      "subject": {
+        "assistant": "Asistent",
+        "code": "Šifra predmeta",
+        "lecturer": "Profesor",
+        "loading": "Podaci o predmetu se učitavaju...",
+        "test": "test"
+      },
       "topic": {
         "buttons": {
           "addMaterial": "Dodaj materijal",
