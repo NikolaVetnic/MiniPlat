@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
+using MiniPlat.Application.Entities.Subjects.Commands.UpdateSubject;
 using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
 using MiniPlat.Application.Entities.Subjects.Queries.ListSubjects;
 using MiniPlat.Application.Entities.Subjects.Queries.ListSubjectsByUserId;
 using MiniPlat.Application.Pagination;
+using MiniPlat.Domain.ValueObjects;
 using OpenIddict.Validation.AspNetCore;
 
 namespace MiniPlat.Api.Controllers.Subjects;
@@ -59,6 +61,32 @@ public class SubjectsController(ISender sender) : ControllerBase
         var result = await sender.Send(new ListSubjectsByUserIdQuery(query));
         var response = new ListSubjectsResponse(result.Subjects);
 
+        return Ok(response);
+    }
+
+    [HttpPut("{subjectId}")]
+    [ProducesResponseType(typeof(UpdateSubjectResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    public async Task<ActionResult<UpdateSubjectResponse>> Update([FromRoute] string subjectId,
+        [FromBody] UpdateSubjectRequest request)
+    {
+        var command = new UpdateSubjectCommand
+        {
+            Id = SubjectId.Of(Guid.Parse(subjectId)),
+            Title = request.Title,
+            Code = request.Code,
+            Description = request.Description,
+            Level = request.Level,
+            Year = request.Year,
+            Lecturer = request.Lecturer,
+            Assistant = request.Assistant,
+            Topics = request.Topics,
+        };
+        
+        var result = await sender.Send(command);
+        var response = new UpdateSubjectResponse(result.Subject);
+        
         return Ok(response);
     }
 

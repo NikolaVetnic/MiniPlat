@@ -9,5 +9,7 @@ public interface ISubjectsRepository
     Task<Subject> GetById(SubjectId subjectId, CancellationToken cancellationToken);
     Task<List<Subject>> ListAsync(int pageIndex, int pageSize, CancellationToken cancellationToken);
     Task<List<Subject>> ListByUsernameAsync(string username, int pageIndex, int pageSize, CancellationToken cancellationToken);
+    Task UpdateAsync(Subject subject, CancellationToken cancellationToken);
+    Task ReplaceTopicsAsync(Subject existingSubject, List<Topic> newTopics, CancellationToken cancellationToken);
     Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken);
 }

@@ -10,4 +10,6 @@ public record GetSubjectByIdResponse(Subject Subject);
 
 public record ListSubjectsResponse(PaginatedResult<Subject> Subjects);
 
+public record UpdateSubjectResponse(Subject Subject);
+
 public record DeleteSubjectResponse(bool IsSubjectDeleted);
