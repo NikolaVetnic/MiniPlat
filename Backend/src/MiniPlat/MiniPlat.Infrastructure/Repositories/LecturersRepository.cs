@@ -13,11 +13,12 @@ public class LecturersRepository(AppDbContext appDbContext) : ILecturersReposito
         await appDbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Lecturer> GetLecturerByUserId(string userId, CancellationToken cancellationToken)
+    public async Task<Lecturer> GetLecturerByUsername(string username, CancellationToken cancellationToken)
     {
         return await appDbContext.Lecturers
+                   .Include(l => l.User)
                    .AsNoTracking()
-                   .SingleOrDefaultAsync(x => x.UserId == userId, cancellationToken) ??
-               throw new LecturerNotFoundException(userId);
+                   .SingleOrDefaultAsync(x => x.User.UserName == username, cancellationToken) ??
+               throw new LecturerNotFoundException(username);
     }
 }

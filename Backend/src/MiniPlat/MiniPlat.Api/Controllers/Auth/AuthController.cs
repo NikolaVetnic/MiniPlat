@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Application.Data.Abstractions;
-using MiniPlat.Application.Entities.Lecturers.Queries.GetLecturerByUserId;
+using MiniPlat.Application.Entities.Lecturers.Queries.GetLecturerByUsername;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
@@ -54,9 +54,9 @@ public class AuthController(ISender sender, ITokenService tokenService)
     {
         var principal = HttpContext.User;
 
-        var sub = principal.GetClaim(OpenIddictConstants.Claims.Subject);
+        var username = principal.GetClaim(OpenIddictConstants.Claims.Username);
 
-        var query = new GetLecturerByUserIdQuery(sub);
+        var query = new GetLecturerByUsernameQuery(username ?? throw new InvalidOperationException());
         var result = await sender.Send(query);
         var lecturer = result.Lecturer;
 
