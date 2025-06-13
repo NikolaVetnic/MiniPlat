@@ -112,6 +112,9 @@ public class AppDbContext(
 
             entity.Property(t => t.Description)
                 .IsRequired();
+            
+            entity.Property(t => t.Order)
+                .IsRequired();
 
             // One-to-many: Topic ➡️ Materials
             entity.HasMany(t => t.Materials)
@@ -132,6 +135,9 @@ public class AppDbContext(
                 .IsRequired();
 
             entity.Property(m => m.Link)
+                .IsRequired();
+            
+            entity.Property(m => m.Order)
                 .IsRequired();
         });
     }

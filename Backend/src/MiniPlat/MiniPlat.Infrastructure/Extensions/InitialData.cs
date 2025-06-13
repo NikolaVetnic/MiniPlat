@@ -83,19 +83,22 @@ internal static class InitialData
                         Id = TopicId.Of(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-000000000001")),
                         Title = "Introduction to Data Structures",
                         Description = "Overview of data structures.",
+                        Order = 0,
                         Materials = new List<SeededMaterial>
                         {
                             new()
                             {
                                 Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000001")),
                                 Description = "Lecture Slides",
-                                Link = "https://example.com/slides.pdf"
+                                Link = "https://example.com/slides.pdf",
+                                Order = 0
                             },
                             new()
                             {
                                 Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000002")),
                                 Description = "Sample Code",
-                                Link = "https://example.com/code.zip"
+                                Link = "https://example.com/code.zip",
+                                Order = 0
                             }
                         }
                     },
@@ -104,13 +107,15 @@ internal static class InitialData
                         Id = TopicId.Of(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-000000000002")),
                         Title = "Algorithms Basics",
                         Description = "Introduction to algorithms.",
+                        Order = 0,
                         Materials = new List<SeededMaterial>
                         {
                             new()
                             {
                                 Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000003")),
                                 Description = "Lecture Notes",
-                                Link = "https://example.com/notes.pdf"
+                                Link = "https://example.com/notes.pdf",
+                                Order = 0
                             }
                         }
                     }
@@ -133,13 +138,15 @@ internal static class InitialData
                         Id = TopicId.Of(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-000000000003")),
                         Title = "Limits and Continuity",
                         Description = "Understanding limits.",
+                        Order = 0,
                         Materials = new List<SeededMaterial>
                         {
                             new()
                             {
                                 Id = MaterialId.Of(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-000000000004")),
                                 Description = "Limit Problems",
-                                Link = "https://example.com/limits.pdf"
+                                Link = "https://example.com/limits.pdf",
+                                Order = 0
                             }
                         }
                     }
@@ -184,6 +191,7 @@ public class SeededTopic
     public required TopicId Id { get; init; }
     public required string Title { get; init; }
     public required string Description { get; init; }
+    public required int Order { get; init; }
     public List<SeededMaterial> Materials { get; init; } = [];
 }
 
@@ -192,4 +200,5 @@ public class SeededMaterial
     public required MaterialId Id { get; init; }
     public required string Description { get; init; }
     public required string Link { get; init; }
+    public required int Order { get; init; }
 }
