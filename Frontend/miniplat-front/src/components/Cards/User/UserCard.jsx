@@ -4,6 +4,8 @@ import { fetchUserInfo } from "../../../services/authService";
 import sr from "../../../locales/sr.json";
 import styles from "./UserCard.module.css";
 
+const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
+
 const UserCard = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [error, setError] = useState(null);
@@ -57,9 +59,13 @@ const UserCard = () => {
           <strong>{cpt.email}:</strong>{" "}
           <a href={`mailto:${userInfo.email}`}>{userInfo.email}</a>
         </li>
-        <li>
-          <strong>{sr.captions.institution}</strong>
-        </li>
+        {userInfo.username == ADMIN_USERNAME ? (
+          <></>
+        ) : (
+          <li>
+            <strong>{sr.captions.institution}</strong>
+          </li>
+        )}
       </ul>
     </section>
   );
