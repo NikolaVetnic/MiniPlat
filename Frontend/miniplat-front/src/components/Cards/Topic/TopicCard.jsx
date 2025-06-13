@@ -7,9 +7,16 @@ import styles from "./TopicCard.module.css";
 import TopicModal from "../../Modals/Topic/TopicModal";
 import { useUser } from "../../../contexts/UserContext";
 
-const TopicCard = ({ topic, index, total, onMoveUp, onMoveDown }) => {
-  const [isHidden, setIsHidden] = useState(topic.isHidden || false);
-  const [isDeleted, setIsDeleted] = useState(topic.isDeleted || false);
+const TopicCard = ({
+  topic,
+  index,
+  total,
+  onMoveUp,
+  onMoveDown,
+  onEdit,
+  onToggleVisibility,
+  onToggleDeletion,
+}) => {
   const [showModal, setShowModal] = useState(false);
 
   // editable fields
@@ -18,6 +25,10 @@ const TopicCard = ({ topic, index, total, onMoveUp, onMoveDown }) => {
   const [editedMaterials, setEditedMaterials] = useState(topic.materials || []);
 
   const { user } = useUser();
+  
+    const handleAddMaterial = () => {
+      setEditedMaterials((prev) => [...prev, { description: "", link: "" }]);
+    };
 
   const handleMaterialChange = (index, field, value) => {
     setEditedMaterials((prev) =>
@@ -27,24 +38,36 @@ const TopicCard = ({ topic, index, total, onMoveUp, onMoveDown }) => {
     );
   };
 
-  const handleAddMaterial = () => {
-    setEditedMaterials((prev) => [...prev, { description: "", link: "" }]);
-  };
-
   const handleRemoveMaterialRow = (index) => {
     setEditedMaterials((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = () => {
-    const filteredMaterials = editedMaterials.filter(
-      (material) =>
-        material.description.trim() !== "" || material.link.trim() !== ""
-    );
+    const generateGuid = () => crypto.randomUUID(); // Standard UUID v4, browser-supported
 
-    topic.title = editedTitle;
-    topic.description = editedDescription;
-    topic.materials = filteredMaterials;
-    topic.updatedAt = new Date().toISOString();
+    const filteredMaterials = editedMaterials
+      .filter(
+        (material) =>
+          material.description.trim() !== "" || material.link.trim() !== ""
+      )
+      .map((material, index) => ({
+        ...material,
+        id: material.id || generateGuid(),
+        order: index,
+      }));
+
+    const updatedTopic = {
+      ...topic,
+      title: editedTitle,
+      description: editedDescription,
+      materials: filteredMaterials,
+      lastModifiedAt: new Date().toISOString(),
+    };
+
+    if (onEdit) {
+      onEdit(updatedTopic);
+    }
+
     setShowModal(false);
   };
 
@@ -91,28 +114,28 @@ const TopicCard = ({ topic, index, total, onMoveUp, onMoveDown }) => {
             </button>
 
             <button
-              onClick={() => setIsHidden(!isHidden)}
+              onClick={() => onToggleVisibility(topic.id)}
               className={`${styles.hideButton} ${
-                isHidden ? styles.showButton : ""
+                topic.isHidden ? styles.showButton : ""
               }`}
             >
-              {isHidden ? cpt.buttons.show : cpt.buttons.hide}
+              {topic.isHidden ? cpt.buttons.show : cpt.buttons.hide}
             </button>
 
             <button
-              onClick={() => setIsDeleted(!isDeleted)}
+              onClick={() => onToggleDeletion(topic.id)}
               className={`${styles.deleteButton} ${
-                isDeleted ? styles.putBackButton : ""
+                topic.isDeleted ? styles.putBackButton : ""
               }`}
             >
-              {isDeleted ? cpt.buttons.putBack : cpt.buttons.delete}
+              {topic.isDeleted ? cpt.buttons.putBack : cpt.buttons.delete}
             </button>
           </div>
         )}
       </div>
 
       <p className={styles.cardCreatedAt}>
-        {cpt.updatedAt} {formatDate(topic.updatedAt)}
+        {cpt.updatedAt} {formatDate(topic.lastModifiedAt)}
       </p>
       <p>{topic.description}</p>
 
@@ -139,19 +162,19 @@ const TopicCard = ({ topic, index, total, onMoveUp, onMoveDown }) => {
       {user && (
         <div
           className={`${styles.statusBar} ${
-            isHidden && isDeleted
+            topic.isHidden && topic.isDeleted
               ? styles.statusDeletedHidden
-              : isDeleted
+              : topic.isDeleted
               ? styles.statusDeleted
-              : isHidden
+              : topic.isHidden
               ? styles.statusHidden
               : styles.statusActive
           }`}
         >
-          {isHidden && isDeleted && cpt.status.hiddenAndDeleted}
-          {!isHidden && isDeleted && cpt.status.deleted}
-          {isHidden && !isDeleted && cpt.status.hidden}
-          {!isHidden && !isDeleted && cpt.status.active}
+          {topic.isHidden && topic.isDeleted && cpt.status.hiddenAndDeleted}
+          {!topic.isHidden && topic.isDeleted && cpt.status.deleted}
+          {topic.isHidden && !topic.isDeleted && cpt.status.hidden}
+          {!topic.isHidden && !topic.isDeleted && cpt.status.active}
         </div>
       )}
 
