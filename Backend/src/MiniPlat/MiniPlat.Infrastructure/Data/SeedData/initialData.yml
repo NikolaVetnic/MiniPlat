@@ -96,3 +96,22 @@ subjects:
             description: Ciljevi predmeta
             link: https://example.com/limits.pdf
             order: 0
+
+  - id: 7704b753-2211-4f7a-9d8a-7f89b7e7cfb4
+    code: FIL-001
+    title: Filozofija
+    description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    level: Undergraduate
+    semester: 4
+    lecturer: USRb
+    assistant:
+    topics:
+      - id: aaaaaaaa-aaaa-aaaa-aaaa-000000000005
+        title: Uvod u predmet
+        description: At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.
+        order: 0
+        materials:
+          - id: bbbbbbbb-bbbb-bbbb-bbbb-000000000006
+            description: Ciljevi predmeta
+            link: https://example.com/limits.pdf
+            order: 0
