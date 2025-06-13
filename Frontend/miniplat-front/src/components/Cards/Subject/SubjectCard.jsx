@@ -20,12 +20,21 @@ const SubjectCard = ({
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
+        const lecturerPromise = lecturerUsername
+          ? fetchLecturer(lecturerUsername)
+          : Promise.resolve(null);
+
+        const assistantPromise = assistantUsername
+          ? fetchLecturer(assistantUsername)
+          : Promise.resolve(null);
+
         const [lecturerData, assistantData] = await Promise.all([
-          lecturerUsername ? fetchLecturer(lecturerUsername) : null,
-          assistantUsername ? fetchLecturer(assistantUsername) : null,
+          lecturerPromise,
+          assistantPromise,
         ]);
+
         setLecturer(lecturerData);
         setAssistant(assistantData);
       } catch (err) {

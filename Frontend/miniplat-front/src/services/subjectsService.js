@@ -20,6 +20,21 @@ export const fetchSubjects = async () => {
   return data.subjects.data || [];
 };
 
+export const fetchSubjectById = async (id) => {
+  const response = await fetch(`https://localhost:4101/api/Subjects/${id}`, {
+    headers: {
+      "x-api-key": API_KEY,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch subject ${id}`);
+  }
+
+  const data = await response.json();
+  return data.subject;
+};
+
 export const updateSubjectTopics = async (subject, updatedTopics) => {
   const token = localStorage.getItem("token");
 
