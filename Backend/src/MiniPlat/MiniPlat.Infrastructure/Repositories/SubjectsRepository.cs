@@ -18,6 +18,8 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
     {
         return await appDbContext.Subjects
                    .AsNoTracking()
+                   .Include(s => s.Topics.OrderBy(t => t.Order))
+                   .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
                    .SingleOrDefaultAsync(x => x.Id == subjectId, cancellationToken) ??
                throw new SubjectNotFoundException(subjectId.ToString());
     }
@@ -26,17 +28,20 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
     {
         return await appDbContext.Subjects
             .AsNoTracking()
-            .Include(s => s.Topics)
-            .ThenInclude(t => t.Materials)
+            .Include(s => s.Topics.OrderBy(t => t.Order))
+            .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<List<Subject>> ListByUsernameAsync(string username, int pageIndex, int pageSize, CancellationToken cancellationToken)
+    public async Task<List<Subject>> ListByUsernameAsync(string username, int pageIndex, int pageSize,
+        CancellationToken cancellationToken)
     {
         return await appDbContext.Subjects
             .AsNoTracking()
+            .Include(s => s.Topics.OrderBy(t => t.Order))
+            .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
             .Where(s => s.Lecturer == username || s.Assistant == username)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
