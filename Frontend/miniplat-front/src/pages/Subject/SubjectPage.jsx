@@ -208,7 +208,7 @@ const SubjectPage = ({ user, onLogout }) => {
                 <SubjectCard
                   code={subject.code}
                   level={subject.level}
-                  year={subject.year}
+                  semester={subject.semester}
                   lecturerUsername={subject.lecturer}
                   assistantUsername={subject.assistant}
                 />
