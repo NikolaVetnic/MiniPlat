@@ -210,7 +210,7 @@ const SubjectPage = ({ user, onLogout }) => {
                   lecturerUsername={subject.lecturer}
                   assistantUsername={subject.assistant}
                 />
-                <p>{subject.description}</p>
+                {/* <p>{subject.description}</p> */}
               </div>
 
               <div className={subjectPageStyles.pageContent}>
