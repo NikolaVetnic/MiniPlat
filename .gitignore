@@ -1,12 +1,10 @@
 # Exclude override settings file
 appsettings.override.json
 
-# Exclude .env files
-**/.env
-
 # Personal configuration files
 **/docker-compose/**/.env*
 !**/docker-compose/.env.template
+**/.env
 .editorconfig
 
 # Ignore generated certs
