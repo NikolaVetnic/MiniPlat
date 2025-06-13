@@ -15,6 +15,8 @@ public static class InitialDataLoader
 
         if (!File.Exists(fullPath))
             throw new FileNotFoundException($"Seed file not found at {fullPath}");
+        else
+            Console.WriteLine($"Reading initialData from {fullPath}");
 
         var yaml = File.ReadAllText(fullPath);
 
@@ -54,7 +56,7 @@ public static class InitialDataLoader
             Title = s.Title,
             Description = s.Description,
             Level = Enum.Parse<Level>(s.Level),
-            Year = s.Year,
+            Semester = s.Semester,
             Lecturer = s.Lecturer,
             Assistant = s.Assistant,
             Topics = s.Topics?.Select(t => new SeededTopic
@@ -146,9 +148,9 @@ public class SeededSubject
     public required string Title { get; init; }
     public required string Description { get; init; }
     public required Level Level { get; init; }
-    public required int Year { get; init; }
+    public required int Semester { get; init; }
     public required string Lecturer { get; init; }
-    public required string Assistant { get; init; }
+    public required string? Assistant { get; init; }
     public List<SeededTopic> Topics { get; init; } = [];
 }
 
@@ -159,9 +161,9 @@ public class SubjectDto
     public required string Title { get; init; }
     public required string Description { get; init; }
     public required string Level { get; init; } // serialized as string like "Undergraduate"
-    public required int Year { get; init; }
+    public required int Semester { get; init; }
     public required string Lecturer { get; init; }
-    public required string Assistant { get; init; }
+    public required string? Assistant { get; init; }
     public List<TopicDto>? Topics { get; init; } = [];
 }
 

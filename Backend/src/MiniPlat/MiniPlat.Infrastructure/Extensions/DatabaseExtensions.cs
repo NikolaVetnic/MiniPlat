@@ -106,7 +106,7 @@ public static class DatabaseExtensions
                 Title = seededSubject.Title,
                 Description = seededSubject.Description,
                 Level = seededSubject.Level,
-                Year = seededSubject.Year,
+                Semester = seededSubject.Semester,
                 Lecturer = seededSubject.Lecturer,
                 Assistant = seededSubject.Assistant,
                 Topics = seededSubject.Topics.Select(t => new Topic
