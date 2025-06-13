@@ -4,7 +4,13 @@ import { fetchLecturer } from "../../../services/lecturersService";
 import styles from "./SubjectCard.module.css"; // your custom styling
 import sr from "../../../locales/sr.json";
 
-const LecturerCard = ({ code, lecturerUsername, assistantUsername }) => {
+const LecturerCard = ({
+  code,
+  level,
+  year,
+  lecturerUsername,
+  assistantUsername,
+}) => {
   const [lecturer, setLecturer] = useState(null);
   const [assistant, setAssistant] = useState(null);
 
@@ -55,6 +61,18 @@ const LecturerCard = ({ code, lecturerUsername, assistantUsername }) => {
           <ul>
             <li>
               <strong>{cpt.code}:</strong> {code}
+            </li>
+            <li>
+              <strong>{cpt.level.caption}:</strong>{" "}
+              {level == 1 ? cpt.level.undergraduate : cpt.level.master}
+            </li>
+            <li>
+              <strong>{cpt.year.caption}:</strong>{" "}
+              {year == 1
+                ? cpt.year.one
+                : year == 2
+                ? cpt.year.two
+                : cpt.year.three}
             </li>
             <li>
               <strong>{cpt.lecturer}:</strong>{" "}
