@@ -57,20 +57,20 @@ public static class InitialDataLoader
             Year = s.Year,
             Lecturer = s.Lecturer,
             Assistant = s.Assistant,
-            Topics = s.Topics.Select(t => new SeededTopic
+            Topics = s.Topics?.Select(t => new SeededTopic
             {
                 Id = TopicId.Of(Guid.Parse(t.Id)),
                 Title = t.Title,
                 Description = t.Description,
                 Order = t.Order,
-                Materials = t.Materials.Select(m => new SeededMaterial
+                Materials = t.Materials?.Select(m => new SeededMaterial
                 {
                     Id = MaterialId.Of(Guid.Parse(m.Id)),
                     Description = m.Description,
                     Link = m.Link,
                     Order = m.Order
-                }).ToList()
-            }).ToList()
+                }).ToList() ?? new List<SeededMaterial>()
+            }).ToList() ?? new List<SeededTopic>()
         }).ToList()
     };
 }
@@ -162,7 +162,7 @@ public class SubjectDto
     public required int Year { get; init; }
     public required string Lecturer { get; init; }
     public required string Assistant { get; init; }
-    public List<TopicDto> Topics { get; init; } = [];
+    public List<TopicDto>? Topics { get; init; } = [];
 }
 
 #endregion
@@ -184,7 +184,7 @@ public class TopicDto
     public required string Title { get; init; }
     public required string Description { get; init; }
     public required int Order { get; init; }
-    public List<MaterialDto> Materials { get; init; } = [];
+    public List<MaterialDto>? Materials { get; init; } = [];
 }
 
 #endregion
