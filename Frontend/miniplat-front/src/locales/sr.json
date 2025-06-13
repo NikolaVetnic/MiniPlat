@@ -22,15 +22,19 @@
           "undergraduate": "Osnovne strukovne studije - Vaspitač dece predškolskog uzrasta",
           "master": "Master strukovne studije - Strukovni master vaspitač"
         },
+        "lecturer": "Profesor",
+        "loading": "Podaci o predmetu se učitavaju...",
+        "semester": {
+          "summer": "letnji",
+          "winter": "zimski"
+        },
+        "test": "test",
         "year": {
           "caption": "Godina studija",
           "one": "I",
           "two": "II",
           "three": "III"
-        },
-        "lecturer": "Profesor",
-        "loading": "Podaci o predmetu se učitavaju...",
-        "test": "test"
+        }
       },
       "topic": {
         "buttons": {
