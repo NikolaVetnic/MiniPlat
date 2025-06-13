@@ -17,6 +17,17 @@
       "subject": {
         "assistant": "Asistent",
         "code": "Šifra predmeta",
+        "level": {
+          "caption": "Nivo studija",
+          "undergraduate": "Osnovne strukovne studije - Vaspitač dece predškolskog uzrasta",
+          "master": "Master strukovne studije - Strukovni master vaspitač"
+        },
+        "year": {
+          "caption": "Godina studija",
+          "one": "I",
+          "two": "II",
+          "three": "III"
+        },
         "lecturer": "Profesor",
         "loading": "Podaci o predmetu se učitavaju...",
         "test": "test"
