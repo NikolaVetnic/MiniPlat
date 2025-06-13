@@ -5,6 +5,8 @@ import sr from "../../locales/sr.json";
 import styles from "./Sidebar.module.css";
 import { useUser } from "../../contexts/UserContext";
 
+const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
+
 const Sidebar = ({ subjects = [], loading = false }) => {
   const { user } = useUser();
   const cpt = sr.components.sidebar;
@@ -20,8 +22,9 @@ const Sidebar = ({ subjects = [], loading = false }) => {
   const subjectsToDisplay = user
     ? subjects.filter(
         (subject) =>
-          subject.lecturer == user.username ||
-          subject.assistant == user.username
+          user.username == subject.lecturer ||
+          user.username == subject.assistant ||
+          user.username == ADMIN_USERNAME
       )
     : subjects;
 
