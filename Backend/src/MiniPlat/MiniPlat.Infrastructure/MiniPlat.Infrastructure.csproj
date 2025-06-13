@@ -18,6 +18,13 @@
       <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="6.3.0" />
       <PackageReference Include="OpenIddict.Server.AspNetCore" Version="6.3.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+      <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Data\SeedData\initialData.yml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,98 @@
+# =-=-=-= USERS
+users:
+  - id: 89c03d53-c3ab-457a-953a-6f3bb023f927
+    username: mp_admin
+    email: mp_admin@email.com
+    firstName: MiniPlat
+    lastName: Admin
+    password: none
+  - id: 11111111-1111-1111-1111-111111111111
+    username: USRa
+    email: USRa@email.com
+    firstName: User
+    lastName: Alpha
+    password: P@ssw0rd!123
+  - id: 22222222-2222-2222-2222-222222222222
+    username: USRb
+    email: USRb@email.com
+    firstName: User
+    lastName: Beta
+    password: P@ssw0rd?456
+  - id: 33333333-3333-3333-3333-333333333333
+    username: USRc
+    email: USRc@email.com
+    firstName: User
+    lastName: Gamma
+    password: P@ssw0rd.789
+
+# =-=-=-= LECTURERS
+lecturers:
+  - id: e1374095-ecc0-4990-a58b-84dab4e92e80
+    userId: 89c03d53-c3ab-457a-953a-6f3bb023f927
+    title: Mrs
+    department: none
+  - id: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+    userId: 11111111-1111-1111-1111-111111111111
+    title: dr
+    department: Računarske nauke
+  - id: bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
+    userId: 22222222-2222-2222-2222-222222222222
+    title: dr
+    department: Matematika
+  - id: cccccccc-cccc-cccc-cccc-cccccccccccc
+    userId: 33333333-3333-3333-3333-333333333333
+    title: MA
+    department: Teorijsko računarstvo
+
+# =-=-=-= SUBJECTS
+subjects:
+  - id: 112f020b-f871-47ee-a1f4-b4cc8aa2dd53
+    code: CS101
+    title: SPA 2
+    description: Strukture podataka i algoritmi
+    level: Undergraduate
+    year: 1
+    lecturer: USRa
+    assistant: USRc
+    topics:
+      - id: aaaaaaaa-aaaa-aaaa-aaaa-000000000001
+        title: Introduction to Data Structures
+        description: Overview of data structures.
+        order: 0
+        materials:
+          - id: bbbbbbbb-bbbb-bbbb-bbbb-000000000001
+            description: Lecture Slides
+            link: https://example.com/slides.pdf
+            order: 0
+          - id: bbbbbbbb-bbbb-bbbb-bbbb-000000000002
+            description: Sample Code
+            link: https://example.com/code.zip
+            order: 0
+      - id: aaaaaaaa-aaaa-aaaa-aaaa-000000000002
+        title: Algorithms Basics II
+        description: Introduction to algorithms.
+        order: 0
+        materials:
+          - id: bbbbbbbb-bbbb-bbbb-bbbb-000000000003
+            description: Lecture Notes
+            link: https://example.com/notes.pdf
+            order: 0
+
+  - id: 88e05977-cbd8-413c-a83f-869d4e9e2a63
+    code: MAT123
+    title: Analiza 3
+    description: Single Variable Calculus
+    level: Undergraduate
+    year: 2
+    lecturer: USRb
+    assistant: USRc
+    topics:
+      - id: aaaaaaaa-aaaa-aaaa-aaaa-000000000003
+        title: Limits and Continuity
+        description: Understanding limits.
+        order: 0
+        materials:
+          - id: bbbbbbbb-bbbb-bbbb-bbbb-000000000004
+            description: Limit Problems
+            link: https://example.com/limits.pdf
+            order: 0
