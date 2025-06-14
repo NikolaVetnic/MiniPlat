@@ -74,7 +74,7 @@
       "subjects": "Predmeti",
       "home": "Početna",
       "levels": ["OSS", "MSS"],
-      "semester": ["zimski semestar", "letnji semestar"],
+      "semester": ["letnji semestar", "zimski semestar"],
       "years": ["I", "II", "III"]
     }
   },

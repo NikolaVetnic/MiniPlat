@@ -93,9 +93,12 @@ const Sidebar = ({ subjects = [], loading = false }) => {
 
       {showSubjects && (
         <nav className={styles.nav}>
-          {Object.entries(groupedSubjects).map(([groupKey, groupSubjects]) => {
-            const [level, semester] = groupKey.split("-");
-            const isOpen = expandedGroups[groupKey] ?? true;
+          {Object.entries(groupedSubjects)
+            .sort((a, b) => {
+              const aSemester = parseInt(a[0].split("-")[1], 10);
+              const bSemester = parseInt(b[0].split("-")[1], 10);
+              return aSemester - bSemester;
+            })
 
             const label = `${cpt.levels[level - 1]}, ${
               cpt.years[Math.floor((semester - 1) / 2)]
