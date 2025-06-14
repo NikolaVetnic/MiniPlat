@@ -72,7 +72,8 @@ public static class InitialDataLoader
                     Link = m.Link,
                     Order = m.Order
                 }).ToList() ?? new List<SeededMaterial>()
-            }).ToList() ?? new List<SeededTopic>()
+            }).ToList() ?? new List<SeededTopic>(),
+            IsActive = s.IsActive,
         }).ToList()
     };
 }
@@ -152,6 +153,7 @@ public class SeededSubject
     public required string Lecturer { get; init; }
     public required string? Assistant { get; init; }
     public List<SeededTopic> Topics { get; init; } = [];
+    public required bool IsActive { get; init; }
 }
 
 public class SubjectDto
@@ -165,6 +167,7 @@ public class SubjectDto
     public required string Lecturer { get; init; }
     public required string? Assistant { get; init; }
     public List<TopicDto>? Topics { get; init; } = [];
+    public required bool IsActive { get; init; }
 }
 
 #endregion

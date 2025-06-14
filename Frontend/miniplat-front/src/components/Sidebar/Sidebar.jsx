@@ -53,14 +53,15 @@ const Sidebar = ({ subjects = [], loading = false }) => {
     );
   }
 
-  const subjectsToDisplay = user
-    ? subjects.filter(
-        (subject) =>
-          user.username === subject.lecturer ||
-          user.username === subject.assistant ||
-          user.username === ADMIN_USERNAME
-      )
-    : subjects;
+  const subjectsToDisplay = subjects.filter((subject) => {
+    const isUserRelated =
+      !user ||
+      user.username === subject.lecturer ||
+      user.username === subject.assistant ||
+      user.username === ADMIN_USERNAME;
+
+    return isUserRelated && subject.isActive;
+  });
 
   const groupedSubjects = {};
   subjectsToDisplay.forEach((subject) => {
@@ -99,59 +100,62 @@ const Sidebar = ({ subjects = [], loading = false }) => {
               const bSemester = parseInt(b[0].split("-")[1], 10);
               return aSemester - bSemester;
             })
+            .map(([groupKey, groupSubjects]) => {
+              const [level, semester] = groupKey.split("-");
+              const isOpen = expandedGroups[groupKey] ?? true;
 
-            const label = `${cpt.levels[level - 1]}, ${
-              cpt.years[Math.floor((semester - 1) / 2)]
-            } - ${cpt.semester[semester % 2]}`;
+              const label = `${cpt.levels[level - 1]}, ${
+                cpt.years[Math.floor((semester - 1) / 2)]
+              } - ${cpt.semester[semester % 2]}`;
 
-            return (
-              <div key={groupKey}>
-                <h2
-                  onClick={() => toggleGroup(groupKey)}
-                  style={{
-                    cursor: "pointer",
-                    fontSize: "0.9rem",
-                    fontWeight: "normal",
-                    margin: "1rem 0 0.5rem 0",
-                    display: "flex",
-                    alignItems: "center",
-                    userSelect: "none",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span
+              return (
+                <div key={groupKey}>
+                  <h2
+                    onClick={() => toggleGroup(groupKey)}
                     style={{
-                      display: "inline-block",
-                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-                      transition: "transform 0.2s ease",
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                      fontWeight: "normal",
+                      margin: "1rem 0 0.5rem 0",
+                      display: "flex",
+                      alignItems: "center",
+                      userSelect: "none",
+                      gap: "0.5rem",
                     }}
                   >
-                    ▶
-                  </span>
-                  {label}
-                </h2>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                        transition: "transform 0.2s ease",
+                      }}
+                    >
+                      ▶
+                    </span>
+                    {label}
+                  </h2>
 
-                {isOpen && (
-                  <ul>
-                    {groupSubjects.map((subject) => (
-                      <NavItem
-                        key={subject.id}
-                        icon={PiNotePencil}
-                        text={subject.title}
-                        href={
-                          user
-                            ? `/${user.username}/subjects/${encodeURIComponent(
-                                subject.id
-                              )}`
-                            : `/subjects/${encodeURIComponent(subject.id)}`
-                        }
-                      />
-                    ))}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
+                  {isOpen && (
+                    <ul>
+                      {groupSubjects.map((subject) => (
+                        <NavItem
+                          key={subject.id}
+                          icon={PiNotePencil}
+                          text={subject.title}
+                          href={
+                            user
+                              ? `/${
+                                  user.username
+                                }/subjects/${encodeURIComponent(subject.id)}`
+                              : `/subjects/${encodeURIComponent(subject.id)}`
+                          }
+                        />
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
         </nav>
       )}
     </aside>
