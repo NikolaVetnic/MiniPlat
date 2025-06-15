@@ -11,7 +11,7 @@ public class CreateSubjectCommand : ICommand<CreateSubjectResult>
     public string Code { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public Level Level { get; set; }
-    public int Year { get; set; }
+    public int Semester { get; set; }
     public string Lecturer { get; set; } = string.Empty;
     public string Assistant { get; set; } = string.Empty;
 }
