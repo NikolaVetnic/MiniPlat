@@ -124,9 +124,13 @@ const Sidebar = ({ subjects = [], loading = false }) => {
               const [level, semester] = groupKey.split("-");
               const isOpen = !!expandedGroups[groupKey];
 
-              const label = `${cpt.levels[level - 1]}, ${
+              const cptLevel = cpt.levels[level - 1];
+              const cptYear = `${
                 cpt.years[Math.floor((semester - 1) / 2)]
-              } - ${cpt.semester[semester % 2]}`;
+              } godina`;
+              const cptSemester = cpt.semester[semester % 2];
+
+              const label = `${cptLevel} • ${cptYear} • ${cptSemester}`;
 
               return (
                 <div key={groupKey}>
