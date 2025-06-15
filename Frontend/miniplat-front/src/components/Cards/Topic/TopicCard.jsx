@@ -25,10 +25,10 @@ const TopicCard = ({
   const [editedMaterials, setEditedMaterials] = useState(topic.materials || []);
 
   const { user } = useUser();
-  
-    const handleAddMaterial = () => {
-      setEditedMaterials((prev) => [...prev, { description: "", link: "" }]);
-    };
+
+  const handleAddMaterial = () => {
+    setEditedMaterials((prev) => [...prev, { description: "", link: "" }]);
+  };
 
   const handleMaterialChange = (index, field, value) => {
     setEditedMaterials((prev) =>
