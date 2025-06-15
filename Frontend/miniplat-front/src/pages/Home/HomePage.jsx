@@ -93,7 +93,7 @@ const HomePage = ({ onLogout }) => {
               )}
             </header>
 
-            {user && <UserCard />}
+            {user && user?.username != "mp_admin" && <UserCard />}
           </div>
 
           <footer className={styles.footer}>{footerText}</footer>
