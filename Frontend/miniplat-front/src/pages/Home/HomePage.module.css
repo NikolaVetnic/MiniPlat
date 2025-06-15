@@ -51,6 +51,28 @@
   line-height: 1.5;
 }
 
+.adminSubjects {
+  /* margin: 2rem; */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 1.5rem;
+}
+
+.downloadYamlButton {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+.downloadYamlButton:hover {
+  opacity: 0.9;
+}
+
 .footer {
   border-top: 1px solid var(--enmGrayLight);
   padding: 1rem;
