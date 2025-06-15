@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 
 import sr from "../../locales/sr.json";
 import styles from "./Navbar.module.css";
-import { useUser } from "../../contexts/UserContext"; // adjust path as needed
+import { useUser } from "../../contexts/UserContext";
+import useWindowWidth from "../../hooks/useWindowWidth"; // ⬅️ make sure path matches
 
 const Navbar = ({ onLogout }) => {
-  const { user } = useUser(); // get user from context
+  const { user } = useUser();
+  const width = useWindowWidth();
 
   const cpt = sr.components.navbar;
+  const isMobile = width < 768;
 
   return (
     <header className={styles.navbar}>
@@ -16,8 +19,10 @@ const Navbar = ({ onLogout }) => {
         to={user ? `/${user.username}/home` : "/home"}
         className={styles.logoText}
       >
-        <FiBook className={styles.logoIcon} />
-        <span>{sr.captions.title}</span>
+        {isMobile ? <div /> : <FiBook className={styles.logoIcon} />}
+        <span className={isMobile ? styles.titleShort : ""}>
+          {isMobile ? sr.captions.titleShort : sr.captions.title}
+        </span>
       </Link>
 
       <div className={styles.rightSection}>

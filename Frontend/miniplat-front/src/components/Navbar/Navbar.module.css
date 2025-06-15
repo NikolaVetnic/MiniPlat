@@ -26,6 +26,10 @@
   text-decoration: none;
 }
 
+.titleShort {
+  padding-left: 2.6rem; /* or 1rem if you want more spacing */
+}
+
 .logoutIcon {
   display: flex;
   align-items: center;
