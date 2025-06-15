@@ -78,7 +78,7 @@ public class SubjectsController(ISender sender) : ControllerBase
             Code = request.Code,
             Description = request.Description,
             Level = request.Level,
-            Semester = request.Year,
+            Semester = request.Semester,
             Lecturer = request.Lecturer,
             Assistant = request.Assistant,
             Topics = request.Topics,

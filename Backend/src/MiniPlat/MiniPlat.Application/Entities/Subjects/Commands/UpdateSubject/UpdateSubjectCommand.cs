@@ -13,7 +13,7 @@ public class UpdateSubjectCommand : ICommand<UpdateSubjectResult>
     public Level? Level { get; set; }
     public int? Semester { get; set; }
     public string? Lecturer { get; set; } = string.Empty;
-    public string? Assistant { get; set; } = string.Empty;
+    public string? Assistant { get; set; }
     public List<Topic>? Topics { get; set; } = [];
 }
 
