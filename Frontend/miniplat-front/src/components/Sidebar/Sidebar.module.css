@@ -10,7 +10,7 @@
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer and Edge (legacy) */
 
-  border: 2px dashed red;
+  /* border: 2px dashed red; */
 }
 .sidebar::-webkit-scrollbar {
   display: none; /* Webkit browsers */
