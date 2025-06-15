@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PiNotePencil } from "react-icons/pi";
 import NavItem from "./NavItem/NavItem";
 import sr from "../../locales/sr.json";
@@ -6,6 +6,7 @@ import styles from "./Sidebar.module.css";
 import { useUser } from "../../contexts/UserContext";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
+const LOCAL_STORAGE_KEY = "sidebarExpandedGroups";
 
 const Sidebar = ({ subjects = [], loading = false }) => {
   const { user } = useUser();
@@ -14,6 +15,23 @@ const Sidebar = ({ subjects = [], loading = false }) => {
   const [expandedGroups, setExpandedGroups] = useState({});
   const [showMainMenu, setShowMainMenu] = useState(true);
   const [showSubjects, setShowSubjects] = useState(true);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (stored) {
+      try {
+        setExpandedGroups(JSON.parse(stored));
+      } catch {
+        console.warn("Invalid localStorage format for sidebar groups");
+      }
+    }
+  }, []);
+
+  // Persist to localStorage on change
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(expandedGroups));
+  }, [expandedGroups]);
 
   const collapsibleHeader = (text, isOpen) => (
     <h2
@@ -96,13 +114,15 @@ const Sidebar = ({ subjects = [], loading = false }) => {
         <nav className={styles.nav}>
           {Object.entries(groupedSubjects)
             .sort((a, b) => {
-              const aSemester = parseInt(a[0].split("-")[1], 10);
-              const bSemester = parseInt(b[0].split("-")[1], 10);
-              return aSemester - bSemester;
+              const [aLevel, aSemester] = a[0].split("-").map(Number);
+              const [bLevel, bSemester] = b[0].split("-").map(Number);
+              return aLevel !== bLevel
+                ? aLevel - bLevel
+                : aSemester - bSemester;
             })
             .map(([groupKey, groupSubjects]) => {
               const [level, semester] = groupKey.split("-");
-              const isOpen = expandedGroups[groupKey] ?? true;
+              const isOpen = !!expandedGroups[groupKey];
 
               const label = `${cpt.levels[level - 1]}, ${
                 cpt.years[Math.floor((semester - 1) / 2)]

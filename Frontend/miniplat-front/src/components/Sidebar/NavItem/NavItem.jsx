@@ -5,10 +5,12 @@ import styles from "./NavItem.module.css";
 const NavItem = ({ icon: Icon, text, href }) => {
   return (
     <li>
-      <span className={styles.navItem}>
-        <Icon />
+      <div className={styles.navItem}>
+        <span className={styles.iconWrapper}>
+          <Icon />
+        </span>
         <Link to={href}>{text}</Link>
-      </span>
+      </div>
     </li>
   );
 };
