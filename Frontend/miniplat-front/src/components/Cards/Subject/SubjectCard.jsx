@@ -3,14 +3,18 @@ import { useEffect, useState } from "react";
 import { fetchLecturer } from "../../../services/lecturersService";
 import styles from "./SubjectCard.module.css";
 import sr from "../../../locales/sr.json";
+import { useUser } from "../../../contexts/UserContext";
 
 const SubjectCard = ({
+  title,
   code,
   level,
   semester,
   lecturerUsername,
   assistantUsername,
 }) => {
+  const { user } = useUser();
+
   const [lecturer, setLecturer] = useState(null);
   const [assistant, setAssistant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +62,7 @@ const SubjectCard = ({
   const renderPerson = (person, label) =>
     person && (
       <li>
-        <strong>{label}:</strong>{" "}
+        {/* <strong>{label}:</strong>{" "} */}
         {`${person.title} ${person.user.firstName} ${person.user.lastName}`}
         {person.user.email && (
           <>
@@ -72,6 +76,11 @@ const SubjectCard = ({
   return (
     <section className={styles.subjectCard}>
       <ul>
+        {user?.username === "mp_admin" && (
+          <li>
+            <strong>{cpt.title}:</strong> {title}
+          </li>
+        )}
         <li>
           <strong>{cpt.code}:</strong> {code}
         </li>
