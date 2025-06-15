@@ -46,6 +46,7 @@ public static class InitialDataLoader
             Id = LecturerId.Of(Guid.Parse(l.Id)),
             UserId = l.UserId,
             Title = l.Title,
+            Position = l.Position,
             Department = l.Department
         }).ToList(),
 
@@ -127,6 +128,7 @@ public class SeededLecturer
     public required LecturerId Id { get; init; }
     public required string UserId { get; init; }
     public required string Title { get; init; }
+    public required string Position { get; init; }
     public required string Department { get; init; }
 }
 
@@ -135,6 +137,7 @@ public class LecturerDto
     public required string Id { get; init; }
     public required string UserId { get; init; }
     public required string Title { get; init; }
+    public required string Position { get; init; }
     public required string Department { get; init; }
 }
 
