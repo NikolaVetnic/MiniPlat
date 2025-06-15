@@ -1,19 +1,55 @@
 .sidebar {
-  /* display: flex; */
-  flex-direction: column;
   width: 300px;
-  overflow-y: auto; /* Enables vertical scroll */
-  background-color: #f9f9f9; /* Adjust to your theme */
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #f9f9f9;
   border-right: 1px solid #ddd;
   padding: 1rem;
+  transition: transform 0.3s ease-in-out;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
 
+  /* Hide scrollbars */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer and Edge (legacy) */
-
-  /* border: 2px dashed red; */
 }
 .sidebar::-webkit-scrollbar {
-  display: none; /* Webkit browsers */
+  display: none; /* WebKit browsers */
+}
+
+.visible {
+  transform: translateX(0);
+}
+
+.hidden {
+  transform: translateX(-100%);
+}
+
+.toggleButton {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background-color: #eee;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  z-index: 1100;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar and toggle adjustments for larger screens */
+@media (min-width: 768px) {
+  .sidebar {
+    transform: translateX(0) !important;
+    position: relative;
+  }
+
+  .toggleButton {
+    display: none;
+  }
 }
 
 .sidebar h2 {
