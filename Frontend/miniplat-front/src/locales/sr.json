@@ -29,6 +29,7 @@
           "winter": "zimski"
         },
         "test": "test",
+        "title": "Naziv",
         "year": {
           "caption": "Godina studija",
           "one": "I",
