@@ -30,6 +30,9 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             .AsNoTracking()
             .Include(s => s.Topics.OrderBy(t => t.Order))
             .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
+            .OrderBy(s => s.Level)
+            .ThenBy(s => s.Semester)
+            .ThenBy(s => s.Order)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);
@@ -43,6 +46,9 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             .Include(s => s.Topics.OrderBy(t => t.Order))
             .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
             .Where(s => s.Lecturer == username || s.Assistant == username)
+            .OrderBy(s => s.Level)
+            .ThenBy(s => s.Semester)
+            .ThenBy(s => s.Order)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);
