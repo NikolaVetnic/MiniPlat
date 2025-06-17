@@ -60,48 +60,33 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         return appDbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task ReplaceTopicsAsync(Subject existingSubject, List<Topic> newTopics, CancellationToken cancellationToken)
+    public async Task ReplaceTopicsAsync(Subject existingSubject, List<Topic> newTopics,
+        CancellationToken cancellationToken)
     {
-        // Remove existing materials
-        appDbContext.Materials.RemoveRange(existingSubject.Topics.SelectMany(t => t.Materials));
+        appDbContext.Materials.RemoveRange(
+            existingSubject.Topics.SelectMany(t => t.Materials)); // Remove existing materials
+        appDbContext.Topics.RemoveRange(existingSubject.Topics); // Remove existing topics
 
-        // Remove existing topics
-        appDbContext.Topics.RemoveRange(existingSubject.Topics);
-
-        // Reassign topics with proper state
-        for (int i = 0; i < newTopics.Count; i++)
+        for (var i = 0; i < newTopics.Count; i++) // Reassign topics with proper state
         {
             newTopics[i].Order = i;
 
-            // Ensure EF can track them correctly
-            if (newTopics[i].Id.Value == Guid.Empty || newTopics[i].Id == default)
-            {
-                appDbContext.Topics.Add(newTopics[i]); // new topic
-            }
+            if (newTopics[i].Id.Value == Guid.Empty) // Ensure EF can track them correctly
+                appDbContext.Topics.Add(newTopics[i]); // New topic
             else
-            {
-                appDbContext.Entry(newTopics[i]).State = EntityState.Added; // treat as new
-            }
+                appDbContext.Entry(newTopics[i]).State = EntityState.Added; // Treat as new
 
-            // Handle materials inside each topic
-            foreach (var material in newTopics[i].Materials)
-            {
-                if (material.Id.Value == Guid.Empty || material.Id == default)
-                {
+            foreach (var material in newTopics[i].Materials) // Handle materials inside each topic
+                if (material.Id.Value == Guid.Empty)
                     appDbContext.Materials.Add(material);
-                }
                 else
-                {
                     appDbContext.Entry(material).State = EntityState.Added;
-                }
-            }
         }
 
-        // Replace entire collection
-        existingSubject.Topics = newTopics;
+        existingSubject.Topics = newTopics; // Replace entire collection
 
-        // Only mark Subject as modified (scalar props only)
-        appDbContext.Entry(existingSubject).State = EntityState.Modified;
+        appDbContext.Entry(existingSubject).State =
+            EntityState.Modified; // Only mark Subject as modified (scalar props only)
 
         await appDbContext.SaveChangesAsync(cancellationToken);
     }
