@@ -22,6 +22,7 @@ public class UpdateSubjectHandler(ISubjectsRepository subjectsRepository)
         existingSubject.Description = command.Description ?? existingSubject.Description;
         existingSubject.Level = command.Level ?? existingSubject.Level;
         existingSubject.Semester = command.Semester ?? existingSubject.Semester;
+        existingSubject.Order = command.Order ?? existingSubject.Order;
         existingSubject.Lecturer = command.Lecturer ?? existingSubject.Lecturer;
         existingSubject.Assistant = command.Assistant ?? existingSubject.Assistant;
 

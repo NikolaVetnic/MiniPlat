@@ -58,6 +58,7 @@ public static class InitialDataLoader
             Description = s.Description,
             Level = Enum.Parse<Level>(s.Level),
             Semester = s.Semester,
+            Order = s.Order,
             Lecturer = s.Lecturer,
             Assistant = s.Assistant,
             Topics = s.Topics?.Select(t => new SeededTopic
@@ -72,9 +73,9 @@ public static class InitialDataLoader
                     Description = m.Description,
                     Link = m.Link,
                     Order = m.Order
-                }).ToList() ?? new List<SeededMaterial>()
-            }).ToList() ?? new List<SeededTopic>(),
-            IsActive = s.IsActive,
+                }).ToList() ?? []
+            }).ToList() ?? [],
+            IsActive = s.IsActive
         }).ToList()
     };
 }
@@ -153,6 +154,7 @@ public class SeededSubject
     public required string Description { get; init; }
     public required Level Level { get; init; }
     public required int Semester { get; init; }
+    public required int Order { get; init; }
     public required string Lecturer { get; init; }
     public required string? Assistant { get; init; }
     public List<SeededTopic> Topics { get; init; } = [];
@@ -167,6 +169,7 @@ public class SubjectDto
     public required string Description { get; init; }
     public required string Level { get; init; } // serialized as string like "Undergraduate"
     public required int Semester { get; init; }
+    public required int Order { get; init; }
     public required string Lecturer { get; init; }
     public required string? Assistant { get; init; }
     public List<TopicDto>? Topics { get; init; } = [];

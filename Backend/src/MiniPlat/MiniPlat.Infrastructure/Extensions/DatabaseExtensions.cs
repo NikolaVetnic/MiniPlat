@@ -107,6 +107,7 @@ public static class DatabaseExtensions
                 Description = seededSubject.Description,
                 Level = seededSubject.Level,
                 Semester = seededSubject.Semester,
+                Order = seededSubject.Order,
                 Lecturer = seededSubject.Lecturer,
                 Assistant = seededSubject.Assistant,
                 Topics = seededSubject.Topics.Select(t => new Topic
@@ -122,7 +123,8 @@ public static class DatabaseExtensions
                         Link = m.Link,
                         Order = m.Order
                     }).ToList()
-                }).ToList()
+                }).ToList(),
+                IsActive = seededSubject.IsActive
             };
 
             await context.Subjects.AddAsync(subject);
