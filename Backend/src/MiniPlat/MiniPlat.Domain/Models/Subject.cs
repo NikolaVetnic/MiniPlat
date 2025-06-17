@@ -10,13 +10,14 @@ public class Subject : Entity<SubjectId>
     public string Description { get; set; } = string.Empty;
     public Level Level { get; set; }
     public int Semester { get; set; }
+    public int Order { get; set; }
     public string Lecturer { get; set; } = string.Empty;
     public string? Assistant { get; set; } = string.Empty;
     public List<Topic> Topics { get; set; } = [];
     public bool IsActive { get; set; } = true;
 
     public static Subject Create(SubjectId id, string title, string description, string code, Level level, int semester,
-        string lecturerId, string assistantId)
+        int order, string lecturerId, string assistantId)
     {
         var subject = new Subject
         {
@@ -26,6 +27,7 @@ public class Subject : Entity<SubjectId>
             Code = code,
             Level = level,
             Semester = semester,
+            Order = order,
             Lecturer = lecturerId,
             Assistant = assistantId
         };

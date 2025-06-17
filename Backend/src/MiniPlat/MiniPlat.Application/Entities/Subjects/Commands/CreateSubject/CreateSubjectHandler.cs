@@ -27,6 +27,7 @@ internal static class CreateSubjectCommandExtensions
             command.Code,
             command.Level,
             command.Semester,
+            command.Order,
             command.Lecturer,
             command.Assistant
         );
