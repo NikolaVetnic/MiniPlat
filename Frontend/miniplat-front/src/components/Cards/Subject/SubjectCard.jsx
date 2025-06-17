@@ -57,7 +57,7 @@ const SubjectCard = ({
 
   const year = Math.floor((semester - 1) / 2) + 1;
   const semesterName =
-    semester / 2 === 1 ? cpt.semester.winter : cpt.semester.summer;
+    semester / 2 === 1 ? cpt.semester.summer : cpt.semester.winter;
 
   const renderPerson = (person, label) =>
     person && (
