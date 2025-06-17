@@ -92,6 +92,9 @@ const SubjectCard = ({
           <strong>{cpt.year.caption}:</strong>{" "}
           {`${year} (${semesterName} semestar)`}
         </li>
+        <li>
+          <strong>{cpt.semester.caption}:</strong> {`${semester}`}
+        </li>
         {renderPerson(lecturer, cpt.lecturer)}
         {renderPerson(assistant, cpt.assistant)}
       </ul>
