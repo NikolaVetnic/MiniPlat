@@ -12,6 +12,8 @@ const SubjectCard = ({
   semester,
   lecturerUsername,
   assistantUsername,
+  isActive,
+  isSingleCard,
 }) => {
   const { user } = useUser();
 
@@ -57,7 +59,7 @@ const SubjectCard = ({
 
   const year = Math.floor((semester - 1) / 2) + 1;
   const semesterName =
-    semester / 2 === 1 ? cpt.semester.summer : cpt.semester.winter;
+    semester % 2 === 0 ? cpt.semester.summer : cpt.semester.winter;
 
   const renderPerson = (person, label) =>
     person && (
@@ -74,30 +76,44 @@ const SubjectCard = ({
     );
 
   return (
-    <section className={styles.subjectCard}>
-      <ul>
-        {user?.username === "mp_admin" && (
+    <section
+      className={`${styles.subjectCard} ${
+        isSingleCard ? styles.subjectCardSingle : ""
+      }`}
+    >
+      <div className={styles.cardContent}>
+        <ul>
+          {user?.username === "mp_admin" && (
+            <li>
+              <strong>{cpt.title}:</strong> {title}
+            </li>
+          )}
           <li>
-            <strong>{cpt.title}:</strong> {title}
+            <strong>{cpt.code}:</strong> {code}
           </li>
-        )}
-        <li>
-          <strong>{cpt.code}:</strong> {code}
-        </li>
-        <li>
-          <strong>{cpt.level.caption}:</strong>{" "}
-          {level === 1 ? cpt.level.undergraduate : cpt.level.master}
-        </li>
-        <li>
-          <strong>{cpt.year.caption}:</strong>{" "}
-          {`${year} (${semesterName} semestar)`}
-        </li>
-        <li>
-          <strong>{cpt.semester.caption}:</strong> {`${semester}`}
-        </li>
-        {renderPerson(lecturer, cpt.lecturer)}
-        {renderPerson(assistant, cpt.assistant)}
-      </ul>
+          <li>
+            <strong>{cpt.level.caption}:</strong>{" "}
+            {level === 1 ? cpt.level.undergraduate : cpt.level.master}
+          </li>
+          <li>
+            <strong>{cpt.year.caption}:</strong>{" "}
+            {`${year} (${semesterName} semestar)`}
+          </li>
+          <li>
+            <strong>{cpt.semester.caption}:</strong> {`${semester}`}
+          </li>
+          {renderPerson(lecturer, cpt.lecturer)}
+          {renderPerson(assistant, cpt.assistant)}
+        </ul>
+      </div>
+
+      <div
+        className={`${styles.statusBar} ${
+          isActive ? styles.statusActive : styles.statusDeleted
+        }`}
+      >
+        {isActive ? cpt.active.true : cpt.active.false}
+      </div>
     </section>
   );
 };
