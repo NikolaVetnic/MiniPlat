@@ -16,6 +16,10 @@
         "loading": "Podaci o korisniku se učitavaju..."
       },
       "subject": {
+        "active": {
+          "false": "Predmet trenutno nije aktivan.",
+          "true": "Predmet je aktivan."
+        },
         "assistant": "Asistent",
         "code": "Šifra predmeta",
         "level": {
@@ -26,6 +30,7 @@
         "lecturer": "Profesor",
         "loading": "Podaci o predmetu se učitavaju...",
         "semester": {
+          "caption": "Semestar",
           "summer": "letnji",
           "winter": "zimski"
         },
