@@ -86,6 +86,7 @@ const HomePage = ({ onLogout }) => {
                         semester={subject.semester}
                         lecturerUsername={subject.lecturer}
                         assistantUsername={subject.assistant}
+                        isActive={subject.isActive}
                       />
                     ))}
                   </div>
