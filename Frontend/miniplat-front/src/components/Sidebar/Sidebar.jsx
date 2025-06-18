@@ -124,9 +124,14 @@ const Sidebar = ({ subjects = [], loading = false }) => {
                   .sort((a, b) => {
                     const [aLevel, aSemester] = a[0].split("-").map(Number);
                     const [bLevel, bSemester] = b[0].split("-").map(Number);
-                    return aLevel !== bLevel
-                      ? aLevel - bLevel
-                      : aSemester - bSemester;
+
+                    if (aLevel !== bLevel) return aLevel - bLevel;
+                    if (aSemester !== bSemester) return aSemester - bSemester;
+
+                    // Third criterion: use the smallest 'order' from each group as tiebreaker
+                    const aOrder = a[1]?.[0]?.order ?? 0;
+                    const bOrder = b[1]?.[0]?.order ?? 0;
+                    return aOrder - bOrder;
                   })
                   .map(([groupKey, groupSubjects]) => {
                     const [level, semester] = groupKey.split("-");
@@ -171,10 +176,11 @@ const Sidebar = ({ subjects = [], loading = false }) => {
 
                         {isOpen && (
                           <ul>
-                            {groupSubjects.map((subject) => (
+                            {groupSubjects.map((subject, index) => (
                               <NavItem
                                 key={subject.id}
                                 icon={PiNotePencil}
+                                index={index}
                                 text={subject.title}
                                 href={
                                   user
