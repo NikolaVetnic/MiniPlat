@@ -3,7 +3,7 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 
 export const fetchSubjects = async () => {
   const response = await fetch(
-    `${API_BASE_URL}/api/Subjects?pageIndex=0&pageSize=100`,
+    `${API_BASE_URL}/api/Subjects?pageIndex=0&pageSize=1000`,
     {
       method: "GET",
       headers: {
