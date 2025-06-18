@@ -169,6 +169,8 @@ const SubjectPage = ({ user, onLogout }) => {
                 semester={subject.semester}
                 lecturerUsername={subject.lecturer}
                 assistantUsername={subject.assistant}
+                isActive={subject.isActive}
+                isSingleCard={true}
               />
             </div>
 
