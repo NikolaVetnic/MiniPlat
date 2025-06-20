@@ -22,9 +22,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="Data\SeedData\initialData.yml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+      <Content Include="Data/SeedData/*.yml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

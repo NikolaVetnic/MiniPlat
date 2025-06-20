@@ -8,10 +8,10 @@ namespace MiniPlat.Infrastructure.Extensions;
 
 public static class InitialDataLoader
 {
-    public static InitialDataContainer Load()
+    public static InitialDataContainer Load(string fileName)
     {
         var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        var fullPath = Path.Combine(assemblyPath, "Data", "SeedData", "initialData.yml");
+        var fullPath = Path.Combine(assemblyPath, "Data", "SeedData", fileName);
 
         if (!File.Exists(fullPath))
             throw new FileNotFoundException($"Seed file not found at {fullPath}");
