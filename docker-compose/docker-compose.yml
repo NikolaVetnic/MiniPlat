@@ -2,19 +2,35 @@ name: miniplat
 
 services:
   mp-api:
-    container_name: mp-api
-    image: ${DOCKER_REGISTRY-}mp-api
-    networks:
-      - main
-    depends_on:
-      - mp-database
     build:
       context: ../Backend
       dockerfile: src/MiniPlat/MiniPlat.Api/Dockerfile
+    container_name: mp-api
+    depends_on:
+      - mp-database
+    image: ${DOCKER_REGISTRY-}mp-api
+    networks:
+      - main
 
   mp-database:
     container_name: mp-database
     image: postgres
+    networks:
+      - main
+
+  mp-fe-builder:
+    command: sh -c "rm -rf dist && npm ci && npm run build"
+    container_name: mp-fe-builder
+    image: node:20-alpine
+    volumes:
+      - ../Frontend/miniplat-front:/app
+    working_dir: /app
+
+  mp-nginx:
+    container_name: mp-nginx
+    depends_on:
+      - mp-api
+    image: nginx:stable-alpine
     networks:
       - main
 
@@ -23,4 +39,4 @@ networks:
     driver: bridge
 
 volumes:
-  miniplat_vol:
+  db_vol:
