@@ -37,12 +37,17 @@
   overflow-y: auto;
 }
 
-.header h2 {
+.header h2,
+h3 {
   margin: 0;
   font-size: 1.6rem;
   font-weight: normal;
   margin-bottom: 1rem;
   color: #444;
+}
+
+.header h3 {
+  font-size: 1.4rem;
 }
 
 .header p {
