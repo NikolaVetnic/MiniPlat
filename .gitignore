@@ -10,6 +10,9 @@ appsettings.override.json
 # Ignore actual data
 Backend/src/MiniPlat/MiniPlat.Infrastructure/Data/SeedData/actualData.yml
 
+# Ignore built FE
+Frontend/miniplat-front/dist
+
 # Ignore generated certs
 */certs/
 
