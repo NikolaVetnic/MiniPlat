@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 
-import { downloadSubjectsYaml } from "../../services/downloadYaml";
+import Content_Admin from "./Content/Content_Admin";
+import Content_Lecturers from "./Content/Content_Lecturers";
+import Content_Public from "./Content/Content_Public";
 import { fetchSubjects } from "../../services/subjectsService";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import styles from "./HomePage.module.css";
 import UserCard from "../../components/Cards/User/UserCard";
+import { useUser } from "../../contexts/UserContext";
 
 import footerText from "../../utils/footerText";
-import placeholderTexts from "./homeText";
-import { useUser } from "../../contexts/UserContext";
 import sr from "../../locales/sr.json";
-import SubjectCard from "../../components/Cards/Subject/SubjectCard";
 
 const HomePage = ({ onLogout }) => {
   const { user } = useUser();
@@ -54,45 +54,23 @@ const HomePage = ({ onLogout }) => {
 
         <main className={styles.main}>
           <div className={styles.pageHeader}>
-            <h1>{sr.pages.home.home}</h1>
+            <h1>
+              {user?.username === "mp_admin"
+                ? sr.pages.home.adminControlPanel
+                : sr.pages.home.home}
+            </h1>
           </div>
 
           <div className={styles.pageContent}>
-            <header className={styles.header}>
-              <h2>
-                {user
-                  ? `${sr.pages.home.greetings.lecturers},`
-                  : `${sr.pages.home.greetings.students},`}
-              </h2>
-              {placeholderTexts.mid.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-
-              {user?.username === "mp_admin" && (
-                <>
-                  <button
-                    className={styles.downloadYamlButton}
-                    onClick={() => downloadSubjectsYaml(subjects)}
-                  >
-                    Download subjects YAML
-                  </button>
-                  <div className={styles.adminSubjects}>
-                    {subjects.map((subject) => (
-                      <SubjectCard
-                        key={subject.id}
-                        title={subject.title}
-                        code={subject.code}
-                        level={subject.level}
-                        semester={subject.semester}
-                        lecturerUsername={subject.lecturer}
-                        assistantUsername={subject.assistant}
-                        isActive={subject.isActive}
-                      />
-                    ))}
-                  </div>
-                </>
+            <div className={styles.header}>
+              {user?.username === "mp_admin" ? (
+                <Content_Admin subjects={subjects} />
+              ) : user ? (
+                <Content_Lecturers />
+              ) : (
+                <Content_Public />
               )}
-            </header>
+            </div>
 
             {user && user?.username != "mp_admin" && <UserCard />}
           </div>

@@ -1,7 +1,7 @@
 {
   "captions": {
     "companyName": "MF Solutions",
-    "title": "eVŠOVNS Portal",
+    "title": "eVŠOVNS MiniPlat",
     "titleShort": "eVŠOVNS",
     "institution": "Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad"
   },
@@ -69,6 +69,14 @@
         "updatedAt": "Poslednji put ažurirano na dan"
       }
     },
+    "modals": {
+      "topic": {
+        "errors": {
+          "titleIsMandatory": "Naslov je obavezan",
+          "descriptionIsMandatory": "Opis je obavezan"
+        }
+      }
+    },
     "navbar": {
       "buttons": {
         "login": "Prijavite se",
@@ -87,6 +95,10 @@
   },
   "pages": {
     "home": {
+      "adminControlPanel": "Administratorska kontrolna stranica",
+      "buttons": {
+        "dumpDatabaseAsYaml": "Preuzmi podatke iz baze podataka u vidu YML fajla"
+      },
       "greetings": {
         "lecturers": "Poštovani profesori",
         "students": "Poštovani studenti"
