@@ -21,8 +21,6 @@ public static class DatabaseExtensions
     {
         await services.MigrateDatabaseAsync();
 
-        var data = InitialDataLoader.Load();
-
         await services.SeedUsersAsync();
         await services.SeedLecturersAsync();
         await services.SeedSubjectsAsync();
@@ -36,8 +34,9 @@ public static class DatabaseExtensions
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
         var adminPasswordFromConfig = config["Seed:AdminPassword"];
+        var fileName = config["Seed:FileName"] ?? "initialData.yml";
 
-        foreach (var seededUser in InitialDataLoader.Load().SeededUsers)
+        foreach (var seededUser in InitialDataLoader.Load(fileName).SeededUsers)
         {
             if (await userManager.FindByNameAsync(seededUser.Username) is not null)
                 continue;
@@ -69,8 +68,11 @@ public static class DatabaseExtensions
     {
         using var scope = services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        
+        var fileName = config["Seed:FileName"] ?? "initialData.yml";
 
-        foreach (var seededLecturer in InitialDataLoader.Load().SeededLecturers)
+        foreach (var seededLecturer in InitialDataLoader.Load(fileName).SeededLecturers)
         {
             if (await context.Lecturers.AnyAsync(l => l.UserId == seededLecturer.UserId))
                 continue;
@@ -93,8 +95,11 @@ public static class DatabaseExtensions
     {
         using var scope = services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        
+        var fileName = config["Seed:FileName"] ?? "initialData.yml";
 
-        foreach (var seededSubject in InitialDataLoader.Load().SeededSubjects)
+        foreach (var seededSubject in InitialDataLoader.Load(fileName).SeededSubjects)
         {
             if (await context.Subjects.AnyAsync(s => s.Id == seededSubject.Id))
                 continue;
