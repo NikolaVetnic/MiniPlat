@@ -15,7 +15,7 @@
 .modal {
   background: white;
   font-size: 0.9rem;
-  padding: 0 1.5rem 1.5rem 1.5rem;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
@@ -73,6 +73,22 @@
   font-size: 1rem;
 }
 
+.materialList {
+  max-height: 13.1rem;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+  padding-right: 0.25rem;
+}
+
+.materialList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.materialList::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
 .addMaterialButton {
   width: 100%;
   background-color: #5bc0de;
@@ -85,6 +101,17 @@
 }
 .addMaterialButton:hover {
   opacity: 0.9;
+}
+
+.inputError {
+  border-color: red;
+}
+
+.errorText {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  display: block;
 }
 
 /* Modal action buttons */
