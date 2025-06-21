@@ -14,6 +14,8 @@ import { useUser } from "../../contexts/UserContext";
 import footerText from "../../utils/footerText";
 import sr from "../../locales/sr.json";
 
+const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
+
 const HomePage = ({ onLogout }) => {
   const { user } = useUser();
   const { username } = useParams();
@@ -46,6 +48,8 @@ const HomePage = ({ onLogout }) => {
     return <Navigate to={`/${user.username}/home`} />;
   }
 
+  const isUserAdmin = user?.username === ADMIN_USERNAME;
+
   return (
     <div className={styles.container}>
       <Navbar user={user} onLogout={onLogout} />
@@ -55,7 +59,7 @@ const HomePage = ({ onLogout }) => {
         <main className={styles.main}>
           <div className={styles.pageHeader}>
             <h1>
-              {user?.username === "mp_admin"
+              {isUserAdmin
                 ? sr.pages.home.adminControlPanel
                 : sr.pages.home.home}
             </h1>
@@ -63,7 +67,7 @@ const HomePage = ({ onLogout }) => {
 
           <div className={styles.pageContent}>
             <div className={styles.header}>
-              {user?.username === "mp_admin" ? (
+              {isUserAdmin ? (
                 <Content_Admin subjects={subjects} />
               ) : user ? (
                 <Content_Lecturers />
@@ -72,7 +76,7 @@ const HomePage = ({ onLogout }) => {
               )}
             </div>
 
-            {user && user?.username != "mp_admin" && <UserCard />}
+            {user && isUserAdmin && <UserCard />}
           </div>
 
           <footer className={styles.footer}>{footerText}</footer>

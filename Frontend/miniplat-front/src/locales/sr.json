@@ -21,6 +21,11 @@
           "true": "Predmet je aktivan."
         },
         "assistant": "Asistent",
+        "buttons": {
+          "cancel": "Odustani",
+          "edit": "Ažuriraj",
+          "ok": "Sačuvaj"
+        },
         "code": "Šifra predmeta",
         "level": {
           "caption": "Nivo studija",
