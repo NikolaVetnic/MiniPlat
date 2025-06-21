@@ -21,9 +21,11 @@ export const fetchSubjects = async () => {
 };
 
 export const fetchSubjectById = async (id) => {
-  const response = await fetch(`https://localhost:4101/api/Subjects/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/Subjects/${id}`, {
+    method: "GET",
     headers: {
       "x-api-key": API_KEY,
+      "Content-Type": "application/json",
     },
   });
 
