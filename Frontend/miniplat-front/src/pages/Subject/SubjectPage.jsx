@@ -163,6 +163,7 @@ const SubjectPage = ({ user, onLogout }) => {
             <div className={styles.pageHeader}>
               <h1>{subject.title}</h1>
               <SubjectCard
+                id={subject.id}
                 title={subject.title}
                 code={subject.code}
                 level={subject.level}
