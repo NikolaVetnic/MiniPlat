@@ -58,3 +58,36 @@ export const updateSubjectTopics = async (subject, updatedTopics) => {
     console.error("Failed to update subject:", error);
   }
 };
+
+export const updateSubjectPeople = async (id, lecturer, assistant) => {
+  const token = localStorage.getItem("token");
+
+  try {
+    const subject = await fetchSubjectById(id);
+
+    const updatedSubject = {
+      ...subject,
+      lecturer,
+      assistant,
+    };
+
+    const res = await fetch(`${API_BASE_URL}/api/Subjects/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedSubject),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+
+      console.error("Server response:", text);
+      throw new Error(`Failed to update subject ${id}`);
+    }
+  } catch (error) {
+    console.error("Failed to update subject:", error);
+    throw error;
+  }
+};

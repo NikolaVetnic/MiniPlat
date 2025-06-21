@@ -1,11 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 
-import { fetchLecturer } from "../../../services/lecturersService";
 import styles from "./SubjectCard.module.css";
 import sr from "../../../locales/sr.json";
+import { updateSubjectPeople } from "../../../services/subjectsService";
+import { useSubjectPeople } from "../../../hooks/useSubjectPeople";
 import { useUser } from "../../../contexts/UserContext";
 
+import lecturerUsernames from "../../../utils/lecturerUsernames";
+
+const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
+
 const SubjectCard = ({
+  id,
   title,
   code,
   level,
@@ -17,42 +24,32 @@ const SubjectCard = ({
 }) => {
   const { user } = useUser();
 
-  const [lecturer, setLecturer] = useState(null);
-  const [assistant, setAssistant] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedLecturer, setSelectedLecturer] = useState(lecturerUsername);
+  const [selectedAssistant, setSelectedAssistant] = useState(assistantUsername);
+
+  const { lecturer, assistant, loading, error, refetch } = useSubjectPeople(
+    lecturerUsername,
+    assistantUsername
+  );
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setSelectedLecturer(lecturerUsername);
+    setSelectedAssistant(assistantUsername);
+  };
+
+  const handleConfirmEdit = async () => {
+    try {
+      await updateSubjectPeople(id, selectedLecturer, selectedAssistant);
+      await refetch(selectedLecturer, selectedAssistant);
+      setIsEditing(false);
+    } catch (err) {
+      setError("Failed to save changes.");
+    }
+  };
 
   const cpt = sr.components.cards.subject;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const lecturerPromise = lecturerUsername
-          ? fetchLecturer(lecturerUsername)
-          : Promise.resolve(null);
-
-        const assistantPromise = assistantUsername
-          ? fetchLecturer(assistantUsername)
-          : Promise.resolve(null);
-
-        const [lecturerData, assistantData] = await Promise.all([
-          lecturerPromise,
-          assistantPromise,
-        ]);
-
-        setLecturer(lecturerData);
-        setAssistant(assistantData);
-      } catch (err) {
-        console.error(err);
-        setError("Unable to fetch lecturer information.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [lecturerUsername, assistantUsername]);
 
   if (error) return <p>{error}</p>;
   if (loading || !lecturer) return <p>{cpt.loading}</p>;
@@ -64,7 +61,7 @@ const SubjectCard = ({
   const renderPerson = (person, label) =>
     person && (
       <li>
-        {/* <strong>{label}:</strong>{" "} */}
+        <strong>{label}:</strong>{" "}
         {`${person.title} ${person.user.firstName} ${person.user.lastName}`}
         {person.user.email && (
           <>
@@ -75,6 +72,8 @@ const SubjectCard = ({
       </li>
     );
 
+  const isUserAdmin = user?.username === ADMIN_USERNAME;
+
   return (
     <section
       className={`${styles.subjectCard} ${
@@ -83,10 +82,37 @@ const SubjectCard = ({
     >
       <div className={styles.cardContent}>
         <ul>
-          {user?.username === "mp_admin" && (
-            <li>
-              <strong>{cpt.title}:</strong> {title}
-            </li>
+          {isUserAdmin && (
+            <>
+              <div className={styles.editControls}>
+                {!isEditing ? (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className={styles.editBtn}
+                  >
+                    <FiEdit2 />
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleCancelEdit}
+                      className={styles.cancelBtn}
+                    >
+                      <FiX />
+                    </button>
+                    <button
+                      onClick={handleConfirmEdit}
+                      className={styles.okBtn}
+                    >
+                      <FiCheck />
+                    </button>
+                  </>
+                )}
+              </div>
+              <li>
+                <strong>{cpt.title}:</strong> {title}
+              </li>
+            </>
           )}
           <li>
             <strong>{cpt.code}:</strong> {code}
@@ -102,8 +128,49 @@ const SubjectCard = ({
           <li>
             <strong>{cpt.semester.caption}:</strong> {`${semester}`}
           </li>
-          {renderPerson(lecturer, cpt.lecturer)}
-          {renderPerson(assistant, cpt.assistant)}
+          {isEditing ? (
+            <>
+              <li className={styles.selectRow}>
+                <strong>{cpt.lecturer}:</strong>
+                <select
+                  id="lecturer"
+                  value={selectedLecturer}
+                  onChange={(e) => setSelectedLecturer(e.target.value)}
+                >
+                  {lecturerUsernames
+                    .filter((l) => l.username !== selectedAssistant) // exclude selected assistant
+                    .map((l) => (
+                      <option key={l.username} value={l.username}>
+                        {l.username}
+                      </option>
+                    ))}
+                </select>
+              </li>
+
+              <li className={styles.selectRow}>
+                <strong>{cpt.assistant}:</strong>
+                <select
+                  id="assistant"
+                  value={selectedAssistant || ""}
+                  onChange={(e) => setSelectedAssistant(e.target.value || null)}
+                >
+                  <option value="">–</option>
+                  {lecturerUsernames
+                    .filter((l) => l.username !== selectedLecturer) // exclude selected lecturer
+                    .map((l) => (
+                      <option key={l.username} value={l.username}>
+                        {l.username}
+                      </option>
+                    ))}
+                </select>
+              </li>
+            </>
+          ) : (
+            <>
+              {renderPerson(lecturer, cpt.lecturer)}
+              {renderPerson(assistant, cpt.assistant)}
+            </>
+          )}
         </ul>
       </div>
 
