@@ -1,4 +1,5 @@
 import Highlight from "../../../components/Highlight/Highlight";
+import YouTubeEmbed from "../../../components/YouTubeEmbed/YouTubeEmbed";
 
 const Content_Public = () => {
   return (
@@ -12,6 +13,13 @@ const Content_Public = () => {
         video i pisanom obliku koje bi trebalo da vam olakša svakodnevno
         korišćenje ove jednostavne aplikacije.
       </p>
+
+      <YouTubeEmbed
+        videoId="lpFrEM2cX7w"
+        maxWidth="640px"
+        title="eVŠOVNS MiniPlat: Uputstvo za studente"
+      />
+
       <p>
         Platforma je kreirana tako da bude potpuno otvorena i dostupna svim
         studentima bez potrebe za registrovanjem korisnika i prijavom, drugim
