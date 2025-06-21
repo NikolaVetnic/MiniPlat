@@ -1,4 +1,5 @@
 import Highlight from "../../../components/Highlight/Highlight";
+import YouTubeEmbed from "../../../components/YouTubeEmbed/YouTubeEmbed";
 
 const Content_Lecturers = () => {
   return (
@@ -12,6 +13,12 @@ const Content_Lecturers = () => {
         video i pisanom obliku koje bi trebalo da vam olakša svakodnevno
         korišćenje ove jednostavne aplikacije.
       </p>
+
+      <YouTubeEmbed
+        videoId="WQ5d6BCmv6I"
+        maxWidth="640px"
+        title="eVŠOVNS MiniPlat: Uputstvo za nastavno osoblje"
+      />
 
       <h2>1 Režimi rada</h2>
       <p>Platforma za nastavu na daljinu funkcioniše u dva režima. </p>
