@@ -19,6 +19,7 @@ const Content_Admin = ({ subjects }) => {
         {subjects.map((subject) => (
           <SubjectCard
             key={subject.id}
+            id={subject.id}
             title={subject.title}
             code={subject.code}
             level={subject.level}
