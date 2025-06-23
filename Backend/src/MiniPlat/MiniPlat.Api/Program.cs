@@ -43,23 +43,32 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Bind forwarded headers options from configuration
+var forwardedHeadersSection = builder.Configuration.GetSection("ForwardedHeaders");
+var forwardedHeadersOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+
+forwardedHeadersSection.Bind(forwardedHeadersOptions);
+
+// Manually parse KnownProxies if needed
+var knownProxies = forwardedHeadersSection.GetSection("KnownProxies").Get<List<string>>();
+if (knownProxies != null)
+{
+    foreach (var proxy in knownProxies)
+    {
+        forwardedHeadersOptions.KnownProxies.Add(IPAddress.Parse(proxy));
+    }
+}
+
 var app = builder.Build();
 
-var prodOptions = new ForwardedHeadersOptions
-        {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
-            RequireHeaderSymmetry = true,
-            ForwardLimit = 1,
-            KnownProxies = { IPAddress.Parse("172.18.0.4") } // `docker inspect nginx-proxy | grep -i ipaddress`
-        };
-
-        app.UseForwardedHeaders(prodOptions);
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{
     app.MapOpenApi();
-}
 
 app.UseRouting();
 
