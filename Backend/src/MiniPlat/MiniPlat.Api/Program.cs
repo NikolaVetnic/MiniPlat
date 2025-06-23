@@ -1,3 +1,5 @@
+using System.Net;
+using Microsoft.AspNetCore.HttpOverrides;
 using MiniPlat.Api.Extensions;
 using MiniPlat.Api.Middlewares;
 using MiniPlat.Application.Exceptions.Handlers;
@@ -42,6 +44,16 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+var prodOptions = new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+            RequireHeaderSymmetry = true,
+            ForwardLimit = 1,
+            KnownProxies = { IPAddress.Parse("172.18.0.4") } // `docker inspect nginx-proxy | grep -i ipaddress`
+        };
+
+        app.UseForwardedHeaders(prodOptions);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
