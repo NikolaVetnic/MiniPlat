@@ -19,7 +19,7 @@ services:
       - main
 
   mp-fe-builder:
-    command: sh -c "rm -rf dist && npm ci && npm run build"
+    command: sh -c "mkdir -p dist && rm -rf dist/* && npm ci && npm run build"
     container_name: mp-fe-builder
     image: node:20-alpine
     volumes:
