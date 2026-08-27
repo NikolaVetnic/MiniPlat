@@ -68,11 +68,13 @@ const SubjectCard = ({
     person && (
       <li>
         <strong>{label}:</strong>{" "}
-        {`${person.title} ${person.user.firstName} ${person.user.lastName}`}
-        {person.user.email && (
+        {[person.title, person.firstName, person.lastName]
+          .filter(Boolean)
+          .join(" ")}
+        {person.email && (
           <>
             {", "}
-            <a href={`mailto:${person.user.email}`}>{person.user.email}</a>
+            <a href={`mailto:${person.email}`}>{person.email}</a>
           </>
         )}
       </li>

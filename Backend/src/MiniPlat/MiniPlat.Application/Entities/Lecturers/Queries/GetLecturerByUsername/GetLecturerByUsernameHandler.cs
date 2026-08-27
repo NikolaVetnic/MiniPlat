@@ -13,6 +13,12 @@ public class GetLecturerByUsernameHandler(ILecturersRepository lecturersReposito
         if (lecturer == null)
             throw new LecturerNotFoundException(query.UserId);
         
-        return new GetLecturerByUsernameResult(lecturer);
+        return new GetLecturerByUsernameResult(new LecturerDetails(
+            lecturer.User.UserName!,
+            lecturer.Title,
+            lecturer.Department,
+            lecturer.User.FirstName,
+            lecturer.User.LastName,
+            lecturer.User.Email));
     }
 }
