@@ -21,4 +21,15 @@ public class LecturersRepository(AppDbContext appDbContext) : ILecturersReposito
                    .SingleOrDefaultAsync(x => x.User.UserName == username, cancellationToken) ??
                throw new LecturerNotFoundException(username);
     }
+
+    public async Task<IReadOnlyList<Lecturer>> ListLecturersAsync(CancellationToken cancellationToken)
+    {
+        return await appDbContext.Lecturers
+            .Include(l => l.User)
+            .AsNoTracking()
+            .OrderBy(l => l.User.LastName)
+            .ThenBy(l => l.User.FirstName)
+            .ThenBy(l => l.User.UserName)
+            .ToListAsync(cancellationToken);
+    }
 }

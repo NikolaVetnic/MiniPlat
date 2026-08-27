@@ -6,8 +6,7 @@ import sr from "../../../locales/sr.json";
 import { updateSubjectPeople } from "../../../services/subjectsService";
 import { useSubjectPeople } from "../../../hooks/useSubjectPeople";
 import { useUser } from "../../../contexts/UserContext";
-
-import lecturerUsernames from "../../../utils/lecturerUsernames";
+import { useLecturers } from "../../../hooks/useLecturers";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
 
@@ -25,6 +24,7 @@ const SubjectCard = ({
   const { user } = useUser();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [selectedLecturer, setSelectedLecturer] = useState(lecturerUsername);
   const [selectedAssistant, setSelectedAssistant] = useState(assistantUsername);
 
@@ -33,19 +33,25 @@ const SubjectCard = ({
     assistantUsername
   );
 
+  // Only requested once the editor is open, so a plain visitor never pulls the roster.
+  const { lecturers, error: lecturersError } = useLecturers(isEditing);
+
   const handleCancelEdit = () => {
     setIsEditing(false);
+    setSaveError(null);
     setSelectedLecturer(lecturerUsername);
     setSelectedAssistant(assistantUsername);
   };
 
   const handleConfirmEdit = async () => {
     try {
+      setSaveError(null);
       await updateSubjectPeople(id, selectedLecturer, selectedAssistant);
       await refetch(selectedLecturer, selectedAssistant);
       setIsEditing(false);
     } catch (err) {
-      setError("Failed to save changes.");
+      console.error(err);
+      setSaveError("Failed to save changes.");
     }
   };
 
@@ -73,6 +79,19 @@ const SubjectCard = ({
     );
 
   const isUserAdmin = user?.username === ADMIN_USERNAME;
+
+  const lecturerLabel = (l) =>
+    [l.title, l.firstName, l.lastName].filter(Boolean).join(" ") || l.username;
+
+  // Keeps the saved username selectable while the roster loads, or if that person
+  // is no longer on it.
+  const optionsFor = (selected, excluded) => {
+    const available = lecturers.filter((l) => l.username !== excluded);
+
+    return selected && !available.some((l) => l.username === selected)
+      ? [{ username: selected }, ...available]
+      : available;
+  };
 
   return (
     <section
@@ -137,13 +156,11 @@ const SubjectCard = ({
                   value={selectedLecturer}
                   onChange={(e) => setSelectedLecturer(e.target.value)}
                 >
-                  {lecturerUsernames
-                    .filter((l) => l.username !== selectedAssistant) // exclude selected assistant
-                    .map((l) => (
-                      <option key={l.username} value={l.username}>
-                        {l.username}
-                      </option>
-                    ))}
+                  {optionsFor(selectedLecturer, selectedAssistant).map((l) => (
+                    <option key={l.username} value={l.username}>
+                      {lecturerLabel(l)}
+                    </option>
+                  ))}
                 </select>
               </li>
 
@@ -155,15 +172,19 @@ const SubjectCard = ({
                   onChange={(e) => setSelectedAssistant(e.target.value || null)}
                 >
                   <option value="">–</option>
-                  {lecturerUsernames
-                    .filter((l) => l.username !== selectedLecturer) // exclude selected lecturer
-                    .map((l) => (
-                      <option key={l.username} value={l.username}>
-                        {l.username}
-                      </option>
-                    ))}
+                  {optionsFor(selectedAssistant, selectedLecturer).map((l) => (
+                    <option key={l.username} value={l.username}>
+                      {lecturerLabel(l)}
+                    </option>
+                  ))}
                 </select>
               </li>
+
+              {(lecturersError || saveError) && (
+                <li>
+                  <em>{lecturersError || saveError}</em>
+                </li>
+              )}
             </>
           ) : (
             <>

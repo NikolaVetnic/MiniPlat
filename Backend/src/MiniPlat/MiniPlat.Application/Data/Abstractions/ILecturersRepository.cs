@@ -6,4 +6,5 @@ public interface ILecturersRepository
 {
     Task CreateLecturerAsync(Lecturer lecturer, CancellationToken cancellationToken);
     Task<Lecturer> GetLecturerByUsername(string username, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Lecturer>> ListLecturersAsync(CancellationToken cancellationToken);
 }
