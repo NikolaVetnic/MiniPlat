@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import { UserProvider } from "../contexts/UserContext";
+import { I18nProvider } from "../i18n/I18nContext";
 import { clearSession, storeSession } from "../services/session";
 
 /**
@@ -30,6 +31,8 @@ export const renderWithSession = (
 ) =>
   render(
     <MemoryRouter initialEntries={[route]}>
-      <UserProvider>{ui}</UserProvider>
+      <I18nProvider>
+        <UserProvider>{ui}</UserProvider>
+      </I18nProvider>
     </MemoryRouter>
   );

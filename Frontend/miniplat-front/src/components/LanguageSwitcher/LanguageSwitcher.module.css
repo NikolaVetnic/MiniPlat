@@ -1,0 +1,31 @@
+.switcher {
+  display: flex;
+  align-items: center;
+}
+
+.select {
+  background-color: transparent;
+  color: white;
+  border: 1px solid var(--enmGrayLight);
+  border-radius: 4px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.select:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* The list itself is drawn by the OS, which ignores the transparent background above. */
+.select option {
+  color: initial;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  margin-right: 0.4rem;
+  font-size: 1.1rem;
+  color: var(--enmGrayLight);
+  cursor: pointer;
+}

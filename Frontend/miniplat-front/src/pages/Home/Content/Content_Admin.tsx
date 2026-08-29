@@ -1,6 +1,6 @@
 import { downloadSubjectsYaml } from "../../../services/downloadYaml";
-import sr from "../../../locales/sr.json";
 import styles from "../HomePage.module.css";
+import { useI18n } from "../../../i18n/I18nContext";
 import type { Subject } from "../../../types/api";
 import SubjectCard from "../../../components/Cards/Subject/SubjectCard";
 
@@ -9,7 +9,8 @@ interface ContentAdminProps {
 }
 
 const Content_Admin = ({ subjects }: ContentAdminProps) => {
-  const cpt = sr.pages.home;
+  const { t } = useI18n();
+  const cpt = t.pages.home;
 
   return (
     <>

@@ -1,3 +1,5 @@
+import { format } from "../../i18n/dictionaries";
+import type { SidebarCaptions } from "../../i18n/types";
 import type { Subject } from "../../types/api";
 import type { SessionUser } from "../../types/app";
 
@@ -43,13 +45,6 @@ export const groupSubjects = (subjects: Subject[]): SubjectGroup[] => {
   });
 };
 
-/** Tekstene Sidebar trenger; formen sr.json faktisk har under components.sidebar. */
-export interface SidebarCaptions {
-  levels: string[];
-  semester: string[];
-  years: string[];
-}
-
 /** Bygger «OSS • II godina • Zimski semestar» fra gruppenøkkelen. */
 export const groupLabel = (groupKey: string, cpt: SidebarCaptions): string => {
   // Var strengaritmetikk: level og semester kom rett fra split() og ble regnet på
@@ -57,7 +52,9 @@ export const groupLabel = (groupKey: string, cpt: SidebarCaptions): string => {
   const [level, semester] = groupKey.split("-").map(Number);
 
   const cptLevel = cpt.levels[level - 1];
-  const cptYear = `${cpt.years[Math.floor((semester - 1) / 2)]} godina`;
+  const cptYear = format(cpt.yearLabel, {
+    year: cpt.years[Math.floor((semester - 1) / 2)],
+  });
   const cptSemester = cpt.semester[semester % 2];
 
   return `${cptLevel} • ${cptYear} • ${cptSemester}`;

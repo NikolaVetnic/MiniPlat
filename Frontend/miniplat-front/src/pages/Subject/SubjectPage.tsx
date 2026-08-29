@@ -13,7 +13,6 @@ import type { MaterialDraft } from "../../types/app";
 import { newTopic, toMaterials } from "../../utils/drafts";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
-import sr from "../../locales/sr.json";
 import styles from "../Home/HomePage.module.css";
 import SubjectCard from "../../components/Cards/Subject/SubjectCard";
 import subjectPageStyles from "./SubjectPage.module.css";
@@ -23,6 +22,7 @@ import TopicModal, {
 } from "../../components/Modals/Topic/TopicModal";
 import { useUser } from "../../contexts/UserContext";
 import footerText from "../../utils/footerText";
+import { useI18n } from "../../i18n/I18nContext";
 
 interface SubjectPageProps {
   onLogout: () => void;
@@ -34,6 +34,9 @@ type TopicFlag = "isHidden" | "isDeleted";
 const SubjectPage = ({ onLogout }: SubjectPageProps) => {
   const { subjectId } = useParams();
   const { user } = useUser();
+  const { t } = useI18n();
+
+  const cpt = t.pages.subject;
 
   // State for subject and subjects list
   const [subject, setSubject] = useState<Subject | null>(null);
@@ -60,8 +63,8 @@ const SubjectPage = ({ onLogout }: SubjectPageProps) => {
       console.error(err);
       setSaveError(
         err instanceof ConflictError
-          ? sr.pages.subject.saveConflict
-          : sr.pages.subject.saveFailed
+          ? cpt.saveConflict
+          : cpt.saveFailed
       );
     });
   };
@@ -135,7 +138,7 @@ const SubjectPage = ({ onLogout }: SubjectPageProps) => {
       [flag]: value,
     }).catch((err: unknown) => {
       console.error(err);
-      setSaveError(sr.pages.subject.saveFailed);
+      setSaveError(cpt.saveFailed);
     });
   };
 
@@ -183,7 +186,7 @@ const SubjectPage = ({ onLogout }: SubjectPageProps) => {
       updatedTopics.map((topic) => topic.id)
     ).catch((err: unknown) => {
       console.error(err);
-      setSaveError(sr.pages.subject.saveFailed);
+      setSaveError(cpt.saveFailed);
     });
   };
 
@@ -255,12 +258,12 @@ const SubjectPage = ({ onLogout }: SubjectPageProps) => {
                     setShowAddModal(true);
                   }}
                 >
-                  {sr.pages.subject.buttons.addTopic}
+                  {cpt.buttons.addTopic}
                 </button>
               )}
             </div>
 
-            <footer className={styles.footer}>{footerText}</footer>
+            <footer className={styles.footer}>{footerText(t.captions)}</footer>
           </main>
         )}
       </div>
@@ -277,7 +280,7 @@ const SubjectPage = ({ onLogout }: SubjectPageProps) => {
           onRemoveMaterial={handleRemoveNewMaterial}
           onSave={handleSaveNewTopic}
           onCancel={() => setShowAddModal(false)}
-          cpt={sr.components.cards.topic}
+          cpt={t.components.cards.topic}
         />
       )}
     </div>

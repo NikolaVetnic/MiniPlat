@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { FiTrash2 } from "react-icons/fi";
 
-import sr from "../../../locales/sr.json";
 import styles from "./TopicModal.module.css";
 import type { MaterialDraft } from "../../../types/app";
+import { useI18n } from "../../../i18n/I18nContext";
+import type { TopicCaptions } from "../../../i18n/types";
 
-/** The topic captions block from sr.json, passed down by whoever opens the modal. */
-export type TopicCaptions = typeof sr.components.cards.topic;
+export type { TopicCaptions };
 
 /** Which material field an edit targets. */
 export type MaterialField = "description" | "link";
@@ -42,6 +42,7 @@ const TopicModal = ({
   onCancel,
   cpt,
 }: TopicModalProps) => {
+  const { t } = useI18n();
   const [errors, setErrors] = useState({ title: false, description: false });
 
   useEffect(() => {
@@ -62,7 +63,7 @@ const TopicModal = ({
     }
   };
 
-  const cptLocal = sr.components.modals.topic;
+  const cptLocal = t.components.modals.topic;
 
   return (
     <div className={styles.modalOverlay}>
@@ -70,7 +71,7 @@ const TopicModal = ({
         <h3>{title ? cpt.titles.update : cpt.titles.create}</h3>
 
         <label>
-          <p>Naslov:</p>
+          <p>{cpt.title}:</p>
           <input
             type="text"
             value={title}
@@ -113,7 +114,7 @@ const TopicModal = ({
                 />
                 <input
                   type="text"
-                  placeholder="Link"
+                  placeholder={cpt.link}
                   value={material.link}
                   onChange={(e) =>
                     onMaterialChange(index, "link", e.target.value)
