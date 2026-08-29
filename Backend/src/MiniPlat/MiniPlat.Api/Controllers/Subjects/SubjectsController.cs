@@ -38,7 +38,7 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<ActionResult<GetSubjectByIdResponse>> GetById([FromRoute] string subjectId)
+    public async Task<ActionResult<GetSubjectByIdResponse>> GetById([FromRoute] SubjectId subjectId)
     {
         var result = await sender.Send(new GetSubjectByIdQuery(subjectId));
         var response = new GetSubjectByIdResponse(result.Subject);
@@ -74,12 +74,12 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(UpdateSubjectResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public async Task<ActionResult<UpdateSubjectResponse>> Update([FromRoute] string subjectId,
+    public async Task<ActionResult<UpdateSubjectResponse>> Update([FromRoute] SubjectId subjectId,
         [FromBody] UpdateSubjectRequest request)
     {
         var command = new UpdateSubjectCommand
         {
-            Id = SubjectId.Of(Guid.Parse(subjectId)),
+            Id = subjectId,
             Title = request.Title,
             Code = request.Code,
             Description = request.Description,
@@ -103,11 +103,11 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public async Task<ActionResult<ReorderTopicsResponse>> ReorderTopics([FromRoute] string subjectId,
+    public async Task<ActionResult<ReorderTopicsResponse>> ReorderTopics([FromRoute] SubjectId subjectId,
         [FromBody] ReorderTopicsRequest request)
     {
         var command = new ReorderTopicsCommand(
-            SubjectId.Of(Guid.Parse(subjectId)),
+            subjectId,
             request.TopicIds.Select(TopicId.Of).ToList());
 
         var result = await sender.Send(command);
@@ -122,12 +122,12 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public async Task<ActionResult<UpdateTopicStateResponse>> UpdateTopicState([FromRoute] string subjectId,
-        [FromRoute] string topicId, [FromBody] UpdateTopicStateRequest request)
+    public async Task<ActionResult<UpdateTopicStateResponse>> UpdateTopicState([FromRoute] SubjectId subjectId,
+        [FromRoute] TopicId topicId, [FromBody] UpdateTopicStateRequest request)
     {
         var command = new UpdateTopicStateCommand(
-            SubjectId.Of(Guid.Parse(subjectId)),
-            TopicId.Of(Guid.Parse(topicId)),
+            subjectId,
+            topicId,
             request.IsHidden,
             request.IsDeleted);
 
@@ -143,11 +143,11 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = AuthorizationPolicies.Admin)]
-    public async Task<ActionResult<SetSubjectStaffResponse>> SetStaff([FromRoute] string subjectId,
+    public async Task<ActionResult<SetSubjectStaffResponse>> SetStaff([FromRoute] SubjectId subjectId,
         [FromBody] SetSubjectStaffRequest request)
     {
         var command = new SetSubjectStaffCommand(
-            SubjectId.Of(Guid.Parse(subjectId)),
+            subjectId,
             request.Lecturer,
             request.Assistant);
 
@@ -163,7 +163,7 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Policy = AuthorizationPolicies.Admin)]
-    public async Task<ActionResult<DeleteSubjectResponse>> Delete([FromRoute] string subjectId)
+    public async Task<ActionResult<DeleteSubjectResponse>> Delete([FromRoute] SubjectId subjectId)
     {
         var result = await sender.Send(new DeleteSubjectCommand(subjectId));
         var response = new DeleteSubjectResponse(result.IsSubjectDeleted);

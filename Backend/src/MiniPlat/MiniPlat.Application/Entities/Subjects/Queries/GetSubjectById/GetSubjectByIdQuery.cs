@@ -5,10 +5,7 @@ using MiniPlat.Domain.ValueObjects;
 
 namespace MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
 
-public record GetSubjectByIdQuery(SubjectId Id) : IQuery<GetSubjectByIdResult>
-{
-    public GetSubjectByIdQuery(string Id) : this(SubjectId.Of(Guid.Parse(Id))) { }
-}
+public record GetSubjectByIdQuery(SubjectId Id) : IQuery<GetSubjectByIdResult>;
 
 public record GetSubjectByIdResult(Subject Subject);
 

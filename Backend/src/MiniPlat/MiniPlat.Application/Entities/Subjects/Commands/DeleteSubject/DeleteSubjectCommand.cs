@@ -4,10 +4,7 @@ using MiniPlat.Domain.ValueObjects;
 
 namespace MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 
-public record DeleteSubjectCommand(SubjectId Id) : ICommand<DeleteSubjectResult>
-{
-    public DeleteSubjectCommand(string Id) : this(SubjectId.Of(Guid.Parse(Id))) { }
-}
+public record DeleteSubjectCommand(SubjectId Id) : ICommand<DeleteSubjectResult>;
 
 public record DeleteSubjectResult(bool IsSubjectDeleted);
 

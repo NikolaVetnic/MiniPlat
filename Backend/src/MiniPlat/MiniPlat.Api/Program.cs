@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.HttpOverrides;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 using MiniPlat.Api.Extensions;
+using MiniPlat.Api.ModelBinding;
 using MiniPlat.Application.Exceptions.Handlers;
 using MiniPlat.Application.Extensions;
 using MiniPlat.Infrastructure.Extensions;
@@ -16,7 +17,8 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+    options.ModelBinderProviders.Insert(0, new StronglyTypedIdModelBinderProvider()));
 
 builder.Services
     .AddApiServices(builder.Configuration)
