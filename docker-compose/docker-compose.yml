@@ -14,22 +14,38 @@ services:
 
   mp-database:
     container_name: mp-database
-    image: postgres
+    # Pinned to the major version that wrote db_vol. Unpinned, this follows postgres:latest,
+    # and 18 both moved the expected mount point to /var/lib/postgresql and refuses to start
+    # on a data directory an older major version created.
+    image: postgres:17
     networks:
       - main
 
   mp-fe-builder:
-    command: sh -c "mkdir -p dist && rm -rf dist/* && npm ci && npm run build"
+    # No "rm -rf dist/*": vite empties outDir itself, immediately before it writes. Clearing
+    # it up front only means the directory nginx serves sits empty for the whole install and
+    # build rather than for the moment the files are swapped.
+    command: sh -c "mkdir -p dist && npm ci && npm run build"
     container_name: mp-fe-builder
     image: node:20-alpine
     volumes:
       - ../Frontend/miniplat-front:/app
+      # Shadows the host directory. Without it the container's npm ci writes Linux binaries
+      # into the developer's node_modules, and the next local npm run dev fails on a missing
+      # platform-specific rollup or esbuild build.
+      - fe_node_modules:/app/node_modules
     working_dir: /app
 
   mp-nginx:
     container_name: mp-nginx
     depends_on:
-      - mp-api
+      mp-api:
+        condition: service_started
+      # The builder empties dist before it rebuilds. Without waiting for it to finish, nginx
+      # serves an empty root for as long as the install and build take - and try_files falling
+      # through to a missing /index.html is a redirect cycle, so that window answers 500.
+      mp-fe-builder:
+        condition: service_completed_successfully
     image: nginx:stable-alpine
     networks:
       - main
@@ -46,3 +62,4 @@ networks:
 
 volumes:
   db_vol:
+  fe_node_modules:
