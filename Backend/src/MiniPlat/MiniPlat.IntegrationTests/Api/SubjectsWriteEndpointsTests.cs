@@ -132,28 +132,65 @@ public class SubjectsWriteEndpointsTests(MiniPlatFixture fixture) : ApiTestBase(
     }
 
     /// <summary>
-    /// Current behaviour, and a trap: the update command initialises its string fields to empty
-    /// rather than null, so a body that leaves "lecturer" out arrives as "" and an administrator's
-    /// save wipes the column. Every client has to send the whole subject back.
+    /// An update names only what it changes. Both request and command used to initialise their
+    /// fields, so a body that left the lecturer out arrived as an empty string and cleared the
+    /// column - and one that left the topics out arrived as an empty list and deleted them all.
     /// </summary>
     [Fact]
-    public async Task An_update_that_omits_the_lecturer_clears_it()
+    public async Task An_update_that_omits_the_lecturer_leaves_it_alone()
     {
+        var admin = await AsAdmin();
+        var subject = await Mine(admin);
+
+        var response = await Update(admin, new { title = "Retitled", version = subject.Version });
+
+        response.EnsureSuccessStatusCode();
+
+        var updated = await Mine();
+
+        Assert.Equal("Retitled", updated.Title);
+        Assert.Equal(Lecturer, updated.Lecturer);
+        Assert.Equal(subject.Code, updated.Code);
+    }
+
+    /// <summary>An empty list is still a list: it says to remove every topic.</summary>
+    [Fact]
+    public async Task An_update_carrying_an_empty_topic_list_removes_them_all()
+    {
+        await GiveItTopics("First", "Second");
+
+        var admin = await AsAdmin();
+        var subject = await Mine(admin);
+
+        (await Update(admin, UpdateBody(subject, topics: Array.Empty<object>())))
+            .EnsureSuccessStatusCode();
+
+        Assert.Empty((await Mine()).Topics);
+    }
+
+    [Fact]
+    public async Task An_update_that_omits_the_topics_leaves_them_alone()
+    {
+        await GiveItTopics("First", "Second");
+
         var admin = await AsAdmin();
         var subject = await Mine(admin);
 
         var response = await Update(admin, new
         {
-            title = subject.Title,
+            title = "Retitled",
             code = subject.Code,
             description = subject.Description,
             level = subject.Level,
             semester = subject.Semester,
+            lecturer = subject.Lecturer,
+            assistant = subject.Assistant,
             version = subject.Version
         });
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(string.Empty, (await Mine()).Lecturer);
+        response.EnsureSuccessStatusCode();
+
+        Assert.Equal(["First", "Second"], (await Mine()).Topics.Select(topic => topic.Title));
     }
 
     #endregion

@@ -23,20 +23,8 @@ public class UpdateSubjectHandlerTests
         return subject;
     }
 
-    /// <summary>
-    /// A command that asks for no change at all. Every field is null on purpose: the handler
-    /// reads null as "leave this alone", and the command's own property initialisers do not.
-    /// </summary>
-    private UpdateSubjectCommand Command() => new()
-    {
-        Id = _id,
-        Title = null,
-        Code = null,
-        Description = null,
-        Lecturer = null,
-        Assistant = null,
-        Topics = null
-    };
+    /// <summary>A command that asks for no change at all: null everywhere means "leave alone".</summary>
+    private UpdateSubjectCommand Command() => new() { Id = _id };
 
     [Fact]
     public async Task A_subject_that_does_not_exist_is_reported_as_missing()
@@ -68,10 +56,7 @@ public class UpdateSubjectHandlerTests
             Description = "Rewritten.",
             Level = Level.Master,
             Semester = 4,
-            Order = 9,
-            Lecturer = null,
-            Assistant = null,
-            Topics = null
+            Order = 9
         };
 
         var result = await Handler(FakeCurrentUser.Admin()).Handle(command, CancellationToken.None);
@@ -235,20 +220,40 @@ public class UpdateSubjectHandlerTests
     }
 
     /// <summary>
-    /// Current behaviour, and a trap rather than a design: the command initialises its string
-    /// fields to string.Empty, so a body that simply omits "lecturer" arrives as "" - which is
-    /// not null, differs from the subject's lecturer, and is refused as an attempt to hand the
-    /// subject to someone else. Every caller has to send the staff back to edit anything at all.
+    /// A command with nothing on it changes nothing. The fields used to be initialised to empty
+    /// strings and an empty topic list, which reached the handler looking exactly like values the
+    /// caller had sent: omitting the lecturer cleared the column, and omitting the topics deleted
+    /// every one of them.
     /// </summary>
     [Fact]
-    public async Task A_command_left_at_its_own_defaults_reads_as_an_attempt_to_clear_the_staff()
+    public async Task A_command_left_at_its_own_defaults_changes_nothing()
+    {
+        Stored(lecturer: "ana", assistant: "bob");
+        var command = new UpdateSubjectCommand { Id = _id };
+
+        var result = await Handler(FakeCurrentUser.Named("ana")).Handle(command, CancellationToken.None);
+
+        Assert.Equal("Original title", result.Subject.Title);
+        Assert.Equal("ana", result.Subject.Lecturer);
+        Assert.Equal("bob", result.Subject.Assistant);
+        await _subjects.DidNotReceive().ReplaceTopicsAsync(
+            Arg.Any<Subject>(), Arg.Any<List<Topic>>(), Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// The lecturer check compares against null, so a caller who simply does not mention the
+    /// staff is not taken to be reassigning it.
+    /// </summary>
+    [Fact]
+    public async Task A_lecturer_may_edit_without_naming_themselves()
     {
         Stored(lecturer: "ana");
-        var command = new UpdateSubjectCommand { Id = _id, Topics = null };
+        var command = new UpdateSubjectCommand { Id = _id, Title = "Edited" };
 
-        Assert.Equal(string.Empty, command.Lecturer);
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => Handler(FakeCurrentUser.Named("ana")).Handle(command, CancellationToken.None));
+        var result = await Handler(FakeCurrentUser.Named("ana")).Handle(command, CancellationToken.None);
+
+        Assert.Equal("Edited", result.Subject.Title);
+        Assert.Equal("ana", result.Subject.Lecturer);
     }
 
     [Fact]

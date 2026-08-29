@@ -12,13 +12,18 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const fetchLecturer = async (
   username: string
 ): Promise<LecturerDetails | null> => {
-  const response = await fetch(`${API_BASE_URL}/api/Lecturers/${username}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
-  });
+  // Encoded rather than interpolated raw: a username carrying a slash or a question mark
+  // would otherwise change which route is called rather than which lecturer is asked for.
+  const response = await fetch(
+    `${API_BASE_URL}/api/Lecturers/${encodeURIComponent(username)}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+    }
+  );
 
   if (!response.ok) {
     dropSessionIfRejected(response);

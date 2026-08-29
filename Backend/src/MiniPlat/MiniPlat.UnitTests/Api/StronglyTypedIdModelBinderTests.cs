@@ -68,14 +68,30 @@ public class StronglyTypedIdModelBinderTests
     }
 
     /// <summary>
-    /// The all-zero guid is not a real id, and the id types refuse it. Reaching the binder it
-    /// would surface as a 500, so this pins where that refusal currently lands.
+    /// The all-zero guid parses but is not a real id, and the id types throw for it. Left to
+    /// them the throw escapes the binder as a 500, so it is refused here as the bad request it
+    /// is - the same answer as any other malformed id.
     /// </summary>
     [Fact]
-    public async Task The_empty_guid_is_refused_by_the_id_type_rather_than_by_the_binder()
+    public async Task The_empty_guid_is_refused_like_any_other_malformed_id()
     {
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => Bind(value => SubjectId.Of(value), Guid.Empty.ToString()));
+        var context = await Bind(value => SubjectId.Of(value), Guid.Empty.ToString());
+
+        Assert.False(context.Result.IsModelSet);
+        Assert.False(context.ModelState.IsValid);
+    }
+
+    [Fact]
+    public async Task A_guid_in_any_of_the_shapes_dotnet_accepts_binds()
+    {
+        var guid = Guid.NewGuid();
+
+        foreach (var format in new[] { "D", "N", "B", "P" })
+        {
+            var context = await Bind(value => SubjectId.Of(value), guid.ToString(format));
+
+            Assert.Equal(SubjectId.Of(guid), context.Result.Model);
+        }
     }
 }
 

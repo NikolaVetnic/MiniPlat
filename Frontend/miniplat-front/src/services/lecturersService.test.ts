@@ -77,6 +77,24 @@ describe("fetchLecturer", () => {
   });
 
   /**
+   * Et brukernavn er fritekst fra Identity. Interpolert rått ville et skråstrek- eller
+   * spørsmålstegn endret hvilken rute som kalles, ikke hvilken foreleser det spørres om.
+   */
+  it.each([
+    ["skråstrek", "pn/../Subjects", "pn%2F..%2FSubjects"],
+    ["spørsmålstegn", "pn?x=1", "pn%3Fx%3D1"],
+    ["mellomrom", "petar nikolic", "petar%20nikolic"],
+    ["skarpe tegn", "pnikolić", "pnikoli%C4%87"],
+  ])("koder %s i brukernavnet", async (_navn, brukernavn, kodet) => {
+    fetchMock.mockResolvedValue(jsonResponse({ lecturer: detaljer }));
+
+    const { fetchLecturer } = await load();
+    await fetchLecturer(brukernavn);
+
+    expect(urlOf(fetchMock)).toBe(`${API}/api/Lecturers/${kodet}`);
+  });
+
+  /**
    * Profilen er åpen, men serveren bruker tokenet til å avgjøre hva den tar med -
    * så headeren følger med når noen er logget inn, og uteblir ellers.
    */

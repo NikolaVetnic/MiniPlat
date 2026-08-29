@@ -127,6 +127,7 @@ public class SubjectsReadEndpointsTests(MiniPlatFixture fixture) : ApiTestBase(f
     [Theory]
     [InlineData("not-a-guid")]
     [InlineData("12345")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
     public async Task An_id_that_is_not_a_guid_is_a_400(string id)
     {
         var response = await Anonymous.GetAsync($"/api/Subjects/{id}");
