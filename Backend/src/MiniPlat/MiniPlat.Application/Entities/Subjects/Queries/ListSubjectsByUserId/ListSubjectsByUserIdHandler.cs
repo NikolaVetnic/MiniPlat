@@ -20,6 +20,6 @@ internal class ListSubjectsByUserIdHandler(ICurrentUser currentUser, ISubjectsRe
                 pageIndex,
                 pageSize,
                 subjects.Count,
-                subjects));
+                subjects.Redact(currentUser)));
     }
 }

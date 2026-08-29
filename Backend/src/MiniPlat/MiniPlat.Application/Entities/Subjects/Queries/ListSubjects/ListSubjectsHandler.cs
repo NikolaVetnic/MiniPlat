@@ -5,7 +5,7 @@ using MiniPlat.Domain.Models;
 
 namespace MiniPlat.Application.Entities.Subjects.Queries.ListSubjects;
 
-internal class ListSubjectsHandler(ISubjectsRepository subjectsRepository) : IQueryHandler<ListSubjectsQuery, ListSubjectsResult>
+internal class ListSubjectsHandler(ICurrentUser currentUser, ISubjectsRepository subjectsRepository) : IQueryHandler<ListSubjectsQuery, ListSubjectsResult>
 {
     public async Task<ListSubjectsResult> Handle(ListSubjectsQuery query, CancellationToken cancellationToken)
     {
@@ -19,6 +19,6 @@ internal class ListSubjectsHandler(ISubjectsRepository subjectsRepository) : IQu
                 pageIndex,
                 pageSize,
                 subjects.Count,
-                subjects));
+                subjects.Redact(currentUser)));
     }
 }

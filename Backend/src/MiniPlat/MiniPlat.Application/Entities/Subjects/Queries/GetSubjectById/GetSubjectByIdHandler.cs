@@ -4,7 +4,7 @@ using MiniPlat.Application.Exceptions;
 
 namespace MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
 
-internal class GetSubjectByIdHandler(ISubjectsRepository subjectsRepository) : IQueryHandler<GetSubjectByIdQuery, GetSubjectByIdResult>
+internal class GetSubjectByIdHandler(ICurrentUser currentUser, ISubjectsRepository subjectsRepository) : IQueryHandler<GetSubjectByIdQuery, GetSubjectByIdResult>
 {
     public async Task<GetSubjectByIdResult> Handle(GetSubjectByIdQuery query, CancellationToken cancellationToken)
     {
@@ -13,6 +13,6 @@ internal class GetSubjectByIdHandler(ISubjectsRepository subjectsRepository) : I
         if (subject == null)
             throw new SubjectNotFoundException(query.Id.ToString());
 
-        return new GetSubjectByIdResult(subject);
+        return new GetSubjectByIdResult(subject.Redact(currentUser));
     }
 }

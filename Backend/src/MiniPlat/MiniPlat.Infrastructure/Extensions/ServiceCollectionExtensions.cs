@@ -8,6 +8,7 @@ using MiniPlat.Domain.Models;
 using MiniPlat.Infrastructure.Interceptors;
 using MiniPlat.Infrastructure.Repositories;
 using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 
 namespace MiniPlat.Infrastructure.Extensions;
 
@@ -22,6 +23,16 @@ public static class ServiceCollectionExtensions
             .AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
+
+        // AddIdentity defaults these to the Identity cookie schemes, which leaves HttpContext.User
+        // anonymous on endpoints that carry no [Authorize] attribute - the public subject reads
+        // among them. Those endpoints still need to know who is asking, so that a lecturer sees the
+        // hidden topics on their own subject while a student does not.
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+        });
 
         services.AddScoped<ILecturersRepository, LecturersRepository>();
         services.AddScoped<ISubjectsRepository, SubjectsRepository>();

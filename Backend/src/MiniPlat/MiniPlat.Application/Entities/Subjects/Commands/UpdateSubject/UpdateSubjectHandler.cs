@@ -1,6 +1,7 @@
 using BuildingBlocks.Application.Exceptions;
 using MediatR;
 using MiniPlat.Application.Data.Abstractions;
+using MiniPlat.Application.Entities.Subjects;
 using MiniPlat.Application.Exceptions;
 
 namespace MiniPlat.Application.Entities.Subjects.Commands.UpdateSubject;
@@ -18,10 +19,8 @@ public class UpdateSubjectHandler(ICurrentUser currentUser, ISubjectsRepository 
 
         if (!currentUser.IsAdmin)
         {
-            var username = currentUser.Username;
-
-            if (string.IsNullOrEmpty(username) ||
-                (existingSubject.Lecturer != username && existingSubject.Assistant != username))
+            // Same ownership rule the read path uses to decide who may see hidden topics.
+            if (!existingSubject.CanManage(currentUser))
                 throw new ForbiddenException("You may only edit subjects you teach.");
 
             if (command.Lecturer is not null && command.Lecturer != existingSubject.Lecturer)
