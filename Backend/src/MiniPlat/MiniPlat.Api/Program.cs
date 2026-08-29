@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.HttpOverrides;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 using MiniPlat.Api.Extensions;
 using MiniPlat.Application.Exceptions.Handlers;
 using MiniPlat.Application.Extensions;
@@ -51,19 +52,33 @@ var forwardedHeadersOptions = new ForwardedHeadersOptions
 
 forwardedHeadersSection.Bind(forwardedHeadersOptions);
 
-// Manually parse KnownProxies if needed
-var knownProxies = forwardedHeadersSection.GetSection("KnownProxies").Get<List<string>>();
-if (knownProxies != null)
+// Bind() cannot turn the configured strings into IPAddress/IPNetwork, so both lists are parsed
+// by hand. KnownNetworks carries the reverse proxy: pinning a single container address breaks
+// the moment Docker hands out a different one, and X-Forwarded-For is then silently ignored -
+// which would put every client into the same rate limit partition, keyed on the proxy.
+foreach (var proxy in forwardedHeadersSection.GetSection("KnownProxies").Get<string[]>() ?? [])
+    forwardedHeadersOptions.KnownProxies.Add(IPAddress.Parse(proxy));
+
+foreach (var cidr in forwardedHeadersSection.GetSection("KnownNetworks").Get<string[]>() ?? [])
 {
-    foreach (var proxy in knownProxies)
-    {
-        forwardedHeadersOptions.KnownProxies.Add(IPAddress.Parse(proxy));
-    }
+    var parts = cidr.Split('/', 2);
+
+    if (parts.Length != 2)
+        throw new InvalidOperationException($"ForwardedHeaders:KnownNetworks entry '{cidr}' is not CIDR notation.");
+
+    forwardedHeadersOptions.KnownNetworks.Add(
+        new IPNetwork(IPAddress.Parse(parts[0]), int.Parse(parts[1])));
 }
 
 var app = builder.Build();
 
 app.UseForwardedHeaders(forwardedHeadersOptions);
+
+app.Logger.LogInformation(
+    "Forwarded headers trusted from networks [{Networks}] and proxies [{Proxies}]. " +
+    "Client addresses outside these are taken from the connection, not X-Forwarded-For.",
+    string.Join(", ", forwardedHeadersOptions.KnownNetworks.Select(n => $"{n.Prefix}/{n.PrefixLength}")),
+    string.Join(", ", forwardedHeadersOptions.KnownProxies));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

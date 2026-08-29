@@ -37,6 +37,12 @@ services:
 networks:
   main:
     driver: bridge
+    # Pinned so the API can trust X-Forwarded-For from this network by range. Without a fixed
+    # subnet Docker assigns addresses at will, the trust list stops matching, and every client
+    # collapses into one rate limit bucket keyed on the proxy.
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
 
 volumes:
   db_vol:

@@ -31,6 +31,12 @@ services:
       - db_vol:/var/lib/postgresql/data
 
   mp-nginx:
+    networks:
+      main:
+        # Fixed so the API can name exactly this address as its trusted proxy. The subnet alone
+        # is not enough: the API also publishes ports, and traffic arriving that way is source
+        # translated to the gateway - inside the subnet, and able to forge X-Forwarded-For.
+        ipv4_address: 172.28.0.10
     ports:
       - "80:80"
       - "443:443"
