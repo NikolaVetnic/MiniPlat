@@ -1,0 +1,81 @@
+name: E2E
+
+# Spenner over hele stakken, så den kjører når noen av delene endrer seg - i motsetning til
+# backend.yml og frontend.yml, som hver ser sin egen halvdel.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Backend/**"
+      - "Frontend/**"
+      - ".github/workflows/e2e.yml"
+  pull_request:
+    paths:
+      - "Backend/**"
+      - "Frontend/**"
+      - ".github/workflows/e2e.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke paths
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # 20 to match the node:20-alpine image mp-fe-builder uses in docker-compose.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: Frontend/miniplat-front/package-lock.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Backend/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Install
+        run: npm ci
+        working-directory: Frontend/miniplat-front
+
+      # Built here rather than inside the Playwright web server, where a cold restore would
+      # be racing that server's startup timeout on a fresh runner.
+      - name: Build the API
+        run: dotnet build Backend/src/MiniPlat/MiniPlat.Api -c Release
+
+      # The API speaks https because OpenIddict refuses to issue a token over a plain
+      # connection - behind nginx the deployed stack gets there through X-Forwarded-Proto.
+      # Playwright is told to ignore the certificate rather than to trust it.
+      - name: Create the development certificate
+        run: dotnet dev-certs https
+
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+        working-directory: Frontend/miniplat-front
+
+      # Postgres is started by the run itself, through Docker, which ubuntu-latest has.
+      - name: Run the smoke paths
+        run: npm run test:e2e
+        working-directory: Frontend/miniplat-front
+
+      - name: Keep the traces of a failed run
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: Frontend/miniplat-front/test-results
+          retention-days: 7
