@@ -1,12 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using MiniPlat.Application.Data.Abstractions;
 using MiniPlat.Domain.Abstractions;
 
 namespace MiniPlat.Infrastructure.Interceptors;
 
-public class AuditableEntityInterceptor : SaveChangesInterceptor
+public class AuditableEntityInterceptor(ICurrentUser currentUser) : SaveChangesInterceptor
 {
+    /// <summary>
+    /// Who to record against a change. Seeding and migrations run outside any request, so there
+    /// is genuinely no user then - "system" says that, rather than blaming a person for it.
+    /// </summary>
+    private string Actor => currentUser.Username is { Length: > 0 } username ? username : "system";
+
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
         UpdateEntities(eventData.Context);
@@ -20,7 +27,7 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private static void UpdateEntities(DbContext? context)
+    private void UpdateEntities(DbContext? context)
     {
         if (context == null) return;
 
@@ -30,7 +37,7 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
         {
             if (entry.State == EntityState.Added)
             {
-                entry.Entity.CreatedBy = "username";
+                entry.Entity.CreatedBy = Actor;
                 entry.Entity.CreatedAt = DateTime.UtcNow;
             }
             
@@ -40,7 +47,7 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
             if (!isAdded && !isModified && !entry.HasChangedOwnedEntities()) 
                 continue;
             
-            entry.Entity.LastModifiedBy = "username";
+            entry.Entity.LastModifiedBy = Actor;
             entry.Entity.LastModifiedAt = DateTime.UtcNow;
         }
     }
