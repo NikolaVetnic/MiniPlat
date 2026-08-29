@@ -13,8 +13,8 @@ internal class ListSubjectsByUserIdHandler(ICurrentUser currentUser, ISubjectsRe
         var pageIndex = pagination.PageIndex;
         var pageSize = pagination.PageSize;
 
-        var (subjects, totalCount) = await subjectsRepository.ListByUsernameAsync(currentUser.Username ?? throw new
-            InvalidOperationException(), pageIndex, pageSize, cancellationToken);
+        var (subjects, totalCount) = await subjectsRepository.ListByUsernameAsync(SubjectViewer.For(currentUser),
+            currentUser.Username ?? throw new InvalidOperationException(), pageIndex, pageSize, cancellationToken);
 
         return new ListSubjectsByUserIdResult(
             new PaginatedResult<Subject>(

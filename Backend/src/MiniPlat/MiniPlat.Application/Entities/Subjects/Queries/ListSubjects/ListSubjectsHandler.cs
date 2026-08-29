@@ -13,7 +13,7 @@ internal class ListSubjectsHandler(ICurrentUser currentUser, ISubjectsRepository
         var pageIndex = pagination.PageIndex;
         var pageSize = pagination.PageSize;
 
-        var (subjects, totalCount) = await subjectsRepository.ListAsync(pageIndex, pageSize, cancellationToken);
+        var (subjects, totalCount) = await subjectsRepository.ListAsync(SubjectViewer.For(currentUser), pageIndex, pageSize, cancellationToken);
 
         return new ListSubjectsResult(
             new PaginatedResult<Subject>(

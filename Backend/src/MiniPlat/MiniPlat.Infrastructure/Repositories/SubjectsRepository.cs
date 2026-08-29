@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MiniPlat.Application.Data.Abstractions;
 using BuildingBlocks.Application.Exceptions;
+using MiniPlat.Application.Entities.Subjects;
 using MiniPlat.Application.Exceptions;
 using MiniPlat.Domain.Models;
 using MiniPlat.Domain.ValueObjects;
@@ -25,10 +26,10 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
                throw new SubjectNotFoundException(subjectId.ToString());
     }
 
-    public async Task<(List<Subject> Subjects, long TotalCount)> ListAsync(int pageIndex, int pageSize,
-        CancellationToken cancellationToken)
+    public async Task<(List<Subject> Subjects, long TotalCount)> ListAsync(SubjectViewer viewer, int pageIndex,
+        int pageSize, CancellationToken cancellationToken)
     {
-        var query = appDbContext.Subjects.AsNoTracking();
+        var query = appDbContext.Subjects.AsNoTracking().Where(viewer.CanSee);
 
         // Counted before the Include, so the total costs one cheap query rather than loading
         // every subject's topics and materials just to size the result.
@@ -47,11 +48,12 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         return (subjects, totalCount);
     }
 
-    public async Task<(List<Subject> Subjects, long TotalCount)> ListByUsernameAsync(string username, int pageIndex,
-        int pageSize, CancellationToken cancellationToken)
+    public async Task<(List<Subject> Subjects, long TotalCount)> ListByUsernameAsync(SubjectViewer viewer,
+        string username, int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         var query = appDbContext.Subjects
             .AsNoTracking()
+            .Where(viewer.CanSee)
             .Where(s => s.Lecturer == username || s.Assistant == username);
 
         var totalCount = await query.LongCountAsync(cancellationToken);
