@@ -46,7 +46,7 @@ const LoginPage = ({ onLogout }: LoginPageProps) => {
 
     try {
       const data = await login(username, password);
-      signIn(data.token, data.user);
+      signIn(data.token, data.user, data.expiresIn);
 
       navigate(`/${data.user.username}/home`);
     } catch (err) {

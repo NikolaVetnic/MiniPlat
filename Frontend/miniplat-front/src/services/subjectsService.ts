@@ -6,6 +6,7 @@ import type {
   Uuid,
 } from "../types/api";
 import { authHeaders } from "./authHeaders";
+import { dropSessionIfRejected } from "./unauthorized";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -35,8 +36,10 @@ export const fetchSubjects = async (): Promise<Subject[]> => {
     }
   );
 
-  if (!response.ok)
+  if (!response.ok) {
+    dropSessionIfRejected(response);
     throw new Error(`Failed to fetch subjects: ${response.status}`);
+  }
 
   const data = (await response.json()) as ListSubjectsResponse;
   return data.subjects.data ?? [];
@@ -63,6 +66,8 @@ export const updateSubjectTopics = async (
   });
 
   if (!res.ok) {
+    dropSessionIfRejected(res);
+
     const text = await res.text();
 
     console.error("Server response:", text);
@@ -93,6 +98,8 @@ export const updateTopicOrder = async (
   );
 
   if (!res.ok) {
+    dropSessionIfRejected(res);
+
     const text = await res.text();
 
     console.error("Server response:", text);
@@ -119,6 +126,8 @@ export const updateTopicState = async (
   );
 
   if (!res.ok) {
+    dropSessionIfRejected(res);
+
     const text = await res.text();
 
     console.error("Server response:", text);
@@ -142,6 +151,8 @@ export const updateSubjectPeople = async (
   });
 
   if (!res.ok) {
+    dropSessionIfRejected(res);
+
     const text = await res.text();
 
     console.error("Server response:", text);

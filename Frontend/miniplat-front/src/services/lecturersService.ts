@@ -5,6 +5,7 @@ import type {
   ListLecturersResponse,
 } from "../types/api";
 import { authHeaders } from "./authHeaders";
+import { dropSessionIfRejected } from "./unauthorized";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -19,8 +20,10 @@ export const fetchLecturer = async (
     },
   });
 
-  if (!response.ok)
+  if (!response.ok) {
+    dropSessionIfRejected(response);
     throw new Error(`Failed to fetch lecturer: ${response.status}`);
+  }
 
   const data = (await response.json()) as GetLecturerResponse;
 
@@ -43,8 +46,10 @@ export const fetchLecturers = async (): Promise<LecturerSummary[]> => {
     },
   })
     .then(async (response) => {
-      if (!response.ok)
+      if (!response.ok) {
+        dropSessionIfRejected(response);
         throw new Error(`Failed to fetch lecturers: ${response.status}`);
+      }
 
       const data = (await response.json()) as ListLecturersResponse;
       return data.lecturers ?? [];

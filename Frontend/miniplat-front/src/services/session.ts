@@ -4,9 +4,14 @@ import type { SessionUser } from "../types/app";
  * The only module that touches the stored session. Everything else - components through
  * UserContext, plain modules through getToken - goes via here, so the storage keys and the
  * in-memory copy can never drift apart.
+ *
+ * It doubles as an external store: the services drop the session from outside the component
+ * tree when the server rejects a token, and subscribers are told so the UI stops claiming to
+ * be signed in.
  */
 const TOKEN_KEY = "token";
 const USER_KEY = "user";
+const EXPIRES_KEY = "tokenExpiresAt";
 
 export interface StoredSession {
   token: string | null;
@@ -18,6 +23,22 @@ const read = (key: string): string | null => {
     return localStorage.getItem(key);
   } catch {
     return null; // private mode, or storage blocked
+  }
+};
+
+const write = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // A session that lives only for this page is still better than a failed sign-in.
+  }
+};
+
+const remove = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // nothing to clean up
   }
 };
 
@@ -47,43 +68,93 @@ const parseUser = (raw: string | null): SessionUser | null => {
   }
 };
 
-// Mirrored in memory so non-React callers can read the token synchronously.
-let token: string | null = read(TOKEN_KEY);
+const parseExpiry = (raw: string | null): number | null => {
+  const value = Number(raw);
 
-export const getToken = (): string | null => token;
+  return raw && Number.isFinite(value) ? value : null;
+};
 
 /**
- * Re-syncs the mirror from storage rather than trusting the copy taken at import. The user
- * was always read fresh here, so a token cached at module load could disagree with it -
- * after a write from another tab, or any import that happened before the session was stored.
+ * Held as one object so useSyncExternalStore can compare identities: it is replaced only
+ * when the session actually changes, never rebuilt on every read.
  */
-export const readStoredSession = (): StoredSession => {
-  token = read(TOKEN_KEY);
+let snapshot: StoredSession = { token: null, user: null };
+let expiresAt: number | null = null;
 
-  return {
-    token,
-    user: parseUser(read(USER_KEY)),
+const listeners = new Set<() => void>();
+
+const emit = (): void => {
+  listeners.forEach((listener) => listener());
+};
+
+export const subscribe = (listener: () => void): (() => void) => {
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
   };
 };
 
-export const storeSession = (newToken: string, user: SessionUser): void => {
-  token = newToken;
+export const getSession = (): StoredSession => snapshot;
 
-  try {
-    localStorage.setItem(TOKEN_KEY, newToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-  } catch {
-    // A session that lives only for this page is still better than a failed sign-in.
-  }
+const loadFromStorage = (): void => {
+  snapshot = { token: read(TOKEN_KEY), user: parseUser(read(USER_KEY)) };
+  expiresAt = parseExpiry(read(EXPIRES_KEY));
+};
+
+loadFromStorage();
+
+const hasExpired = (): boolean => expiresAt !== null && Date.now() >= expiresAt;
+
+/**
+ * Checks expiry rather than waiting for the server to say no, so a request that is certain
+ * to be rejected is never sent and the UI drops back to signed-out on its own.
+ */
+export const getToken = (): string | null => {
+  if (snapshot.token && hasExpired()) clearSession();
+
+  return snapshot.token;
+};
+
+/** Re-reads storage, in case it was written after this module was first evaluated. */
+export const readStoredSession = (): StoredSession => {
+  loadFromStorage();
+
+  return snapshot;
+};
+
+export const storeSession = (
+  newToken: string,
+  user: SessionUser,
+  expiresInSeconds?: number | null
+): void => {
+  expiresAt =
+    typeof expiresInSeconds === "number" && Number.isFinite(expiresInSeconds)
+      ? Date.now() + expiresInSeconds * 1000
+      : null;
+
+  snapshot = { token: newToken, user };
+
+  write(TOKEN_KEY, newToken);
+  write(USER_KEY, JSON.stringify(user));
+
+  if (expiresAt === null) remove(EXPIRES_KEY);
+  else write(EXPIRES_KEY, String(expiresAt));
+
+  emit();
 };
 
 export const clearSession = (): void => {
-  token = null;
+  // Guarded so a 401 on an endpoint the visitor was never signed in for does not push a
+  // pointless re-render through every subscriber.
+  if (snapshot.token === null && snapshot.user === null) return;
 
-  try {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-  } catch {
-    // nothing to clean up
-  }
+  expiresAt = null;
+  snapshot = { token: null, user: null };
+
+  remove(TOKEN_KEY);
+  remove(USER_KEY);
+  remove(EXPIRES_KEY);
+
+  emit();
 };

@@ -1,11 +1,14 @@
 import type { TokenErrorResponse, TokenResponse, UserInfo } from "../types/api";
 import type { SessionUser } from "../types/app";
+import { dropSessionIfRejected } from "./unauthorized";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export interface LoginResult {
   token: string;
   user: SessionUser;
+  /** Seconds the token is good for, or null if the server did not say. */
+  expiresIn: number | null;
 }
 
 export const login = async (
@@ -40,6 +43,10 @@ export const login = async (
   return {
     token: data.access_token,
     user: { username },
+    expiresIn:
+      typeof data.expires_in === "number" && Number.isFinite(data.expires_in)
+        ? data.expires_in
+        : null,
   };
 };
 
@@ -52,6 +59,8 @@ export const fetchUserInfo = async (token: string): Promise<UserInfo> => {
   });
 
   if (!response.ok) {
+    dropSessionIfRejected(response);
+
     const errorText = await response.text();
     throw new Error(
       `Failed to fetch user info: ${response.status} - ${errorText}`

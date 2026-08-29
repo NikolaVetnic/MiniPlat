@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * session.js leser localStorage én gang ved import og speiler tokenet i en
@@ -12,6 +12,10 @@ const loadSession = async () => {
 
 beforeEach(() => {
   localStorage.clear();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("session", () => {
@@ -98,5 +102,76 @@ describe("session", () => {
     const { readStoredSession } = await loadSession();
 
     expect(readStoredSession().user).toBeNull();
+  });
+});
+
+describe("utløp", () => {
+  it("beholder tokenet så lenge det er gyldig", async () => {
+    const { getToken, storeSession } = await loadSession();
+
+    storeSession("abc123", { username: "pnikolic" }, 3600);
+
+    expect(getToken()).toBe("abc123");
+  });
+
+  it("dropper økten når tokenet er utløpt, uten å spørre serveren", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-29T12:00:00Z"));
+
+    const { getToken, getSession, storeSession } = await loadSession();
+
+    storeSession("abc123", { username: "pnikolic" }, 3600);
+    vi.setSystemTime(new Date("2026-08-29T13:00:01Z"));
+
+    expect(getToken()).toBeNull();
+    // Ikke bare skjult: økten er faktisk ryddet bort, så UI-et slutter å si innlogget.
+    expect(getSession()).toEqual({ token: null, user: null });
+    expect(localStorage.getItem("token")).toBeNull();
+  });
+
+  it("lar en økt uten utløpstid stå", async () => {
+    const { getToken, storeSession } = await loadSession();
+
+    // Serveren oppga ingen expires_in. Da er det bare et 401 som kan avslutte økten.
+    storeSession("abc123", { username: "pnikolic" });
+
+    expect(getToken()).toBe("abc123");
+  });
+});
+
+describe("abonnenter", () => {
+  it("varsler ved innlogging og utlogging", async () => {
+    const { clearSession, storeSession, subscribe } = await loadSession();
+    const varsler = vi.fn();
+
+    subscribe(varsler);
+
+    storeSession("abc123", { username: "pnikolic" });
+    expect(varsler).toHaveBeenCalledTimes(1);
+
+    clearSession();
+    expect(varsler).toHaveBeenCalledTimes(2);
+  });
+
+  it("varsler ikke når det ikke fantes noen økt å rydde", async () => {
+    // Et 401 fra et endepunkt en anonym besøkende aldri var innlogget på skal ikke
+    // presse en render gjennom hele treet.
+    const { clearSession, subscribe } = await loadSession();
+    const varsler = vi.fn();
+
+    subscribe(varsler);
+    clearSession();
+
+    expect(varsler).not.toHaveBeenCalled();
+  });
+
+  it("slutter å varsle etter avmelding", async () => {
+    const { storeSession, subscribe } = await loadSession();
+    const varsler = vi.fn();
+
+    subscribe(varsler)();
+    storeSession("abc123", { username: "pnikolic" });
+
+    expect(varsler).not.toHaveBeenCalled();
   });
 });
