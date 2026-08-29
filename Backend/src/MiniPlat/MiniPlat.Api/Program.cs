@@ -20,7 +20,7 @@ builder.Services.AddControllers();
 builder.Services
     .AddApiServices(builder.Configuration)
     .AddApplicationServices()
-    .AddInfrastructureServices(builder.Configuration);
+    .AddInfrastructureServices(builder.Configuration, builder.Environment);
 
 builder.Services.AddInterceptors();
 

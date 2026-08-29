@@ -9,6 +9,10 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=${ASPNETCORE_Kestrel__Certificates__Default__Path}
       - ASPNETCORE_Kestrel__Certificates__Default__Password=${ASPNETCORE_Kestrel__Certificates__Default__Password}
       - ConnectionStrings__DefaultConnection=${DEFAULT_CONNECTION}
+      - OpenIddict__SigningCertificate__Path=${OpenIddict__SigningCertificate__Path}
+      - OpenIddict__SigningCertificate__Password=${OpenIddict__SigningCertificate__Password}
+      - OpenIddict__EncryptionCertificate__Path=${OpenIddict__EncryptionCertificate__Path}
+      - OpenIddict__EncryptionCertificate__Password=${OpenIddict__EncryptionCertificate__Password}
     ports:
       - "5001:8080"
       - "5101:8081"
