@@ -14,7 +14,10 @@ services:
 
   mp-database:
     container_name: mp-database
-    image: postgres
+    # Pinned to the major version that wrote db_vol. Unpinned, this follows postgres:latest,
+    # and 18 both moved the expected mount point to /var/lib/postgresql and refuses to start
+    # on a data directory an older major version created.
+    image: postgres:17
     networks:
       - main
 
