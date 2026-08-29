@@ -30,6 +30,10 @@ services:
     image: node:20-alpine
     volumes:
       - ../Frontend/miniplat-front:/app
+      # Shadows the host directory. Without it the container's npm ci writes Linux binaries
+      # into the developer's node_modules, and the next local npm run dev fails on a missing
+      # platform-specific rollup or esbuild build.
+      - fe_node_modules:/app/node_modules
     working_dir: /app
 
   mp-nginx:
@@ -58,3 +62,4 @@ networks:
 
 volumes:
   db_vol:
+  fe_node_modules:
