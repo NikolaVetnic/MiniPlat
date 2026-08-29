@@ -1,8 +1,14 @@
+interface YouTubeEmbedProps {
+  videoId: string;
+  title?: string;
+  maxWidth?: string;
+}
+
 const YouTubeEmbed = ({
   videoId,
   title = "Embedded YouTube",
   maxWidth = "800px",
-}) => (
+}: YouTubeEmbedProps) => (
   <div style={{ width: "100%", maxWidth, margin: "2rem auto" }}>
     <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
       <iframe
@@ -23,4 +29,4 @@ const YouTubeEmbed = ({
   </div>
 );
 
-export default YouTubeEmbed; // ✅ This is required
+export default YouTubeEmbed;

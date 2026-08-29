@@ -2,19 +2,22 @@ import { useEffect, useState } from "react";
 
 import { fetchUserInfo } from "../../../services/authService";
 import { useUser } from "../../../contexts/UserContext";
+import type { UserInfo } from "../../../types/api";
 import sr from "../../../locales/sr.json";
 import styles from "./UserCard.module.css";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
 
 const UserCard = () => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [error, setError] = useState(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const cpt = sr.components.cards.user;
   const { token } = useUser();
 
   useEffect(() => {
+    if (!token) return;
+
     const getUserInfo = async () => {
       try {
         const data = await fetchUserInfo(token);
@@ -25,9 +28,7 @@ const UserCard = () => {
       }
     };
 
-    if (token) {
-      getUserInfo();
-    }
+    void getUserInfo();
   }, [token]);
 
   if (error) {
@@ -46,12 +47,17 @@ const UserCard = () => {
     );
   }
 
+  // Every field comes from a claim and can be absent. Joining the present ones avoids
+  // rendering the string "null" where a title or a name is missing.
+  const fullName = [userInfo.title, userInfo.firstName, userInfo.lastName]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <section className={styles.userCard}>
       <ul>
         <li>
-          <strong>{cpt.lecturer}:</strong>{" "}
-          {`${userInfo.title} ${userInfo.firstName} ${userInfo.lastName}`}
+          <strong>{cpt.lecturer}:</strong> {fullName}
         </li>
         <li>
           <strong>{cpt.department}:</strong> {userInfo.department}
@@ -60,9 +66,7 @@ const UserCard = () => {
           <strong>{cpt.email}:</strong>{" "}
           <a href={`mailto:${userInfo.email}`}>{userInfo.email}</a>
         </li>
-        {userInfo.username == ADMIN_USERNAME ? (
-          <></>
-        ) : (
+        {userInfo.username !== ADMIN_USERNAME && (
           <li>
             <strong>{sr.captions.institution}</strong>
           </li>

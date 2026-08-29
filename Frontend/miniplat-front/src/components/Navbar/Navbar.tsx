@@ -4,9 +4,13 @@ import { Link } from "react-router-dom";
 import sr from "../../locales/sr.json";
 import styles from "./Navbar.module.css";
 import { useUser } from "../../contexts/UserContext";
-import useWindowWidth from "../../hooks/useWindowWidth"; // ⬅️ make sure path matches
+import useWindowWidth from "../../hooks/useWindowWidth";
 
-const Navbar = ({ onLogout }) => {
+interface NavbarProps {
+  onLogout: () => void;
+}
+
+const Navbar = ({ onLogout }: NavbarProps) => {
   const { user } = useUser();
   const width = useWindowWidth();
 

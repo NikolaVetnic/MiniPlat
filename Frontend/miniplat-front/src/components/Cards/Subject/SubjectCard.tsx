@@ -3,12 +3,30 @@ import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 
 import styles from "./SubjectCard.module.css";
 import sr from "../../../locales/sr.json";
+import {
+  Level,
+  type LecturerDetails,
+  type LecturerSummary,
+  type Uuid,
+} from "../../../types/api";
 import { updateSubjectPeople } from "../../../services/subjectsService";
 import { useSubjectPeople } from "../../../hooks/useSubjectPeople";
 import { useUser } from "../../../contexts/UserContext";
 import { useLecturers } from "../../../hooks/useLecturers";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
+
+interface SubjectCardProps {
+  id: Uuid;
+  title: string;
+  code: string;
+  level: Level;
+  semester: number;
+  lecturerUsername: string;
+  assistantUsername: string | null;
+  isActive: boolean;
+  isSingleCard?: boolean;
+}
 
 const SubjectCard = ({
   id,
@@ -19,14 +37,16 @@ const SubjectCard = ({
   lecturerUsername,
   assistantUsername,
   isActive,
-  isSingleCard,
-}) => {
+  isSingleCard = false,
+}: SubjectCardProps) => {
   const { user } = useUser();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [saveError, setSaveError] = useState(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedLecturer, setSelectedLecturer] = useState(lecturerUsername);
-  const [selectedAssistant, setSelectedAssistant] = useState(assistantUsername);
+  const [selectedAssistant, setSelectedAssistant] = useState<string | null>(
+    assistantUsername
+  );
 
   const { lecturer, assistant, loading, error, refetch } = useSubjectPeople(
     lecturerUsername,
@@ -64,7 +84,7 @@ const SubjectCard = ({
   const semesterName =
     semester % 2 === 0 ? cpt.semester.summer : cpt.semester.winter;
 
-  const renderPerson = (person, label) =>
+  const renderPerson = (person: LecturerDetails | null, label: string) =>
     person && (
       <li>
         <strong>{label}:</strong>{" "}
@@ -82,16 +102,23 @@ const SubjectCard = ({
 
   const isUserAdmin = user?.username === ADMIN_USERNAME;
 
-  const lecturerLabel = (l) =>
+  const lecturerLabel = (l: LecturerSummary) =>
     [l.title, l.firstName, l.lastName].filter(Boolean).join(" ") || l.username;
 
   // Keeps the saved username selectable while the roster loads, or if that person
-  // is no longer on it.
-  const optionsFor = (selected, excluded) => {
+  // is no longer on it. The placeholder carries nulls rather than missing fields, so
+  // lecturerLabel falls back to the username without special-casing it.
+  const optionsFor = (
+    selected: string | null,
+    excluded: string | null
+  ): LecturerSummary[] => {
     const available = lecturers.filter((l) => l.username !== excluded);
 
     return selected && !available.some((l) => l.username === selected)
-      ? [{ username: selected }, ...available]
+      ? [
+          { username: selected, title: null, firstName: null, lastName: null },
+          ...available,
+        ]
       : available;
   };
 
@@ -122,7 +149,7 @@ const SubjectCard = ({
                       <FiX />
                     </button>
                     <button
-                      onClick={handleConfirmEdit}
+                      onClick={() => void handleConfirmEdit()}
                       className={styles.okBtn}
                     >
                       <FiCheck />
@@ -140,7 +167,9 @@ const SubjectCard = ({
           </li>
           <li>
             <strong>{cpt.level.caption}:</strong>{" "}
-            {level === 1 ? cpt.level.undergraduate : cpt.level.master}
+            {level === Level.Undergraduate
+              ? cpt.level.undergraduate
+              : cpt.level.master}
           </li>
           <li>
             <strong>{cpt.year.caption}:</strong>{" "}
@@ -170,7 +199,7 @@ const SubjectCard = ({
                 <strong>{cpt.assistant}:</strong>
                 <select
                   id="assistant"
-                  value={selectedAssistant || ""}
+                  value={selectedAssistant ?? ""}
                   onChange={(e) => setSelectedAssistant(e.target.value || null)}
                 >
                   <option value="">–</option>

@@ -1,8 +1,33 @@
 import { useState, useEffect } from "react";
-
 import { FiTrash2 } from "react-icons/fi";
+
 import sr from "../../../locales/sr.json";
 import styles from "./TopicModal.module.css";
+import type { MaterialDraft } from "../../../types/app";
+
+/** The topic captions block from sr.json, passed down by whoever opens the modal. */
+export type TopicCaptions = typeof sr.components.cards.topic;
+
+/** Which material field an edit targets. */
+export type MaterialField = "description" | "link";
+
+interface TopicModalProps {
+  title: string;
+  description: string;
+  materials: MaterialDraft[];
+  onTitleChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  onMaterialChange: (
+    index: number,
+    field: MaterialField,
+    value: string
+  ) => void;
+  onAddMaterial: () => void;
+  onRemoveMaterial: (index: number) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  cpt: TopicCaptions;
+}
 
 const TopicModal = ({
   title,
@@ -16,7 +41,7 @@ const TopicModal = ({
   onSave,
   onCancel,
   cpt,
-}) => {
+}: TopicModalProps) => {
   const [errors, setErrors] = useState({ title: false, description: false });
 
   useEffect(() => {
@@ -42,7 +67,7 @@ const TopicModal = ({
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
-        <h3>{title ? cpt?.titles?.update : cpt?.titles?.create}</h3>
+        <h3>{title ? cpt.titles.update : cpt.titles.create}</h3>
 
         <label>
           <p>Naslov:</p>
@@ -60,7 +85,7 @@ const TopicModal = ({
         </label>
 
         <label>
-          <p>{cpt?.description}:</p>
+          <p>{cpt.description}:</p>
           <textarea
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
@@ -74,13 +99,13 @@ const TopicModal = ({
         </label>
 
         <div className={styles.materialsSection}>
-          <p>{cpt?.materials}:</p>
+          <p>{cpt.materials}:</p>
           <div className={styles.materialList}>
             {materials.map((material, index) => (
               <div key={index} className={styles.materialItem}>
                 <input
                   type="text"
-                  placeholder={cpt?.description}
+                  placeholder={cpt.description}
                   value={material.description}
                   onChange={(e) =>
                     onMaterialChange(index, "description", e.target.value)
@@ -104,13 +129,13 @@ const TopicModal = ({
             ))}
           </div>
           <button onClick={onAddMaterial} className={styles.addMaterialButton}>
-            {cpt?.buttons?.addMaterial}
+            {cpt.buttons.addMaterial}
           </button>
         </div>
 
         <div className={styles.modalButtons}>
-          <button onClick={handleSave}>{cpt?.buttons?.save}</button>
-          <button onClick={onCancel}>{cpt?.buttons?.cancel}</button>
+          <button onClick={handleSave}>{cpt.buttons.save}</button>
+          <button onClick={onCancel}>{cpt.buttons.cancel}</button>
         </div>
       </div>
     </div>

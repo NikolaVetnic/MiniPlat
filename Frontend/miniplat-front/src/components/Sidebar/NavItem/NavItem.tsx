@@ -1,8 +1,17 @@
 import { Link } from "react-router-dom";
+import type { IconType } from "react-icons";
 
 import styles from "./NavItem.module.css";
 
-const NavItem = ({ icon: Icon, index, text, href }) => {
+interface NavItemProps {
+  icon: IconType;
+  /** Omitted for standalone entries; supplied to number items within a group. */
+  index?: number;
+  text: string;
+  href: string;
+}
+
+const NavItem = ({ icon: Icon, index, text, href }: NavItemProps) => {
   return (
     <li>
       <div className={styles.navItem}>

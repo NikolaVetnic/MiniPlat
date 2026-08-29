@@ -2,11 +2,27 @@ import { FiBook } from "react-icons/fi";
 import { useState } from "react";
 
 import { formatDate } from "../../../utils/formatDate";
+import { toMaterials } from "../../../utils/drafts";
 import sr from "../../../locales/sr.json";
 import styles from "./TopicCard.module.css";
-import TopicModal from "../../Modals/Topic/TopicModal";
+import TopicModal, {
+  type MaterialField,
+} from "../../Modals/Topic/TopicModal";
+import type { Material, Topic, Uuid } from "../../../types/api";
+import type { MaterialDraft } from "../../../types/app";
 import { useUser } from "../../../contexts/UserContext";
 import { safeLink } from "../../../utils/safeLink";
+
+interface TopicCardProps {
+  topic: Topic;
+  index: number;
+  total: number;
+  onMoveUp: (index: number) => void;
+  onMoveDown: (index: number) => void;
+  onEdit?: (topic: Topic) => void;
+  onToggleVisibility: (id: Uuid) => void;
+  onToggleDeletion: (id: Uuid) => void;
+}
 
 const TopicCard = ({
   topic,
@@ -17,13 +33,15 @@ const TopicCard = ({
   onEdit,
   onToggleVisibility,
   onToggleDeletion,
-}) => {
+}: TopicCardProps) => {
   const [showModal, setShowModal] = useState(false);
 
   // editable fields
   const [editedTitle, setEditedTitle] = useState(topic.title);
   const [editedDescription, setEditedDescription] = useState(topic.description);
-  const [editedMaterials, setEditedMaterials] = useState(topic.materials || []);
+  const [editedMaterials, setEditedMaterials] = useState<
+    Array<Material | MaterialDraft>
+  >(topic.materials);
 
   const { user } = useUser();
 
@@ -31,7 +49,11 @@ const TopicCard = ({
     setEditedMaterials((prev) => [...prev, { description: "", link: "" }]);
   };
 
-  const handleMaterialChange = (index, field, value) => {
+  const handleMaterialChange = (
+    index: number,
+    field: MaterialField,
+    value: string
+  ) => {
     setEditedMaterials((prev) =>
       prev.map((material, i) =>
         i === index ? { ...material, [field]: value } : material
@@ -39,29 +61,16 @@ const TopicCard = ({
     );
   };
 
-  const handleRemoveMaterialRow = (index) => {
+  const handleRemoveMaterialRow = (index: number) => {
     setEditedMaterials((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = () => {
-    const generateGuid = () => crypto.randomUUID(); // Standard UUID v4, browser-supported
-
-    const filteredMaterials = editedMaterials
-      .filter(
-        (material) =>
-          material.description.trim() !== "" || material.link.trim() !== ""
-      )
-      .map((material, index) => ({
-        ...material,
-        id: material.id || generateGuid(),
-        order: index,
-      }));
-
-    const updatedTopic = {
+    const updatedTopic: Topic = {
       ...topic,
       title: editedTitle,
       description: editedDescription,
-      materials: filteredMaterials,
+      materials: toMaterials(editedMaterials),
       lastModifiedAt: new Date().toISOString(),
     };
 
@@ -106,7 +115,7 @@ const TopicCard = ({
               onClick={() => {
                 setEditedTitle(topic.title);
                 setEditedDescription(topic.description);
-                setEditedMaterials(topic.materials || []);
+                setEditedMaterials(topic.materials);
                 setShowModal(true);
               }}
               className={styles.editButton}
@@ -135,12 +144,16 @@ const TopicCard = ({
         )}
       </div>
 
-      <p className={styles.cardCreatedAt}>
-        {cpt.updatedAt} {formatDate(topic.lastModifiedAt)}
-      </p>
+      {/* Uten et tidsstempel droppes hele linjen: new Date(null) er epoken, og
+          "Ažurirano 1. januar 1970" ser ut som en ekte dato. */}
+      {topic.lastModifiedAt && (
+        <p className={styles.cardCreatedAt}>
+          {cpt.updatedAt} {formatDate(topic.lastModifiedAt)}
+        </p>
+      )}
       <p>{topic.description}</p>
 
-      {topic.materials && topic.materials.length > 0 && (
+      {topic.materials.length > 0 && (
         <div>
           <p>{cpt.materials}:</p>
           <ul className={styles.materialList}>
@@ -197,7 +210,7 @@ const TopicCard = ({
           onRemoveMaterial={handleRemoveMaterialRow}
           onSave={handleSave}
           onCancel={() => setShowModal(false)}
-          cpt={sr.components.cards.topic}
+          cpt={cpt}
         />
       )}
     </div>

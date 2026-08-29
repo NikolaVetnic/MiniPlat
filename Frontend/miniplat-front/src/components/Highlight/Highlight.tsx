@@ -1,4 +1,16 @@
-const Highlight = ({ color = "#5bc0de", textColor = "#fff", children }) => (
+import type { ReactNode } from "react";
+
+interface HighlightProps {
+  color?: string;
+  textColor?: string;
+  children: ReactNode;
+}
+
+const Highlight = ({
+  color = "#5bc0de",
+  textColor = "#fff",
+  children,
+}: HighlightProps) => (
   <span
     style={{
       backgroundColor: color,
