@@ -45,8 +45,6 @@ const LoginPage = ({ onLogout }: LoginPageProps) => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // simulate delay
-
       const data = await login(username, password);
       signIn(data.token, data.user);
 
