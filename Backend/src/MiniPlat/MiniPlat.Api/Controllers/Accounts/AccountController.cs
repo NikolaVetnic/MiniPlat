@@ -1,7 +1,8 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MiniPlat.Api.Attributes;
+using MiniPlat.Api.Authorization;
 using MiniPlat.Application.Entities.User.Commands.RegisterUser;
 using MiniPlat.Application.Entities.User.Commands.RegisterUsers;
 using MiniPlat.Domain.Models;
@@ -10,7 +11,7 @@ namespace MiniPlat.Api.Controllers.Accounts;
 
 [ApiController]
 [Route("api/[controller]")]
-[RequireApiKey]
+[Authorize(Policy = AuthorizationPolicies.Admin)]
 public class AccountController(ISender sender, UserManager<ApplicationUser> userManager) : ControllerBase
 {
     [HttpPost("Register")]

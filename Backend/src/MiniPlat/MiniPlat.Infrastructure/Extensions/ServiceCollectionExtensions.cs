@@ -67,6 +67,7 @@ public static class ServiceCollectionExtensions
                 options.RegisterClaims(
                     OpenIddictConstants.Claims.Email,
                     OpenIddictConstants.Claims.Name,
+                    OpenIddictConstants.Claims.Role,
                     "firstName",
                     "lastName");
 

@@ -27,6 +27,9 @@ public class TokenService(UserManager<ApplicationUser> userManager) : ITokenServ
         identity.AddClaim("firstName", user.FirstName ?? "");
         identity.AddClaim("lastName", user.LastName ?? "");
 
+        foreach (var role in await userManager.GetRolesAsync(user))
+            identity.AddClaim(OpenIddictConstants.Claims.Role, role);
+
         var principal = new ClaimsPrincipal(identity);
 
         // Assign scopes & resources
