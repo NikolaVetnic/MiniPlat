@@ -9,17 +9,18 @@ internal class ListSubjectsByUserIdHandler(ICurrentUser currentUser, ISubjectsRe
 {
     public async Task<ListSubjectsByUserIdResult> Handle(ListSubjectsByUserIdQuery query, CancellationToken cancellationToken)
     {
-        var pageIndex = query.PaginationRequest.PageIndex;
-        var pageSize = query.PaginationRequest.PageSize;
+        var pagination = query.PaginationRequest.Normalized();
+        var pageIndex = pagination.PageIndex;
+        var pageSize = pagination.PageSize;
 
-        var subjects = await subjectsRepository.ListByUsernameAsync(currentUser.Username ?? throw new
+        var (subjects, totalCount) = await subjectsRepository.ListByUsernameAsync(currentUser.Username ?? throw new
             InvalidOperationException(), pageIndex, pageSize, cancellationToken);
 
         return new ListSubjectsByUserIdResult(
             new PaginatedResult<Subject>(
                 pageIndex,
                 pageSize,
-                subjects.Count,
+                totalCount,
                 subjects.Redact(currentUser)));
     }
 }

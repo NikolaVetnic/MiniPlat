@@ -24,34 +24,48 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
                throw new SubjectNotFoundException(subjectId.ToString());
     }
 
-    public async Task<List<Subject>> ListAsync(int pageIndex, int pageSize, CancellationToken cancellationToken)
-    {
-        return await appDbContext.Subjects
-            .AsNoTracking()
-            .Include(s => s.Topics.OrderBy(t => t.Order))
-            .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
-            .OrderBy(s => s.Level)
-            .ThenBy(s => s.Semester)
-            .ThenBy(s => s.Order)
-            .Skip(pageSize * pageIndex)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken: cancellationToken);
-    }
-
-    public async Task<List<Subject>> ListByUsernameAsync(string username, int pageIndex, int pageSize,
+    public async Task<(List<Subject> Subjects, long TotalCount)> ListAsync(int pageIndex, int pageSize,
         CancellationToken cancellationToken)
     {
-        return await appDbContext.Subjects
-            .AsNoTracking()
+        var query = appDbContext.Subjects.AsNoTracking();
+
+        // Counted before the Include, so the total costs one cheap query rather than loading
+        // every subject's topics and materials just to size the result.
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        var subjects = await query
             .Include(s => s.Topics.OrderBy(t => t.Order))
             .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
-            .Where(s => s.Lecturer == username || s.Assistant == username)
             .OrderBy(s => s.Level)
             .ThenBy(s => s.Semester)
             .ThenBy(s => s.Order)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken: cancellationToken);
+
+        return (subjects, totalCount);
+    }
+
+    public async Task<(List<Subject> Subjects, long TotalCount)> ListByUsernameAsync(string username, int pageIndex,
+        int pageSize, CancellationToken cancellationToken)
+    {
+        var query = appDbContext.Subjects
+            .AsNoTracking()
+            .Where(s => s.Lecturer == username || s.Assistant == username);
+
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        var subjects = await query
+            .Include(s => s.Topics.OrderBy(t => t.Order))
+            .ThenInclude(t => t.Materials.OrderBy(m => m.Order))
+            .OrderBy(s => s.Level)
+            .ThenBy(s => s.Semester)
+            .ThenBy(s => s.Order)
+            .Skip(pageSize * pageIndex)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        return (subjects, totalCount);
     }
 
     public Task UpdateAsync(Subject subject, CancellationToken cancellationToken)

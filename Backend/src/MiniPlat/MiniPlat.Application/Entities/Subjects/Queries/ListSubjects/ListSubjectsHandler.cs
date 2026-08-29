@@ -9,16 +9,17 @@ internal class ListSubjectsHandler(ICurrentUser currentUser, ISubjectsRepository
 {
     public async Task<ListSubjectsResult> Handle(ListSubjectsQuery query, CancellationToken cancellationToken)
     {
-        var pageIndex = query.PaginationRequest.PageIndex;
-        var pageSize = query.PaginationRequest.PageSize;
+        var pagination = query.PaginationRequest.Normalized();
+        var pageIndex = pagination.PageIndex;
+        var pageSize = pagination.PageSize;
 
-        var subjects = await subjectsRepository.ListAsync(pageIndex, pageSize, cancellationToken);
+        var (subjects, totalCount) = await subjectsRepository.ListAsync(pageIndex, pageSize, cancellationToken);
 
         return new ListSubjectsResult(
             new PaginatedResult<Subject>(
                 pageIndex,
                 pageSize,
-                subjects.Count,
+                totalCount,
                 subjects.Redact(currentUser)));
     }
 }
