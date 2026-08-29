@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Attributes;
+using MiniPlat.Api.Authorization;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subjects.Commands.UpdateSubject;
 using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
@@ -18,7 +19,10 @@ namespace MiniPlat.Api.Controllers.Subjects;
 public class SubjectsController(ISender sender) : ControllerBase
 {
     [HttpPost]
-    [RequireApiKey]
+    [ProducesResponseType(typeof(CreateSubjectResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Authorize(Policy = AuthorizationPolicies.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateSubjectRequest request)
     {
         var result = await sender.Send(request.ToCommand());
@@ -94,7 +98,9 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(DeleteSubjectResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [RequireApiKey]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Authorize(Policy = AuthorizationPolicies.Admin)]
     public async Task<ActionResult<DeleteSubjectResponse>> Delete([FromRoute] string subjectId)
     {
         var result = await sender.Send(new DeleteSubjectCommand(subjectId));
