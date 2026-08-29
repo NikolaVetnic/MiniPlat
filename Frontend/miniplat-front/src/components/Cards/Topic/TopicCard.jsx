@@ -6,6 +6,7 @@ import sr from "../../../locales/sr.json";
 import styles from "./TopicCard.module.css";
 import TopicModal from "../../Modals/Topic/TopicModal";
 import { useUser } from "../../../contexts/UserContext";
+import { safeLink } from "../../../utils/safeLink";
 
 const TopicCard = ({
   topic,
@@ -143,18 +144,24 @@ const TopicCard = ({
         <div>
           <p>{cpt.materials}:</p>
           <ul className={styles.materialList}>
-            {topic.materials.map((material, index) => (
-              <li key={index}>
-                {material.description}:{" "}
-                <a
-                  href={material.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {material.link}
-                </a>
-              </li>
-            ))}
+            {topic.materials.map((material, index) => {
+              const href = safeLink(material.link);
+
+              return (
+                <li key={index}>
+                  {material.description}:{" "}
+                  {href ? (
+                    <a href={href} target="_blank" rel="noopener noreferrer">
+                      {material.link}
+                    </a>
+                  ) : (
+                    // Shown as plain text rather than a link: an unsupported scheme is not
+                    // something a reader should be able to click.
+                    <span className={styles.unsafeLink}>{material.link}</span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

@@ -1,3 +1,4 @@
+using FluentValidation;
 using MiniPlat.Application.Cqrs;
 using MiniPlat.Domain.Models;
 using MiniPlat.Domain.ValueObjects;
@@ -25,3 +26,27 @@ public class UpdateSubjectCommand : ICommand<UpdateSubjectResult>
 }
 
 public record UpdateSubjectResult(Subject Subject);
+public class UpdateSubjectCommandValidator : AbstractValidator<UpdateSubjectCommand>
+{
+    public UpdateSubjectCommandValidator()
+    {
+        RuleFor(command => command.Topics).Custom((topics, context) =>
+        {
+            var materials = topics?.SelectMany(topic => topic.Materials ?? []) ?? [];
+
+            foreach (var material in materials.Where(material => !IsSafeLink(material.Link)))
+                context.AddFailure(
+                    $"Material link '{material.Link}' must be an http or https address.");
+        });
+    }
+
+    /// <summary>
+    /// Anything but http and https is rejected. A lecturer could otherwise store a
+    /// "javascript:..." link, which the browser would run in a student's session when clicked.
+    /// An empty link is allowed: a material may carry only a description.
+    /// </summary>
+    private static bool IsSafeLink(string? link) =>
+        string.IsNullOrWhiteSpace(link) ||
+        (Uri.TryCreate(link, UriKind.Absolute, out var uri) &&
+         (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps));
+}

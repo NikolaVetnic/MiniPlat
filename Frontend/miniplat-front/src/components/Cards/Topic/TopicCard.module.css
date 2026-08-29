@@ -141,3 +141,8 @@
 .statusDeletedHidden {
   background-color: darkred;
 }
+
+.unsafeLink {
+  color: #6c757d;
+  text-decoration: line-through;
+}
