@@ -58,15 +58,33 @@ describe("session", () => {
     expect(localStorage.getItem("user")).toBeNull();
   });
 
-  it("KJENT DEFEKT: korrupt brukerdata i localStorage kaster ved oppstart", async () => {
+  it("behandler korrupt brukerdata som ingen bruker i stedet for å kaste", async () => {
+    // Var tidligere en krasj i UserProvider ved mount: JSON.parse lå utenfor
+    // try/catch-en i read(). Tokenet beholdes, så leseendepunktene fortsetter å
+    // svare med foreleserens utvidede innhold; brukeren framstår som utlogget.
     localStorage.setItem("token", "abc123");
     localStorage.setItem("user", "{ikke json");
 
     const { readStoredSession } = await loadSession();
 
-    // JSON.parse ligger utenfor try/catch-en i read(), så dette velter UserProvider
-    // ved mount. Testen dokumenterer dagens kontrakt; den skal snus til å returnere
-    // en tom økt når session migreres i steg 2.
-    expect(() => readStoredSession()).toThrow();
+    expect(readStoredSession()).toEqual({ token: "abc123", user: null });
+  });
+
+  it("avviser lagret bruker uten brukernavn", async () => {
+    // Hver konsument leser user.username, så et objekt uten det feltet er ubrukelig
+    // og skal ikke sendes videre til en render.
+    localStorage.setItem("user", JSON.stringify({ epost: "a@b.c" }));
+
+    const { readStoredSession } = await loadSession();
+
+    expect(readStoredSession().user).toBeNull();
+  });
+
+  it("avviser lagret bruker som ikke er et objekt", async () => {
+    localStorage.setItem("user", '"pnikolic"');
+
+    const { readStoredSession } = await loadSession();
+
+    expect(readStoredSession().user).toBeNull();
   });
 });

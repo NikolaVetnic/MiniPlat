@@ -5,7 +5,7 @@
  * before that check existed: React happily renders href="javascript:..." and the browser runs
  * it in the reader's session.
  */
-export const safeLink = (url) => {
+export const safeLink = (url: string | null | undefined): string | null => {
   if (!url) return null;
 
   try {
