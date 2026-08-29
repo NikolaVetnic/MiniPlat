@@ -13,5 +13,6 @@ export default defineConfig({
     // trenger et DOM selv om modulene de dekker ellers er ren logikk.
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
+    setupFiles: ["src/test/setup.ts"],
   },
 });

@@ -70,6 +70,18 @@ describe("session", () => {
     expect(readStoredSession()).toEqual({ token: "abc123", user: null });
   });
 
+  it("leser tokenet friskt, ikke fra kopien tatt ved import", async () => {
+    // Modulen lastes med tomt lager, og tokenet skrives etterpå - slik en annen fane
+    // ville gjort det. Speilet skal fange opp skrivingen, ikke bli hengende igjen.
+    const { getToken, readStoredSession } = await loadSession();
+    expect(getToken()).toBeNull();
+
+    localStorage.setItem("token", "skrevet-senere");
+
+    expect(readStoredSession().token).toBe("skrevet-senere");
+    expect(getToken()).toBe("skrevet-senere");
+  });
+
   it("avviser lagret bruker uten brukernavn", async () => {
     // Hver konsument leser user.username, så et objekt uten det feltet er ubrukelig
     // og skal ikke sendes videre til en render.

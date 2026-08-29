@@ -52,10 +52,19 @@ let token: string | null = read(TOKEN_KEY);
 
 export const getToken = (): string | null => token;
 
-export const readStoredSession = (): StoredSession => ({
-  token,
-  user: parseUser(read(USER_KEY)),
-});
+/**
+ * Re-syncs the mirror from storage rather than trusting the copy taken at import. The user
+ * was always read fresh here, so a token cached at module load could disagree with it -
+ * after a write from another tab, or any import that happened before the session was stored.
+ */
+export const readStoredSession = (): StoredSession => {
+  token = read(TOKEN_KEY);
+
+  return {
+    token,
+    user: parseUser(read(USER_KEY)),
+  };
+};
 
 export const storeSession = (newToken: string, user: SessionUser): void => {
   token = newToken;
