@@ -26,6 +26,12 @@ public class UpdateSubjectRequest
     public List<Topic> Topics { get; set; } = [];
 }
 
+public class ReorderTopicsRequest
+{
+    /// <summary>Topic ids in their new display order.</summary>
+    public List<Guid> TopicIds { get; set; } = [];
+}
+
 public static class SubjectRequestExtensions
 {
     public static CreateSubjectCommand ToCommand(this CreateSubjectRequest request)

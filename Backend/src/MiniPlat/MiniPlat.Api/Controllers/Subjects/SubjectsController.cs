@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Authorization;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
+using MiniPlat.Application.Entities.Subjects.Commands.ReorderTopics;
 using MiniPlat.Application.Entities.Subjects.Commands.UpdateSubject;
 using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
 using MiniPlat.Application.Entities.Subjects.Queries.ListSubjects;
@@ -91,6 +92,25 @@ public class SubjectsController(ISender sender) : ControllerBase
         var response = new UpdateSubjectResponse(result.Subject);
         
         return Ok(response);
+    }
+
+    [HttpPut("{subjectId}/topics/order")]
+    [ProducesResponseType(typeof(ReorderTopicsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    public async Task<ActionResult<ReorderTopicsResponse>> ReorderTopics([FromRoute] string subjectId,
+        [FromBody] ReorderTopicsRequest request)
+    {
+        var command = new ReorderTopicsCommand(
+            SubjectId.Of(Guid.Parse(subjectId)),
+            request.TopicIds.Select(TopicId.Of).ToList());
+
+        var result = await sender.Send(command);
+
+        return Ok(new ReorderTopicsResponse(result.Reordered));
     }
 
     [HttpDelete("{subjectId}")]

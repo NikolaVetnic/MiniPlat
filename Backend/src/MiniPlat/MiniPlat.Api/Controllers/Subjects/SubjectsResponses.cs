@@ -12,4 +12,6 @@ public record ListSubjectsResponse(PaginatedResult<Subject> Subjects);
 
 public record UpdateSubjectResponse(Subject Subject);
 
+public record ReorderTopicsResponse(bool Reordered);
+
 public record DeleteSubjectResponse(bool IsSubjectDeleted);

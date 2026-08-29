@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import {
   fetchSubjects,
   updateSubjectTopics,
+  updateTopicOrder,
 } from "../../services/subjectsService";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
@@ -142,25 +143,32 @@ const SubjectPage = ({ user, onLogout }) => {
   };
 
   // Move topic ordering
-  const handleMoveUp = (index) => {
-    if (index === 0 || !subject?.topics) return;
-    const newTopics = [...subject.topics];
-    [newTopics[index - 1], newTopics[index]] = [
-      newTopics[index],
-      newTopics[index - 1],
-    ];
-    setSubject((prev) => ({ ...prev, topics: newTopics }));
+  const moveTopic = (from, to) => {
+    if (!subject?.topics || to < 0 || to >= subject.topics.length) return;
+
+    const reordered = [...subject.topics];
+    [reordered[from], reordered[to]] = [reordered[to], reordered[from]];
+
+    // The server derives Order from position in the list; keep the local copy in step.
+    const updatedTopics = reordered.map((topic, i) => ({ ...topic, order: i }));
+
+    setSubject({ ...subject, topics: updatedTopics });
+    setSaveError(null);
+
+    // Only the order changed, so this goes to the dedicated endpoint rather than resending
+    // the whole subject.
+    updateTopicOrder(
+      subject.id,
+      updatedTopics.map((topic) => topic.id)
+    ).catch((err) => {
+      console.error(err);
+      setSaveError(sr.pages.subject.saveFailed);
+    });
   };
 
-  const handleMoveDown = (index) => {
-    if (!subject?.topics || index >= subject.topics.length - 1) return;
-    const newTopics = [...subject.topics];
-    [newTopics[index], newTopics[index + 1]] = [
-      newTopics[index + 1],
-      newTopics[index],
-    ];
-    setSubject((prev) => ({ ...prev, topics: newTopics }));
-  };
+  const handleMoveUp = (index) => moveTopic(index, index - 1);
+
+  const handleMoveDown = (index) => moveTopic(index, index + 1);
 
   return (
     <div className={styles.container}>

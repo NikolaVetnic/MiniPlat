@@ -126,6 +126,30 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         topic.Materials = updatedMaterials;
     }
 
+    /// <summary>
+    /// Writes nothing but the Order column of each topic. Tracked rather than AsNoTracking, so
+    /// EF emits a plain UPDATE per moved topic instead of tearing down the graph the way
+    /// ReplaceTopicsAsync has to.
+    /// </summary>
+    public async Task ReorderTopicsAsync(SubjectId subjectId, IReadOnlyList<TopicId> orderedTopicIds,
+        CancellationToken cancellationToken)
+    {
+        var subject = await appDbContext.Subjects
+                          .Include(s => s.Topics)
+                          .SingleOrDefaultAsync(s => s.Id == subjectId, cancellationToken) ??
+                      throw new SubjectNotFoundException(subjectId.ToString());
+
+        var positions = orderedTopicIds
+            .Select((topicId, index) => (topicId, index))
+            .ToDictionary(entry => entry.topicId, entry => entry.index);
+
+        foreach (var topic in subject.Topics)
+            if (positions.TryGetValue(topic.Id, out var order))
+                topic.Order = order;
+
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken)
     {
         var subject = await appDbContext.Subjects

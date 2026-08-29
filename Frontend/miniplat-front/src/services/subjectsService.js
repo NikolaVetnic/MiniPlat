@@ -61,6 +61,28 @@ export const updateSubjectTopics = async (subject, updatedTopics) => {
   }
 };
 
+/**
+ * Persists topic order only. Cheaper than updateSubjectTopics, which sends the whole graph
+ * and makes the server delete and recreate every topic and material.
+ */
+export const updateTopicOrder = async (subjectId, topicIds) => {
+  const res = await fetch(`${API_BASE_URL}/api/Subjects/${subjectId}/topics/order`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify({ topicIds }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+
+    console.error("Server response:", text);
+    throw new Error(`Failed to reorder topics on subject ${subjectId}`);
+  }
+};
+
 export const updateSubjectPeople = async (id, lecturer, assistant) => {
   try {
     const subject = await fetchSubjectById(id);
