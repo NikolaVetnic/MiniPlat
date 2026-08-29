@@ -14,5 +14,11 @@ export default defineConfig({
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
     setupFiles: ["src/test/setup.ts"],
+    // SubjectCard og Sidebar leser administratornavnet ved import, og det kommer fra
+    // en gitignorert .env - altså noe hver maskin har sin egen verdi av, og CI ingen.
+    // Pinnet her, så testene prøver den samme regelen overalt.
+    env: {
+      VITE_ADMIN_USERNAME: "mp_admin",
+    },
   },
 });
