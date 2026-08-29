@@ -8,10 +8,10 @@ public class GetLecturerByUsernameHandler(ILecturersRepository lecturersReposito
 {
     public async Task<GetLecturerByUsernameResult> Handle(GetLecturerByUsernameQuery query, CancellationToken cancellationToken)
     {
-        var lecturer = await lecturersRepository.GetLecturerByUsername(query.UserId, cancellationToken);
+        var lecturer = await lecturersRepository.GetLecturerByUsername(query.Username, cancellationToken);
         
         if (lecturer == null)
-            throw new LecturerNotFoundException(query.UserId);
+            throw new LecturerNotFoundException(query.Username);
         
         return new GetLecturerByUsernameResult(new LecturerDetails(
             lecturer.User.UserName!,

@@ -3,7 +3,7 @@ using MiniPlat.Application.Cqrs;
 
 namespace MiniPlat.Application.Entities.Lecturers.Queries.GetLecturerByUsername;
 
-public record GetLecturerByUsernameQuery(string UserId) : IQuery<GetLecturerByUsernameResult>;
+public record GetLecturerByUsernameQuery(string Username) : IQuery<GetLecturerByUsernameResult>;
 
 public record GetLecturerByUsernameResult(LecturerDetails Lecturer);
 
@@ -25,8 +25,8 @@ public class GetLecturerByUsernameQueryValidator : AbstractValidator<GetLecturer
 {
     public GetLecturerByUsernameQueryValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Id is required.")
-            .Must(value => Guid.TryParse(value.ToString(), out _)).WithMessage("Id is not valid.");
+        RuleFor(query => query.Username)
+            .NotEmpty().WithMessage("Username is required.")
+            .MaximumLength(256).WithMessage("Username is too long.");
     }
 }

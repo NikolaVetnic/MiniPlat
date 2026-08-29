@@ -13,8 +13,6 @@ public class GetSubjectByIdQueryValidator : AbstractValidator<GetSubjectByIdQuer
 {
     public GetSubjectByIdQueryValidator()
     {
-        RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("Id is required.")
-            .Must(value => Guid.TryParse(value.ToString(), out _)).WithMessage("Id is not valid.");
+        RuleFor(command => command.Id).NotNull();
     }
 }
