@@ -1,7 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniPlat.Api.Attributes;
 using MiniPlat.Application.Entities.Lecturers.Queries.GetLecturerByUsername;
 using MiniPlat.Application.Entities.Lecturers.Queries.ListLecturers;
 using OpenIddict.Validation.AspNetCore;
@@ -16,7 +15,7 @@ public class LecturersController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(GetLecturerByUsernameResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [RequireApiKey]
+    [AllowAnonymous]
     public async Task<ActionResult<GetLecturerByUsernameResponse>> GetByUsername([FromRoute] string username)
     {
         var result = await sender.Send(new GetLecturerByUsernameQuery(username));

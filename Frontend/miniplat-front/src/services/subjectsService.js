@@ -1,5 +1,6 @@
+import { authHeaders } from "./authHeaders";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_KEY = import.meta.env.VITE_API_KEY;
 
 export const fetchSubjects = async () => {
   const response = await fetch(
@@ -7,8 +8,8 @@ export const fetchSubjects = async () => {
     {
       method: "GET",
       headers: {
-        "x-api-key": API_KEY,
         "Content-Type": "application/json",
+        ...authHeaders(),
       },
     }
   );
@@ -24,8 +25,8 @@ export const fetchSubjectById = async (id) => {
   const response = await fetch(`${API_BASE_URL}/api/Subjects/${id}`, {
     method: "GET",
     headers: {
-      "x-api-key": API_KEY,
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
   });
 

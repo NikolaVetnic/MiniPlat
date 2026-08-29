@@ -1,7 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.HttpOverrides;
 using MiniPlat.Api.Extensions;
-using MiniPlat.Api.Middlewares;
 using MiniPlat.Application.Exceptions.Handlers;
 using MiniPlat.Application.Extensions;
 using MiniPlat.Infrastructure.Extensions;
@@ -72,9 +71,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-app.UseCors("AllowSpecificOrigins");
+app.UseRateLimiter();
 
-app.UseMiddleware<ApiKeyMiddleware>();
+app.UseCors("AllowSpecificOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -85,6 +84,6 @@ await app.Services.MigrateAndSeedDatabaseAsync();
 
 app.UseExceptionHandler(_ => { }); // ToDo: To be removed as it eats up any exceptions on startup
 
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").DisableRateLimiting();
 
 app.Run();

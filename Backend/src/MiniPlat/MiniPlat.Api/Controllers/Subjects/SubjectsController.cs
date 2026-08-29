@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniPlat.Api.Attributes;
 using MiniPlat.Api.Authorization;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subjects.Commands.UpdateSubject;
@@ -35,7 +34,7 @@ public class SubjectsController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(GetSubjectByIdResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [RequireApiKey]
+    [AllowAnonymous]
     public async Task<ActionResult<GetSubjectByIdResponse>> GetById([FromRoute] string subjectId)
     {
         var result = await sender.Send(new GetSubjectByIdQuery(subjectId));
@@ -47,7 +46,7 @@ public class SubjectsController(ISender sender) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(ListSubjectsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [RequireApiKey]
+    [AllowAnonymous]
     public async Task<ActionResult<ListSubjectsResponse>> List([FromQuery] PaginationRequest query)
     {
         var result = await sender.Send(new ListSubjectsQuery(query));

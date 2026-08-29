@@ -3,6 +3,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using MiniPlat.Api.RateLimiting;
 using MiniPlat.Application.Data.Abstractions;
 using MiniPlat.Application.Entities.Lecturers.Queries.GetLecturerByUsername;
 using OpenIddict.Abstractions;
@@ -19,6 +21,7 @@ public class AuthController(ISender sender, ITokenService tokenService)
     : ControllerBase
 {
     [HttpPost("Token")]
+    [EnableRateLimiting(RateLimitPolicies.Authentication)]
     public async Task<IActionResult> Exchange()
     {
         var request = HttpContext.GetOpenIddictServerRequest()!;
