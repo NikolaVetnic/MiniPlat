@@ -5,6 +5,7 @@ using MiniPlat.Api.Authorization;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subjects.Commands.ReorderTopics;
 using MiniPlat.Application.Entities.Subjects.Commands.UpdateSubject;
+using MiniPlat.Application.Entities.Subjects.Commands.UpdateTopicState;
 using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
 using MiniPlat.Application.Entities.Subjects.Queries.ListSubjects;
 using MiniPlat.Application.Entities.Subjects.Queries.ListSubjectsByUserId;
@@ -111,6 +112,27 @@ public class SubjectsController(ISender sender) : ControllerBase
         var result = await sender.Send(command);
 
         return Ok(new ReorderTopicsResponse(result.Reordered));
+    }
+
+    [HttpPatch("{subjectId}/topics/{topicId}")]
+    [ProducesResponseType(typeof(UpdateTopicStateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    public async Task<ActionResult<UpdateTopicStateResponse>> UpdateTopicState([FromRoute] string subjectId,
+        [FromRoute] string topicId, [FromBody] UpdateTopicStateRequest request)
+    {
+        var command = new UpdateTopicStateCommand(
+            SubjectId.Of(Guid.Parse(subjectId)),
+            TopicId.Of(Guid.Parse(topicId)),
+            request.IsHidden,
+            request.IsDeleted);
+
+        var result = await sender.Send(command);
+
+        return Ok(new UpdateTopicStateResponse(result.Updated));
     }
 
     [HttpDelete("{subjectId}")]

@@ -150,6 +150,30 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         await appDbContext.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Writes only the flags that were supplied, on one topic. Tracked, so EF emits a single
+    /// UPDATE rather than rebuilding the subject's topics and materials.
+    /// </summary>
+    public async Task UpdateTopicStateAsync(SubjectId subjectId, TopicId topicId, bool? isHidden, bool? isDeleted,
+        CancellationToken cancellationToken)
+    {
+        var subject = await appDbContext.Subjects
+                          .Include(s => s.Topics)
+                          .SingleOrDefaultAsync(s => s.Id == subjectId, cancellationToken) ??
+                      throw new SubjectNotFoundException(subjectId.ToString());
+
+        var topic = subject.Topics.SingleOrDefault(t => t.Id.Equals(topicId)) ??
+                    throw new TopicNotFoundException(topicId.ToString());
+
+        if (isHidden.HasValue)
+            topic.IsHidden = isHidden.Value;
+
+        if (isDeleted.HasValue)
+            topic.IsDeleted = isDeleted.Value;
+
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken)
     {
         var subject = await appDbContext.Subjects

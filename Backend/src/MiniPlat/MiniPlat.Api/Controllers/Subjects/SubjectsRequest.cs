@@ -32,6 +32,13 @@ public class ReorderTopicsRequest
     public List<Guid> TopicIds { get; set; } = [];
 }
 
+public class UpdateTopicStateRequest
+{
+    /// <summary>Omit a flag to leave it as it is.</summary>
+    public bool? IsHidden { get; set; }
+    public bool? IsDeleted { get; set; }
+}
+
 public static class SubjectRequestExtensions
 {
     public static CreateSubjectCommand ToCommand(this CreateSubjectRequest request)

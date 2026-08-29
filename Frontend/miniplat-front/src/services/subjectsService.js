@@ -83,6 +83,31 @@ export const updateTopicOrder = async (subjectId, topicIds) => {
   }
 };
 
+/**
+ * Flips a topic's hidden or deleted flag. Like updateTopicOrder, this avoids resending the
+ * whole subject just to change one boolean. Omitted flags are left as they are.
+ */
+export const updateTopicState = async (subjectId, topicId, changes) => {
+  const res = await fetch(
+    `${API_BASE_URL}/api/Subjects/${subjectId}/topics/${topicId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+      body: JSON.stringify(changes),
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+
+    console.error("Server response:", text);
+    throw new Error(`Failed to update topic ${topicId}`);
+  }
+};
+
 export const updateSubjectPeople = async (id, lecturer, assistant) => {
   try {
     const subject = await fetchSubjectById(id);

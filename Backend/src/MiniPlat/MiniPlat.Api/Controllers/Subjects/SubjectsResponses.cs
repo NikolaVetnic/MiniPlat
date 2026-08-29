@@ -14,4 +14,6 @@ public record UpdateSubjectResponse(Subject Subject);
 
 public record ReorderTopicsResponse(bool Reordered);
 
+public record UpdateTopicStateResponse(bool Updated);
+
 public record DeleteSubjectResponse(bool IsSubjectDeleted);

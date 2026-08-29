@@ -6,6 +6,7 @@ import {
   fetchSubjects,
   updateSubjectTopics,
   updateTopicOrder,
+  updateTopicState,
 } from "../../services/subjectsService";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
@@ -89,30 +90,34 @@ const SubjectPage = ({ user, onLogout }) => {
     persistTopics(updatedSubject, updatedTopics);
   };
 
-  // Toggle visibility or deletion on topic
-  const handleToggleTopicVisibility = (id) => {
+  // Toggle visibility or deletion on topic. Only one boolean changes, so these go to the
+  // per-topic endpoint rather than resending the whole subject.
+  const toggleTopicFlag = (id, flag) => {
     if (!subject) return;
 
-    const updatedTopics = subject.topics.map((t) =>
-      t.id === id ? { ...t, isHidden: !t.isHidden } : t
-    );
-    const updatedSubject = { ...subject, topics: updatedTopics };
+    const topic = subject.topics.find((t) => t.id === id);
 
-    setSubject(updatedSubject);
-    persistTopics(updatedSubject, updatedTopics);
+    if (!topic) return;
+
+    const value = !topic[flag];
+
+    setSubject({
+      ...subject,
+      topics: subject.topics.map((t) =>
+        t.id === id ? { ...t, [flag]: value } : t
+      ),
+    });
+    setSaveError(null);
+
+    updateTopicState(subject.id, id, { [flag]: value }).catch((err) => {
+      console.error(err);
+      setSaveError(sr.pages.subject.saveFailed);
+    });
   };
 
-  const handleToggleTopicDeletion = (id) => {
-    if (!subject) return;
+  const handleToggleTopicVisibility = (id) => toggleTopicFlag(id, "isHidden");
 
-    const updatedTopics = subject.topics.map((t) =>
-      t.id === id ? { ...t, isDeleted: !t.isDeleted } : t
-    );
-    const updatedSubject = { ...subject, topics: updatedTopics };
-
-    setSubject(updatedSubject);
-    persistTopics(updatedSubject, updatedTopics);
-  };
+  const handleToggleTopicDeletion = (id) => toggleTopicFlag(id, "isDeleted");
 
   // Add a new topic to the subject
   const handleSaveNewTopic = () => {
