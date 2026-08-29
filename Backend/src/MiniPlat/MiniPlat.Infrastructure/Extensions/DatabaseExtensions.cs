@@ -31,6 +31,15 @@ public static class DatabaseExtensions
     private static string AdminUsername(IConfiguration config) =>
         config["Seed:AdminUsername"] is { Length: > 0 } name ? name : "mp_admin";
 
+    /// <summary>
+    /// appsettings.json carries Seed:FileName as an empty string rather than leaving it out, and
+    /// an empty string is a value: a null-coalescing fallback never fires, and the seeder goes
+    /// looking for a file called "" - which is how a checkout without a gitignored override file
+    /// failed to start at all.
+    /// </summary>
+    private static string SeedFileName(IConfiguration config) =>
+        config["Seed:FileName"] is { Length: > 0 } name ? name : "initialData.yml";
+
     private static async Task SeedRolesAsync(this IServiceProvider services)
     {
         using var scope = services.CreateScope();
@@ -84,7 +93,7 @@ public static class DatabaseExtensions
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
         var adminPasswordFromConfig = config["Seed:AdminPassword"];
-        var fileName = config["Seed:FileName"] ?? "initialData.yml";
+        var fileName = SeedFileName(config);
 
         foreach (var seededUser in InitialDataLoader.Load(fileName).SeededUsers)
         {
@@ -120,7 +129,7 @@ public static class DatabaseExtensions
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         
-        var fileName = config["Seed:FileName"] ?? "initialData.yml";
+        var fileName = SeedFileName(config);
 
         foreach (var seededLecturer in InitialDataLoader.Load(fileName).SeededLecturers)
         {
@@ -147,7 +156,7 @@ public static class DatabaseExtensions
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         
-        var fileName = config["Seed:FileName"] ?? "initialData.yml";
+        var fileName = SeedFileName(config);
 
         foreach (var seededSubject in InitialDataLoader.Load(fileName).SeededSubjects)
         {

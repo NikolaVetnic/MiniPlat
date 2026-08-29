@@ -51,16 +51,12 @@ jobs:
       - name: Build
         run: dotnet build "$SOLUTION" -c Release --no-restore
 
-      # The solution has no test projects yet. Handing an untested solution to `dotnet test`
-      # is an error, not a no-op, so look first and skip - the step starts running on its own
-      # the day a test project is added, without anyone remembering to edit this file.
+      # Unit tests and integration tests both. The integration suite starts a postgres:17
+      # container through Testcontainers, which needs a working Docker daemon - present on
+      # ubuntu-latest, so there is nothing to install. No conditional here on purpose: if the
+      # test projects ever go missing this step fails, which is the point.
       - name: Test
-        run: |
-          if ! grep -rlE 'Microsoft\.NET\.Test\.Sdk|xunit|NUnit|MSTest' --include='*.csproj' Backend > /dev/null; then
-            echo "No test projects found in Backend - skipping."
-            exit 0
-          fi
-          dotnet test "$SOLUTION" -c Release --no-build --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test "$SOLUTION" -c Release --no-build --logger "trx;LogFileName=test-results.trx"
 
   docker:
     name: Docker image
