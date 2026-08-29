@@ -24,6 +24,9 @@ public class UpdateSubjectRequest
     public string Lecturer { get; set; } = string.Empty;
     public string? Assistant { get; set; }
     public List<Topic> Topics { get; set; } = [];
+
+    /// <summary>Version the client last read; omit to skip the conflict check.</summary>
+    public uint Version { get; set; }
 }
 
 public class ReorderTopicsRequest

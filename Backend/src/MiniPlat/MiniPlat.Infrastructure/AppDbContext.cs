@@ -89,6 +89,13 @@ public class AppDbContext(
             entity.Property(s => s.Lecturer)
                 .IsRequired();
 
+            // xmin is a system column every row already has, so this costs no schema change.
+            entity.Property(s => s.Version)
+                .HasColumnName("xmin")
+                .HasColumnType("xid")
+                .ValueGeneratedOnAddOrUpdate()
+                .IsConcurrencyToken();
+
             // One-to-many: Subject ➡️ Topics
             entity.HasMany(s => s.Topics)
                   .WithOne()

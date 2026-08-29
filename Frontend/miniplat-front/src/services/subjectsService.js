@@ -40,7 +40,13 @@ export const updateSubjectTopics = async (subject, updatedTopics) => {
     const text = await res.text();
 
     console.error("Server response:", text);
-    throw new Error(`Failed to update subject ${subject.id}`);
+
+    // 409 means someone else saved first; the page needs to say so rather than
+    // report a generic failure.
+    const error = new Error(`Failed to update subject ${subject.id}`);
+    error.isConflict = res.status === 409;
+
+    throw error;
   }
 };
 

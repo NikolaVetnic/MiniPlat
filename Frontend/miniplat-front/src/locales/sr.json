@@ -143,7 +143,8 @@
       "buttons": {
         "addTopic": "Dodaj temu"
       },
-      "saveFailed": "Čuvanje izmena nije uspelo. Osvežite stranicu i pokušajte ponovo."
+      "saveFailed": "Čuvanje izmena nije uspelo. Osvežite stranicu i pokušajte ponovo.",
+      "saveConflict": "Neko drugi je u međuvremenu izmenio ovaj predmet. Osvežite stranicu da vidite najnoviju verziju, pa ponovite izmenu."
     }
   }
 }

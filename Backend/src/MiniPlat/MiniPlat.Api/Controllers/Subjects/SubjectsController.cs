@@ -88,6 +88,7 @@ public class SubjectsController(ISender sender) : ControllerBase
             Lecturer = request.Lecturer,
             Assistant = request.Assistant,
             Topics = request.Topics,
+            Version = request.Version,
         };
         
         var result = await sender.Send(command);

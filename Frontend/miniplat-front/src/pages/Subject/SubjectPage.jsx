@@ -44,7 +44,11 @@ const SubjectPage = ({ user, onLogout }) => {
 
     updateSubjectTopics(updatedSubject, updatedTopics).catch((err) => {
       console.error(err);
-      setSaveError(sr.pages.subject.saveFailed);
+      setSaveError(
+        err.isConflict
+          ? sr.pages.subject.saveConflict
+          : sr.pages.subject.saveFailed
+      );
     });
   };
 

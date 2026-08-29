@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MiniPlat.Application.Data.Abstractions;
+using BuildingBlocks.Application.Exceptions;
 using MiniPlat.Application.Exceptions;
 using MiniPlat.Domain.Models;
 using MiniPlat.Domain.ValueObjects;
@@ -68,10 +69,29 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         return (subjects, totalCount);
     }
 
-    public Task UpdateAsync(Subject subject, CancellationToken cancellationToken)
+    public async Task UpdateAsync(Subject subject, CancellationToken cancellationToken)
     {
         appDbContext.Subjects.Update(subject);
-        return appDbContext.SaveChangesAsync(cancellationToken);
+        await SaveDetectingConflicts(cancellationToken);
+    }
+
+    /// <summary>
+    /// EF raises DbUpdateConcurrencyException when the row's xmin no longer matches the one the
+    /// caller sent, meaning someone saved first. Translated here so the Application layer does
+    /// not have to know about EF.
+    /// </summary>
+    private async Task SaveDetectingConflicts(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await appDbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "This subject was changed by someone else while you were editing it. " +
+                "Reload the page and apply your change again.");
+        }
     }
 
     public async Task ReplaceTopicsAsync(Subject existingSubject, List<Topic> newTopics,
@@ -102,7 +122,7 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         appDbContext.Entry(existingSubject).State =
             EntityState.Modified; // Only mark Subject as modified (scalar props only)
 
-        await appDbContext.SaveChangesAsync(cancellationToken);
+        await SaveDetectingConflicts(cancellationToken);
     }
 
     private void ReplaceMaterials(Topic topic, List<Material> newMaterials)

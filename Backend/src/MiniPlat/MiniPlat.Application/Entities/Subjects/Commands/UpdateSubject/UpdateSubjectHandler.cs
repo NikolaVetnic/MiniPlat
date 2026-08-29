@@ -30,6 +30,11 @@ public class UpdateSubjectHandler(ICurrentUser currentUser, ISubjectsRepository 
                 throw new ForbiddenException("Only an administrator may change the assistant of a subject.");
         }
 
+        // The row was just read, so its own version is current by definition. Overwriting it with
+        // the caller's makes EF compare against what they actually saw, which is the whole point.
+        if (command.Version != 0)
+            existingSubject.Version = command.Version;
+
         // Update scalar fields
         existingSubject.Title = command.Title ?? existingSubject.Title;
         existingSubject.Code = command.Code ?? existingSubject.Code;

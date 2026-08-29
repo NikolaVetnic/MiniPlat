@@ -16,6 +16,13 @@ public class Subject : Entity<SubjectId>
     public List<Topic> Topics { get; set; } = [];
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// Optimistic concurrency token, mapped to the row's PostgreSQL xmin. Returned with the
+    /// subject and sent back on update, so a save built on stale data is rejected instead of
+    /// quietly overwriting whatever someone else did in the meantime.
+    /// </summary>
+    public uint Version { get; set; }
+
     public static Subject Create(SubjectId id, string title, string description, string code, Level level, int semester,
         int order, string lecturerId, string assistantId)
     {
