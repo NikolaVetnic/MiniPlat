@@ -6,7 +6,7 @@
  */
 
 /** The languages the client can be switched to. */
-export type Language = "sr" | "no";
+export type Language = "sr" | "no" | "en";
 
 /** A run of text inside a paragraph, optionally emphasised or badged. */
 export interface RichSegment {

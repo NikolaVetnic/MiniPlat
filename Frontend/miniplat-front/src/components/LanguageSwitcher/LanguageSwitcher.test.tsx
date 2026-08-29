@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
 import no from "../../locales/no.json";
 import sr from "../../locales/sr.json";
+import { dictionaries, LANGUAGES } from "../../i18n/dictionaries";
 import { I18nProvider } from "../../i18n/I18nContext";
 import { UserProvider } from "../../contexts/UserContext";
 
@@ -39,8 +40,11 @@ describe("LanguageSwitcher", () => {
   it("offers every language under its own name", () => {
     show();
 
-    expect(screen.getByRole("option", { name: sr.languageName })).toBeDefined();
-    expect(screen.getByRole("option", { name: no.languageName })).toBeDefined();
+    LANGUAGES.forEach((language) => {
+      expect(
+        screen.getByRole("option", { name: dictionaries[language].languageName })
+      ).toBeDefined();
+    });
   });
 
   it("switches the captions when another language is picked", () => {
@@ -63,7 +67,7 @@ describe("LanguageSwitcher", () => {
   });
 
   it("ignores a stored language it does not know", () => {
-    localStorage.setItem("language", "en");
+    localStorage.setItem("language", "de");
     show();
 
     expect(screen.getByText(sr.components.navbar.buttons.login)).toBeDefined();

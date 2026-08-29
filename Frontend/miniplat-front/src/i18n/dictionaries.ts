@@ -1,3 +1,4 @@
+import enJson from "../locales/en.json";
 import noJson from "../locales/no.json";
 import srJson from "../locales/sr.json";
 import type { Dictionary, Language } from "./types";
@@ -10,13 +11,14 @@ import type { Dictionary, Language } from "./types";
 export const dictionaries: Record<Language, Dictionary> = {
   sr: srJson as unknown as Dictionary,
   no: noJson as unknown as Dictionary,
+  en: enJson as unknown as Dictionary,
 };
 
 /** Serbian, because that is what the institution the platform serves reads. */
 export const DEFAULT_LANGUAGE: Language = "sr";
 
 /** Offered by the picker, in the order it lists them. */
-export const LANGUAGES: Language[] = ["sr", "no"];
+export const LANGUAGES: Language[] = ["sr", "no", "en"];
 
 export const isLanguage = (value: unknown): value is Language =>
   typeof value === "string" && (LANGUAGES as string[]).includes(value);

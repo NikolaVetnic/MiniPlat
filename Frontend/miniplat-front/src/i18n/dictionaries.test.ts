@@ -42,7 +42,7 @@ describe("dictionaries", () => {
     expect(isLanguage(language)).toBe(true);
   });
 
-  it.each([["en"], [""], [null], [undefined], [42]])(
+  it.each([["de"], ["sr-Latn"], [""], [null], [undefined], [42]])(
     "rejects %s",
     (value: unknown) => {
       expect(isLanguage(value)).toBe(false);
