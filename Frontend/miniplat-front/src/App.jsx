@@ -8,9 +8,7 @@ import SubjectPage from "./pages/Subject/SubjectPage";
 import { useUser } from "./contexts/UserContext";
 
 function App({ onLogout }) {
-  const { user } = useUser(); // grab user from context
-  const token = localStorage.getItem("token");
-  const isAuthenticated = !!token;
+  const { user, isAuthenticated } = useUser();
 
   return (
     <Routes>

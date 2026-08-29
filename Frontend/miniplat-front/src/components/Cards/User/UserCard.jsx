@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { fetchUserInfo } from "../../../services/authService";
+import { useUser } from "../../../contexts/UserContext";
 import sr from "../../../locales/sr.json";
 import styles from "./UserCard.module.css";
 
@@ -11,7 +12,7 @@ const UserCard = () => {
   const [error, setError] = useState(null);
 
   const cpt = sr.components.cards.user;
-  const token = localStorage.getItem("token");
+  const { token } = useUser();
 
   useEffect(() => {
     const getUserInfo = async () => {

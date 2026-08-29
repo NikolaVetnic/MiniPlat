@@ -39,30 +39,29 @@ export const fetchSubjectById = async (id) => {
 };
 
 export const updateSubjectTopics = async (subject, updatedTopics) => {
-  const token = localStorage.getItem("token");
-
   const updatedSubject = {
     ...subject,
     topics: updatedTopics,
   };
 
-  try {
-    await fetch(`${API_BASE_URL}/api/Subjects/${subject.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(updatedSubject),
-    });
-  } catch (error) {
-    console.error("Failed to update subject:", error);
+  const res = await fetch(`${API_BASE_URL}/api/Subjects/${subject.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(updatedSubject),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+
+    console.error("Server response:", text);
+    throw new Error(`Failed to update subject ${subject.id}`);
   }
 };
 
 export const updateSubjectPeople = async (id, lecturer, assistant) => {
-  const token = localStorage.getItem("token");
-
   try {
     const subject = await fetchSubjectById(id);
 
@@ -76,7 +75,7 @@ export const updateSubjectPeople = async (id, lecturer, assistant) => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...authHeaders(),
       },
       body: JSON.stringify(updatedSubject),
     });

@@ -1,3 +1,5 @@
+import { getToken } from "./session";
+
 /**
  * Bearer header when someone is signed in, nothing otherwise.
  *
@@ -6,7 +8,7 @@
  * deleted topics, a student gets neither. An expired token simply falls back to the public view.
  */
 export const authHeaders = () => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   return token ? { Authorization: `Bearer ${token}` } : {};
 };

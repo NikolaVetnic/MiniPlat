@@ -18,8 +18,7 @@ const LoginPage = ({ onLogout }) => {
 
   const navigate = useNavigate();
 
-  const { setUser } = useUser();
-  const { user } = useUser();
+  const { user, signIn } = useUser();
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -45,9 +44,7 @@ const LoginPage = ({ onLogout }) => {
       await new Promise((resolve) => setTimeout(resolve, 1500)); // simulate delay
 
       const data = await login(username, password);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setUser(data.user);
+      signIn(data.token, data.user);
 
       navigate(`/${data.user.username}/home`);
     } catch (err) {

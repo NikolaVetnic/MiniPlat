@@ -24,13 +24,11 @@ let lecturersPromise = null;
 export const fetchLecturers = async () => {
   if (lecturersPromise) return lecturersPromise;
 
-  const token = localStorage.getItem("token");
-
   lecturersPromise = fetch(`${API_BASE_URL}/api/Lecturers`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
   })
     .then(async (response) => {

@@ -1,28 +1,41 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-// Create the context
+import {
+  clearSession,
+  readStoredSession,
+  storeSession,
+} from "../services/session";
+
 const UserContext = createContext(null);
 
-// Create a provider component
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [session, setSession] = useState({ user: null, token: null });
 
-  // Example: load user from localStorage on mount
+  // Rehydrate a previous sign-in on mount.
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    setSession(readStoredSession());
   }, []);
 
-  return (
-    <UserContext.Provider value={{ user, setUser }}>
-      {children}
-    </UserContext.Provider>
+  const value = useMemo(
+    () => ({
+      user: session.user,
+      token: session.token,
+      isAuthenticated: !!session.token,
+
+      signIn: (token, user) => {
+        storeSession(token, user);
+        setSession({ token, user });
+      },
+
+      signOut: () => {
+        clearSession();
+        setSession({ user: null, token: null });
+      },
+    }),
+    [session]
   );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
-// Create a hook for easy consumption
-export const useUser = () => {
-  return useContext(UserContext);
-};
+export const useUser = () => useContext(UserContext);

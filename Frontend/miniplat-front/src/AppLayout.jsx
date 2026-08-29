@@ -3,14 +3,11 @@ import App from "./App";
 import { UserProvider, useUser } from "./contexts/UserContext";
 
 const AppLayout = () => {
-  const { setUser } = useUser();
+  const { signOut } = useUser();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null); // clear user context
-
+    signOut();
     navigate("/home");
   };
 

@@ -1,5 +1,5 @@
 // SubjectPage.jsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {
@@ -32,8 +32,19 @@ const SubjectPage = ({ user, onLogout }) => {
   const [newDescription, setNewDescription] = useState("");
   const [newMaterials, setNewMaterials] = useState([]);
 
-  // Used to debounce topic updates
-  const debounceTimeout = useRef();
+  // Surfaced when a save fails, so the page stops pretending it succeeded
+  const [saveError, setSaveError] = useState(null);
+
+  // Persists the change and reports failure instead of swallowing it. Kept out of the
+  // setSubject updater: an updater must stay pure, and a rejection thrown inside one is lost.
+  const persistTopics = (updatedSubject, updatedTopics) => {
+    setSaveError(null);
+
+    updateSubjectTopics(updatedSubject, updatedTopics).catch((err) => {
+      console.error(err);
+      setSaveError(sr.pages.subject.saveFailed);
+    });
+  };
 
   // Fetch all subjects and select current one
   useEffect(() => {
@@ -66,38 +77,40 @@ const SubjectPage = ({ user, onLogout }) => {
 
   // Save edited topic
   const handleTopicEdit = (updatedTopic) => {
-    setSubject((prev) => {
-      if (!prev) return prev;
-      const updatedTopics = prev.topics.map((t) =>
-        t.id === updatedTopic.id ? updatedTopic : t
-      );
-      const updatedSubject = { ...prev, topics: updatedTopics };
-      updateSubjectTopics(updatedSubject, updatedTopics);
-      return updatedSubject;
-    });
+    if (!subject) return;
+
+    const updatedTopics = subject.topics.map((t) =>
+      t.id === updatedTopic.id ? updatedTopic : t
+    );
+    const updatedSubject = { ...subject, topics: updatedTopics };
+
+    setSubject(updatedSubject);
+    persistTopics(updatedSubject, updatedTopics);
   };
 
   // Toggle visibility or deletion on topic
   const handleToggleTopicVisibility = (id) => {
-    setSubject((prev) => {
-      const updatedTopics = prev.topics.map((t) =>
-        t.id === id ? { ...t, isHidden: !t.isHidden } : t
-      );
-      const updatedSubject = { ...prev, topics: updatedTopics };
-      updateSubjectTopics(updatedSubject, updatedTopics);
-      return updatedSubject;
-    });
+    if (!subject) return;
+
+    const updatedTopics = subject.topics.map((t) =>
+      t.id === id ? { ...t, isHidden: !t.isHidden } : t
+    );
+    const updatedSubject = { ...subject, topics: updatedTopics };
+
+    setSubject(updatedSubject);
+    persistTopics(updatedSubject, updatedTopics);
   };
 
   const handleToggleTopicDeletion = (id) => {
-    setSubject((prev) => {
-      const updatedTopics = prev.topics.map((t) =>
-        t.id === id ? { ...t, isDeleted: !t.isDeleted } : t
-      );
-      const updatedSubject = { ...prev, topics: updatedTopics };
-      updateSubjectTopics(updatedSubject, updatedTopics);
-      return updatedSubject;
-    });
+    if (!subject) return;
+
+    const updatedTopics = subject.topics.map((t) =>
+      t.id === id ? { ...t, isDeleted: !t.isDeleted } : t
+    );
+    const updatedSubject = { ...subject, topics: updatedTopics };
+
+    setSubject(updatedSubject);
+    persistTopics(updatedSubject, updatedTopics);
   };
 
   // Add a new topic to the subject
@@ -119,12 +132,11 @@ const SubjectPage = ({ user, onLogout }) => {
       isDeleted: false,
     };
 
-    setSubject((prev) => {
-      const updatedTopics = [...(prev?.topics || []), newTopic];
-      const updatedSubject = { ...prev, topics: updatedTopics };
-      updateSubjectTopics(updatedSubject, updatedTopics);
-      return updatedSubject;
-    });
+    const updatedTopics = [...(subject?.topics || []), newTopic];
+    const updatedSubject = { ...subject, topics: updatedTopics };
+
+    setSubject(updatedSubject);
+    persistTopics(updatedSubject, updatedTopics);
 
     setShowAddModal(false);
   };
@@ -174,6 +186,12 @@ const SubjectPage = ({ user, onLogout }) => {
                 isSingleCard={true}
               />
             </div>
+
+            {saveError && (
+              <p role="alert" className={subjectPageStyles.saveError}>
+                {saveError}
+              </p>
+            )}
 
             <div className={subjectPageStyles.pageContent}>
               <div className={subjectPageStyles.cardGrid}>

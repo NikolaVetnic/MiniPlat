@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchLecturer } from "../services/lecturersService";
 
 export const useSubjectPeople = (lecturerUsername, assistantUsername) => {
@@ -7,30 +7,40 @@ export const useSubjectPeople = (lecturerUsername, assistantUsername) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refetch = async (lecturerUsername, assistantUsername) => {
+  // Each load claims a sequence number and only writes state if it is still the newest one.
+  // A ref rather than an effect-scoped flag, because refetch is called from outside the effect
+  // and its result races with the effect's just the same.
+  const latestRequest = useRef(0);
+
+  const load = useCallback(async (lecturerName, assistantName) => {
+    const requestId = ++latestRequest.current;
     setLoading(true);
+
     try {
       const [lecturerData, assistantData] = await Promise.all([
-        lecturerUsername
-          ? fetchLecturer(lecturerUsername)
-          : Promise.resolve(null),
-        assistantUsername
-          ? fetchLecturer(assistantUsername)
-          : Promise.resolve(null),
+        lecturerName ? fetchLecturer(lecturerName) : Promise.resolve(null),
+        assistantName ? fetchLecturer(assistantName) : Promise.resolve(null),
       ]);
+
+      if (requestId !== latestRequest.current) return;
+
       setLecturer(lecturerData);
       setAssistant(assistantData);
+      setError(null); // a success clears a previous failure
     } catch (err) {
-      setError("Unable to fetch lecturer information.");
       console.error(err);
+
+      if (requestId !== latestRequest.current) return;
+
+      setError("Unable to fetch lecturer information.");
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest.current) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    refetch(lecturerUsername, assistantUsername);
-  }, [lecturerUsername, assistantUsername]);
+    load(lecturerUsername, assistantUsername);
+  }, [lecturerUsername, assistantUsername, load]);
 
-  return { lecturer, assistant, loading, error, refetch };
+  return { lecturer, assistant, loading, error, refetch: load };
 };

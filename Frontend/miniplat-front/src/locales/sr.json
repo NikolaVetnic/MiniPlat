@@ -93,9 +93,19 @@
       "mainMenu": "Glavni meni",
       "subjects": "Predmeti",
       "home": "Početna",
-      "levels": ["OSS", "MSS"],
-      "semester": ["Letnji semestar", "Zimski semestar"],
-      "years": ["I", "II", "III"]
+      "levels": [
+        "OSS",
+        "MSS"
+      ],
+      "semester": [
+        "Letnji semestar",
+        "Zimski semestar"
+      ],
+      "years": [
+        "I",
+        "II",
+        "III"
+      ]
     }
   },
   "pages": {
@@ -132,7 +142,8 @@
     "subject": {
       "buttons": {
         "addTopic": "Dodaj temu"
-      }
+      },
+      "saveFailed": "Čuvanje izmena nije uspelo. Osvežite stranicu i pokušajte ponovo."
     }
   }
 }
