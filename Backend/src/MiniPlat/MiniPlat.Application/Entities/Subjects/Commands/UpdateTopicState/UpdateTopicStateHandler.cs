@@ -22,7 +22,7 @@ public class UpdateTopicStateHandler(ICurrentUser currentUser, ISubjectsReposito
         if (!subject.CanManage(currentUser))
             throw new ForbiddenException("You may only edit topics on subjects you teach.");
 
-        if (subject.Topics.All(topic => !topic.Id.Equals(command.TopicId)))
+        if (subject.Topics.All(topic => topic.Id != command.TopicId))
             throw new TopicNotFoundException(command.TopicId.ToString());
 
         await subjectsRepository.UpdateTopicStateAsync(

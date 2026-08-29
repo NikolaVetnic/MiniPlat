@@ -22,6 +22,15 @@ public class MaterialId : StronglyTypedId
     {
         return Value.GetHashCode();
     }
+
+    /// <summary>
+    /// Without these, == on a MaterialId compares references, so two instances of the same id are
+    /// never equal outside a database query. Typed to this id so comparing different id types
+    /// fails to compile rather than silently returning false.
+    /// </summary>
+    public static bool operator ==(MaterialId? left, MaterialId? right) => Equals(left, right);
+
+    public static bool operator !=(MaterialId? left, MaterialId? right) => !Equals(left, right);
 }
 
 public class MaterialIdJsonConverter : JsonConverter<MaterialId>

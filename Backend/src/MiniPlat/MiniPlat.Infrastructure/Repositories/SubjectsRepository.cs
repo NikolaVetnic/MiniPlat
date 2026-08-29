@@ -198,7 +198,7 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
                           .SingleOrDefaultAsync(s => s.Id == subjectId, cancellationToken) ??
                       throw new SubjectNotFoundException(subjectId.ToString());
 
-        var topic = subject.Topics.SingleOrDefault(t => t.Id.Equals(topicId)) ??
+        var topic = subject.Topics.SingleOrDefault(t => t.Id == topicId) ??
                     throw new TopicNotFoundException(topicId.ToString());
 
         if (isHidden.HasValue)

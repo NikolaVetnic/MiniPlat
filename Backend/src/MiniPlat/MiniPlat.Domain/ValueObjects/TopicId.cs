@@ -22,6 +22,15 @@ public class TopicId : StronglyTypedId
     {
         return Value.GetHashCode();
     }
+
+    /// <summary>
+    /// Without these, == on a TopicId compares references, so two instances of the same id are
+    /// never equal outside a database query. Typed to this id so comparing different id types
+    /// fails to compile rather than silently returning false.
+    /// </summary>
+    public static bool operator ==(TopicId? left, TopicId? right) => Equals(left, right);
+
+    public static bool operator !=(TopicId? left, TopicId? right) => !Equals(left, right);
 }
 
 public class TopicIdJsonConverter : JsonConverter<TopicId>
