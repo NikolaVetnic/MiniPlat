@@ -1,6 +1,5 @@
-// SubjectPage.jsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 
 import {
   ConflictError,
@@ -9,6 +8,9 @@ import {
   updateTopicOrder,
   updateTopicState,
 } from "../../services/subjectsService";
+import type { Subject, Topic, Uuid } from "../../types/api";
+import type { MaterialDraft } from "../../types/app";
+import { newTopic, toMaterials } from "../../utils/drafts";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import sr from "../../locales/sr.json";
@@ -16,15 +18,26 @@ import styles from "../Home/HomePage.module.css";
 import SubjectCard from "../../components/Cards/Subject/SubjectCard";
 import subjectPageStyles from "./SubjectPage.module.css";
 import TopicCard from "../../components/Cards/Topic/TopicCard";
-import TopicModal from "../../components/Modals/Topic/TopicModal";
+import TopicModal, {
+  type MaterialField,
+} from "../../components/Modals/Topic/TopicModal";
+import { useUser } from "../../contexts/UserContext";
 import footerText from "../../utils/footerText";
 
-const SubjectPage = ({ user, onLogout }) => {
+interface SubjectPageProps {
+  onLogout: () => void;
+}
+
+/** The two topic booleans the per-topic endpoint can flip. */
+type TopicFlag = "isHidden" | "isDeleted";
+
+const SubjectPage = ({ onLogout }: SubjectPageProps) => {
   const { subjectId } = useParams();
+  const { user } = useUser();
 
   // State for subject and subjects list
-  const [subject, setSubject] = useState(null);
-  const [subjects, setSubjects] = useState([]);
+  const [subject, setSubject] = useState<Subject | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
 
   // Loading indicator
   const [loading, setLoading] = useState(true);
@@ -33,17 +46,17 @@ const SubjectPage = ({ user, onLogout }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newMaterials, setNewMaterials] = useState([]);
+  const [newMaterials, setNewMaterials] = useState<MaterialDraft[]>([]);
 
   // Surfaced when a save fails, so the page stops pretending it succeeded
-  const [saveError, setSaveError] = useState(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Persists the change and reports failure instead of swallowing it. Kept out of the
   // setSubject updater: an updater must stay pure, and a rejection thrown inside one is lost.
-  const persistTopics = (updatedSubject, updatedTopics) => {
+  const persistTopics = (updatedSubject: Subject, updatedTopics: Topic[]) => {
     setSaveError(null);
 
-    updateSubjectTopics(updatedSubject, updatedTopics).catch((err) => {
+    updateSubjectTopics(updatedSubject, updatedTopics).catch((err: unknown) => {
       console.error(err);
       setSaveError(
         err instanceof ConflictError
@@ -60,7 +73,7 @@ const SubjectPage = ({ user, onLogout }) => {
       try {
         const data = await fetchSubjects();
         setSubjects(data);
-        setSubject(data.find((s) => s.id === subjectId));
+        setSubject(data.find((s) => s.id === subjectId) ?? null);
       } catch (error) {
         console.error("Error fetching subjects:", error);
       } finally {
@@ -68,22 +81,26 @@ const SubjectPage = ({ user, onLogout }) => {
       }
     };
 
-    getSubjects();
+    void getSubjects();
   }, [subjectId]);
 
   // Handlers for material inputs in modal
-  const handleNewMaterialChange = (index, field, value) => {
+  const handleNewMaterialChange = (
+    index: number,
+    field: MaterialField,
+    value: string
+  ) => {
     setNewMaterials((prev) =>
       prev.map((m, i) => (i === index ? { ...m, [field]: value } : m))
     );
   };
   const handleAddNewMaterial = () =>
     setNewMaterials((prev) => [...prev, { description: "", link: "" }]);
-  const handleRemoveNewMaterial = (index) =>
+  const handleRemoveNewMaterial = (index: number) =>
     setNewMaterials((prev) => prev.filter((_, i) => i !== index));
 
   // Save edited topic
-  const handleTopicEdit = (updatedTopic) => {
+  const handleTopicEdit = (updatedTopic: Topic) => {
     if (!subject) return;
 
     const updatedTopics = subject.topics.map((t) =>
@@ -97,7 +114,7 @@ const SubjectPage = ({ user, onLogout }) => {
 
   // Toggle visibility or deletion on topic. Only one boolean changes, so these go to the
   // per-topic endpoint rather than resending the whole subject.
-  const toggleTopicFlag = (id, flag) => {
+  const toggleTopicFlag = (id: Uuid, flag: TopicFlag) => {
     if (!subject) return;
 
     const topic = subject.topics.find((t) => t.id === id);
@@ -114,36 +131,30 @@ const SubjectPage = ({ user, onLogout }) => {
     });
     setSaveError(null);
 
-    updateTopicState(subject.id, id, { [flag]: value }).catch((err) => {
+    updateTopicState(subject.id, id, {
+      [flag]: value,
+    }).catch((err: unknown) => {
       console.error(err);
       setSaveError(sr.pages.subject.saveFailed);
     });
   };
 
-  const handleToggleTopicVisibility = (id) => toggleTopicFlag(id, "isHidden");
+  const handleToggleTopicVisibility = (id: Uuid) => toggleTopicFlag(id, "isHidden");
 
-  const handleToggleTopicDeletion = (id) => toggleTopicFlag(id, "isDeleted");
+  const handleToggleTopicDeletion = (id: Uuid) => toggleTopicFlag(id, "isDeleted");
 
   // Add a new topic to the subject
   const handleSaveNewTopic = () => {
-    if (!newTitle.trim()) return;
+    if (!subject || !newTitle.trim()) return;
 
-    const generateGuid = () => crypto.randomUUID();
-    const materials = newMaterials
-      .filter((m) => m.description.trim() || m.link.trim())
-      .map((m, i) => ({ ...m, id: m.id || generateGuid(), order: i }));
+    const topic = newTopic(
+      newTitle,
+      newDescription,
+      toMaterials(newMaterials),
+      subject.topics.length
+    );
 
-    const newTopic = {
-      id: generateGuid(),
-      title: newTitle,
-      description: newDescription,
-      materials,
-      lastModifiedAt: new Date().toISOString(),
-      isHidden: false,
-      isDeleted: false,
-    };
-
-    const updatedTopics = [...(subject?.topics || []), newTopic];
+    const updatedTopics = [...subject.topics, topic];
     const updatedSubject = { ...subject, topics: updatedTopics };
 
     setSubject(updatedSubject);
@@ -153,8 +164,8 @@ const SubjectPage = ({ user, onLogout }) => {
   };
 
   // Move topic ordering
-  const moveTopic = (from, to) => {
-    if (!subject?.topics || to < 0 || to >= subject.topics.length) return;
+  const moveTopic = (from: number, to: number) => {
+    if (!subject || to < 0 || to >= subject.topics.length) return;
 
     const reordered = [...subject.topics];
     [reordered[from], reordered[to]] = [reordered[to], reordered[from]];
@@ -170,23 +181,27 @@ const SubjectPage = ({ user, onLogout }) => {
     updateTopicOrder(
       subject.id,
       updatedTopics.map((topic) => topic.id)
-    ).catch((err) => {
+    ).catch((err: unknown) => {
       console.error(err);
       setSaveError(sr.pages.subject.saveFailed);
     });
   };
 
-  const handleMoveUp = (index) => moveTopic(index, index - 1);
+  const handleMoveUp = (index: number) => moveTopic(index, index - 1);
 
-  const handleMoveDown = (index) => moveTopic(index, index + 1);
+  const handleMoveDown = (index: number) => moveTopic(index, index + 1);
+
+  // An id that matches no subject used to render a blank page and then throw on
+  // subject.title. Same treatment the home page gives a route it cannot serve.
+  if (!loading && !subject) return <Navigate to="/home" replace />;
 
   return (
     <div className={styles.container}>
-      <Navbar user={user} onLogout={onLogout} />
+      <Navbar onLogout={onLogout} />
       <div className={styles.contentWrapper}>
-        <Sidebar subjects={subjects} user={user} loading={loading} />
+        <Sidebar subjects={subjects} loading={loading} />
 
-        {loading ? (
+        {loading || !subject ? (
           <div />
         ) : (
           <main className={styles.main}>

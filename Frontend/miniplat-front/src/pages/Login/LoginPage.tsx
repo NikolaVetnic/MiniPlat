@@ -9,11 +9,15 @@ import { useUser } from "../../contexts/UserContext";
 
 import footerText from "../../utils/footerText";
 
-const LoginPage = ({ onLogout }) => {
+interface LoginPageProps {
+  onLogout: () => void;
+}
+
+const LoginPage = ({ onLogout }: LoginPageProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -34,10 +38,10 @@ const LoginPage = ({ onLogout }) => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setError("");
+    setError(null);
     setIsLoading(true);
 
     try {
@@ -48,7 +52,7 @@ const LoginPage = ({ onLogout }) => {
 
       navigate(`/${data.user.username}/home`);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +75,7 @@ const LoginPage = ({ onLogout }) => {
               <p>Učitavanje...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => void handleSubmit(e)}>
               <input
                 type="text"
                 placeholder={cpt.placeholders.username}

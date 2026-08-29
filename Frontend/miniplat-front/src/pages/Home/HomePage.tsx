@@ -5,6 +5,7 @@ import Content_Admin from "./Content/Content_Admin";
 import Content_Lecturers from "./Content/Content_Lecturers";
 import Content_Public from "./Content/Content_Public";
 import { fetchSubjects } from "../../services/subjectsService";
+import type { Subject } from "../../types/api";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import styles from "./HomePage.module.css";
@@ -16,10 +17,14 @@ import sr from "../../locales/sr.json";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
 
-const HomePage = ({ onLogout }) => {
+interface HomePageProps {
+  onLogout: () => void;
+}
+
+const HomePage = ({ onLogout }: HomePageProps) => {
   const { user } = useUser();
   const { username } = useParams();
-  const [subjects, setSubjects] = useState([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +40,7 @@ const HomePage = ({ onLogout }) => {
       }
     };
 
-    getSubjects();
+    void getSubjects();
   }, []);
 
   // if route has username param but no user is logged in → redirect to /home
@@ -52,7 +57,7 @@ const HomePage = ({ onLogout }) => {
 
   return (
     <div className={styles.container}>
-      <Navbar user={user} onLogout={onLogout} />
+      <Navbar onLogout={onLogout} />
       <div className={styles.contentWrapper}>
         <Sidebar subjects={subjects} loading={loading} />
 

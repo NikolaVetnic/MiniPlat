@@ -4,14 +4,18 @@ import sr from "../../locales/sr.json";
 import styles from "./PageNotFound.module.css";
 import { useUser } from "../../contexts/UserContext";
 
-const PageNotFound = ({ onLogout }) => {
+interface PageNotFoundProps {
+  onLogout: () => void;
+}
+
+const PageNotFound = ({ onLogout }: PageNotFoundProps) => {
   const { user } = useUser();
 
   const cpt = sr.pages.notFound;
 
   return (
     <div className={styles.container}>
-      <Navbar user={user} onLogout={onLogout} />
+      <Navbar onLogout={onLogout} />
 
       <div className={styles.contentWrapper}>
         <main className={styles.main}>
