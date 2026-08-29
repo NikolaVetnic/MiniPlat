@@ -7,4 +7,5 @@ public interface ICurrentUser
     ClaimsPrincipal? Principal { get; }
     string? UserId { get; }
     string? Username { get; }
+    bool IsAdmin { get; }
 }
