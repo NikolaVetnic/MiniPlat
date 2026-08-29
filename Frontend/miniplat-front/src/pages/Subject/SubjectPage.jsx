@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {
+  ConflictError,
   fetchSubjects,
   updateSubjectTopics,
   updateTopicOrder,
@@ -45,7 +46,7 @@ const SubjectPage = ({ user, onLogout }) => {
     updateSubjectTopics(updatedSubject, updatedTopics).catch((err) => {
       console.error(err);
       setSaveError(
-        err.isConflict
+        err instanceof ConflictError
           ? sr.pages.subject.saveConflict
           : sr.pages.subject.saveFailed
       );

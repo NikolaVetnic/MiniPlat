@@ -1,38 +1,64 @@
+import type {
+  ListSubjectsResponse,
+  Subject,
+  Topic,
+  UpdateTopicStateRequest,
+  Uuid,
+} from "../types/api";
 import { authHeaders } from "./authHeaders";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const fetchSubjects = async () => {
+/**
+ * 409 from the server: someone else saved first, and the version token the caller read is
+ * stale. Its own class rather than a flag hung on Error, so the page can tell the two apart
+ * with instanceof instead of reaching for a property that only exists sometimes.
+ */
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
+const jsonHeaders = (): Record<string, string> => ({
+  "Content-Type": "application/json",
+  ...authHeaders(),
+});
+
+export const fetchSubjects = async (): Promise<Subject[]> => {
   const response = await fetch(
     `${API_BASE_URL}/api/Subjects?pageIndex=0&pageSize=1000`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders(),
-      },
+      headers: jsonHeaders(),
     }
   );
 
   if (!response.ok)
     throw new Error(`Failed to fetch subjects: ${response.status}`);
 
-  const data = await response.json();
-  return data.subjects.data || [];
+  const data = (await response.json()) as ListSubjectsResponse;
+  return data.subjects.data ?? [];
 };
 
-export const updateSubjectTopics = async (subject, updatedTopics) => {
-  const updatedSubject = {
+/**
+ * Sends the whole subject graph. The server replaces every topic and material row, and
+ * derives each topic's order from its position in the list, so the order values carried
+ * here are informational only.
+ */
+export const updateSubjectTopics = async (
+  subject: Subject,
+  updatedTopics: Topic[]
+): Promise<void> => {
+  const updatedSubject: Subject = {
     ...subject,
     topics: updatedTopics,
   };
 
   const res = await fetch(`${API_BASE_URL}/api/Subjects/${subject.id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
+    headers: jsonHeaders(),
     body: JSON.stringify(updatedSubject),
   });
 
@@ -41,12 +67,11 @@ export const updateSubjectTopics = async (subject, updatedTopics) => {
 
     console.error("Server response:", text);
 
-    // 409 means someone else saved first; the page needs to say so rather than
-    // report a generic failure.
-    const error = new Error(`Failed to update subject ${subject.id}`);
-    error.isConflict = res.status === 409;
+    if (res.status === 409) {
+      throw new ConflictError(`Subject ${subject.id} was changed by someone else`);
+    }
 
-    throw error;
+    throw new Error(`Failed to update subject ${subject.id}`);
   }
 };
 
@@ -54,15 +79,18 @@ export const updateSubjectTopics = async (subject, updatedTopics) => {
  * Persists topic order only. Cheaper than updateSubjectTopics, which sends the whole graph
  * and makes the server delete and recreate every topic and material.
  */
-export const updateTopicOrder = async (subjectId, topicIds) => {
-  const res = await fetch(`${API_BASE_URL}/api/Subjects/${subjectId}/topics/order`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
-    body: JSON.stringify({ topicIds }),
-  });
+export const updateTopicOrder = async (
+  subjectId: Uuid,
+  topicIds: Uuid[]
+): Promise<void> => {
+  const res = await fetch(
+    `${API_BASE_URL}/api/Subjects/${subjectId}/topics/order`,
+    {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ topicIds }),
+    }
+  );
 
   if (!res.ok) {
     const text = await res.text();
@@ -76,15 +104,16 @@ export const updateTopicOrder = async (subjectId, topicIds) => {
  * Flips a topic's hidden or deleted flag. Like updateTopicOrder, this avoids resending the
  * whole subject just to change one boolean. Omitted flags are left as they are.
  */
-export const updateTopicState = async (subjectId, topicId, changes) => {
+export const updateTopicState = async (
+  subjectId: Uuid,
+  topicId: Uuid,
+  changes: UpdateTopicStateRequest
+): Promise<void> => {
   const res = await fetch(
     `${API_BASE_URL}/api/Subjects/${subjectId}/topics/${topicId}`,
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders(),
-      },
+      headers: jsonHeaders(),
       body: JSON.stringify(changes),
     }
   );
@@ -101,13 +130,14 @@ export const updateTopicState = async (subjectId, topicId, changes) => {
  * Assigns the lecturer and assistant. Pass null as the assistant to remove them - the general
  * subject update cannot express that, because there null means "leave this field alone".
  */
-export const updateSubjectPeople = async (id, lecturer, assistant) => {
+export const updateSubjectPeople = async (
+  id: Uuid,
+  lecturer: string,
+  assistant: string | null
+): Promise<void> => {
   const res = await fetch(`${API_BASE_URL}/api/Subjects/${id}/staff`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
+    headers: jsonHeaders(),
     body: JSON.stringify({ lecturer, assistant: assistant || null }),
   });
 

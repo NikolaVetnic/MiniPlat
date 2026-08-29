@@ -1,46 +1,40 @@
 import { describe, expect, it } from "vitest";
 import yaml from "js-yaml";
 
+import { Level, type Topic } from "../types/api";
+import { makeMaterial, makeSubject, makeTopic } from "../test/fixtures";
 import {
   formatSubjectsYaml,
   toYamlDocument,
   yamlFilename,
 } from "./downloadYaml";
 
-const subject = (over = {}) => ({
-  id: "11111111-1111-1111-1111-111111111111",
-  code: "PSI-101",
-  title: "Psihologija",
-  description: "Opis predmeta",
-  level: 1,
-  semester: 1,
-  lecturer: "pnikolic",
-  assistant: "mmarkovic",
-  isActive: true,
-  topics: [],
-  ...over,
-});
-
 describe("toYamlDocument", () => {
   it("oversetter nivå fra tall til navn", () => {
-    expect(toYamlDocument([subject({ level: 1 })]).subjects[0].level).toBe(
-      "Undergraduate"
-    );
-    expect(toYamlDocument([subject({ level: 2 })]).subjects[0].level).toBe(
-      "Master"
-    );
+    expect(
+      toYamlDocument([makeSubject({ level: Level.Undergraduate })]).subjects[0]
+        .level
+    ).toBe("Undergraduate");
+
+    expect(
+      toYamlDocument([makeSubject({ level: Level.Master })]).subjects[0].level
+    ).toBe("Master");
   });
 
   it("skriver tom streng når assistent mangler", () => {
-    expect(toYamlDocument([subject({ assistant: null })]).subjects[0].assistant).toBe("");
+    expect(
+      toYamlDocument([makeSubject({ assistant: null })]).subjects[0].assistant
+    ).toBe("");
   });
 
-  it("tåler emner uten temaer og temaer uten materialer", () => {
+  it("tåler avkortede svar uten temaer eller materialer", () => {
+    // Typene lover at listene finnes, så castet er med vilje: testen dekker
+    // runtime-vaktene mot et svar som ikke holder det API-et lover.
     const doc = toYamlDocument([
-      subject({ topics: undefined }),
-      subject({
+      makeSubject({ topics: undefined as unknown as Topic[] }),
+      makeSubject({
         id: "s2",
-        topics: [{ id: "t1", title: "Tema", description: "d", order: 0 }],
+        topics: [makeTopic({ materials: undefined as unknown as never })],
       }),
     ]);
 
@@ -51,9 +45,7 @@ describe("toYamlDocument", () => {
   it("tar bare med de feltene dumpen er ment å ha", () => {
     // Emnet fra API-et bærer også version, isDeleted og revisjonsfelter. De skal
     // ikke lekke ut i en fil som deles.
-    const doc = toYamlDocument([
-      subject({ version: 42, isDeleted: false, createdBy: "admin" }),
-    ]);
+    const doc = toYamlDocument([makeSubject({ version: 42 })]);
 
     expect(Object.keys(doc.subjects[0]).sort()).toEqual([
       "assistant",
@@ -71,23 +63,19 @@ describe("toYamlDocument", () => {
 
   it("beholder rekkefølgen på temaer og materialer", () => {
     const doc = toYamlDocument([
-      subject({
+      makeSubject({
         topics: [
-          {
-            id: "t1",
-            title: "Tema",
-            description: "d",
-            order: 0,
+          makeTopic({
             materials: [
-              { id: "m1", description: "Skripta", link: "https://a", order: 0 },
-              { id: "m2", description: "Vežbe", link: "https://b", order: 1 },
+              makeMaterial({ id: "m1", order: 0 }),
+              makeMaterial({ id: "m2", order: 1 }),
             ],
-          },
+          }),
         ],
       }),
     ]);
 
-    expect(doc.subjects[0].topics[0].materials.map((m: { id: string }) => m.id)).toEqual([
+    expect(doc.subjects[0].topics[0].materials.map((m) => m.id)).toEqual([
       "m1",
       "m2",
     ]);
@@ -96,7 +84,10 @@ describe("toYamlDocument", () => {
 
 describe("formatSubjectsYaml", () => {
   it("produserer YAML som leser tilbake til samme dokument", () => {
-    const subjects = [subject(), subject({ id: "s2", level: 2 })];
+    const subjects = [
+      makeSubject(),
+      makeSubject({ id: "s2", level: Level.Master }),
+    ];
 
     expect(yaml.load(formatSubjectsYaml(subjects))).toEqual(
       toYamlDocument(subjects)
@@ -108,16 +99,8 @@ describe("formatSubjectsYaml", () => {
     // ubrukelig til å kopiere lenker fra.
     const lang = `https://example.com/${"a".repeat(200)}.pdf`;
     const ut = formatSubjectsYaml([
-      subject({
-        topics: [
-          {
-            id: "t1",
-            title: "Tema",
-            description: "d",
-            order: 0,
-            materials: [{ id: "m1", description: "d", link: lang, order: 0 }],
-          },
-        ],
+      makeSubject({
+        topics: [makeTopic({ materials: [makeMaterial({ link: lang })] })],
       }),
     ]);
 
