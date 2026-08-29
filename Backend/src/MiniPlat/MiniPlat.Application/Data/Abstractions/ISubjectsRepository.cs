@@ -13,5 +13,6 @@ public interface ISubjectsRepository
     Task ReplaceTopicsAsync(Subject existingSubject, List<Topic> newTopics, CancellationToken cancellationToken);
     Task ReorderTopicsAsync(SubjectId subjectId, IReadOnlyList<TopicId> orderedTopicIds, CancellationToken cancellationToken);
     Task UpdateTopicStateAsync(SubjectId subjectId, TopicId topicId, bool? isHidden, bool? isDeleted, CancellationToken cancellationToken);
+    Task UpdateStaffAsync(SubjectId subjectId, string lecturer, string? assistant, CancellationToken cancellationToken);
     Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken);
 }

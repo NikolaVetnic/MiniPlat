@@ -39,6 +39,14 @@ public class UpdateTopicStateRequest
     public bool? IsDeleted { get; set; }
 }
 
+public class SetSubjectStaffRequest
+{
+    public string Lecturer { get; set; } = string.Empty;
+
+    /// <summary>Null or empty removes the assistant.</summary>
+    public string? Assistant { get; set; }
+}
+
 public static class SubjectRequestExtensions
 {
     public static CreateSubjectCommand ToCommand(this CreateSubjectRequest request)

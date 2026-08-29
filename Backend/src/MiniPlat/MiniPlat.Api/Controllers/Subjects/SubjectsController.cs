@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MiniPlat.Api.Authorization;
 using MiniPlat.Application.Entities.Subjects.Commands.DeleteSubject;
 using MiniPlat.Application.Entities.Subjects.Commands.ReorderTopics;
+using MiniPlat.Application.Entities.Subjects.Commands.SetSubjectStaff;
 using MiniPlat.Application.Entities.Subjects.Commands.UpdateSubject;
 using MiniPlat.Application.Entities.Subjects.Commands.UpdateTopicState;
 using MiniPlat.Application.Entities.Subjects.Queries.GetSubjectById;
@@ -133,6 +134,26 @@ public class SubjectsController(ISender sender) : ControllerBase
         var result = await sender.Send(command);
 
         return Ok(new UpdateTopicStateResponse(result.Updated));
+    }
+
+    [HttpPut("{subjectId}/staff")]
+    [ProducesResponseType(typeof(SetSubjectStaffResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = AuthorizationPolicies.Admin)]
+    public async Task<ActionResult<SetSubjectStaffResponse>> SetStaff([FromRoute] string subjectId,
+        [FromBody] SetSubjectStaffRequest request)
+    {
+        var command = new SetSubjectStaffCommand(
+            SubjectId.Of(Guid.Parse(subjectId)),
+            request.Lecturer,
+            request.Assistant);
+
+        var result = await sender.Send(command);
+
+        return Ok(new SetSubjectStaffResponse(result.Updated));
     }
 
     [HttpDelete("{subjectId}")]

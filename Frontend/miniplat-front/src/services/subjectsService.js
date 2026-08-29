@@ -21,23 +21,6 @@ export const fetchSubjects = async () => {
   return data.subjects.data || [];
 };
 
-export const fetchSubjectById = async (id) => {
-  const response = await fetch(`${API_BASE_URL}/api/Subjects/${id}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch subject ${id}`);
-  }
-
-  const data = await response.json();
-  return data.subject;
-};
-
 export const updateSubjectTopics = async (subject, updatedTopics) => {
   const updatedSubject = {
     ...subject,
@@ -108,33 +91,24 @@ export const updateTopicState = async (subjectId, topicId, changes) => {
   }
 };
 
+/**
+ * Assigns the lecturer and assistant. Pass null as the assistant to remove them - the general
+ * subject update cannot express that, because there null means "leave this field alone".
+ */
 export const updateSubjectPeople = async (id, lecturer, assistant) => {
-  try {
-    const subject = await fetchSubjectById(id);
+  const res = await fetch(`${API_BASE_URL}/api/Subjects/${id}/staff`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify({ lecturer, assistant: assistant || null }),
+  });
 
-    const updatedSubject = {
-      ...subject,
-      lecturer,
-      assistant,
-    };
+  if (!res.ok) {
+    const text = await res.text();
 
-    const res = await fetch(`${API_BASE_URL}/api/Subjects/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders(),
-      },
-      body: JSON.stringify(updatedSubject),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-
-      console.error("Server response:", text);
-      throw new Error(`Failed to update subject ${id}`);
-    }
-  } catch (error) {
-    console.error("Failed to update subject:", error);
-    throw error;
+    console.error("Server response:", text);
+    throw new Error(`Failed to update staff on subject ${id}`);
   }
 };

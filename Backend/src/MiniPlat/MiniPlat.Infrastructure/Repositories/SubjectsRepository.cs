@@ -188,6 +188,23 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
         await appDbContext.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Writes the two staff columns and nothing else. Tracked, so the subject's topics and
+    /// materials are left where they are instead of being rebuilt to change a name.
+    /// </summary>
+    public async Task UpdateStaffAsync(SubjectId subjectId, string lecturer, string? assistant,
+        CancellationToken cancellationToken)
+    {
+        var subject = await appDbContext.Subjects
+                          .SingleOrDefaultAsync(s => s.Id == subjectId, cancellationToken) ??
+                      throw new SubjectNotFoundException(subjectId.ToString());
+
+        subject.Lecturer = lecturer;
+        subject.Assistant = assistant;
+
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task DeleteSubjectAsync(SubjectId subjectId, CancellationToken cancellationToken)
     {
         var subject = await appDbContext.Subjects
