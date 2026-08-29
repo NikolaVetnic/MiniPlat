@@ -99,6 +99,15 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
     public async Task ReplaceTopicsAsync(Subject existingSubject, List<Topic> newTopics,
         CancellationToken cancellationToken)
     {
+        var deletedAt = existingSubject.Topics
+            .Where(topic => topic.DeletedAt.HasValue)
+            .ToDictionary(topic => topic.Id, topic => topic.DeletedAt);
+
+        foreach (var topic in newTopics)
+            topic.DeletedAt = topic.IsDeleted
+                ? deletedAt.GetValueOrDefault(topic.Id) ?? DateTime.UtcNow
+                : null;
+
         appDbContext.Materials.RemoveRange(
             existingSubject.Topics.SelectMany(t => t.Materials)); // Remove existing materials
         appDbContext.Topics.RemoveRange(existingSubject.Topics); // Remove existing topics
@@ -205,7 +214,10 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             topic.IsHidden = isHidden.Value;
 
         if (isDeleted.HasValue)
+        {
             topic.IsDeleted = isDeleted.Value;
+            topic.DeletedAt = isDeleted.Value ? topic.DeletedAt ?? DateTime.UtcNow : null;
+        }
 
         await appDbContext.SaveChangesAsync(cancellationToken);
     }

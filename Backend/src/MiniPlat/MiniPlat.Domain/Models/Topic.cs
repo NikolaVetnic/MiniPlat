@@ -10,4 +10,11 @@ public class Topic : Entity<TopicId>
     public int Order { get; set; }
     public List<Material> Materials { get; set; } = [];
     public bool IsHidden { get; set; } = false;
+
+    /// <summary>
+    /// When the topic was marked for deletion, which is when its retention period starts.
+    /// Separate from LastModifiedAt because saving the subject recreates every topic row and
+    /// would otherwise keep pushing the deadline out.
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
 }

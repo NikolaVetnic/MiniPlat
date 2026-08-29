@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MiniPlat.Application.Data.Abstractions;
 using MiniPlat.Domain.Models;
+using MiniPlat.Infrastructure.BackgroundServices;
 using MiniPlat.Infrastructure.Interceptors;
 using MiniPlat.Infrastructure.Repositories;
 using OpenIddict.Abstractions;
@@ -36,6 +37,8 @@ public static class ServiceCollectionExtensions
             options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
         });
+
+        services.AddHostedService<DeletedTopicCleanupService>();
 
         services.AddScoped<ILecturersRepository, LecturersRepository>();
         services.AddScoped<ISubjectsRepository, SubjectsRepository>();
