@@ -4,6 +4,7 @@ import NavItem from "./NavItem/NavItem";
 import sr from "../../locales/sr.json";
 import styles from "./Sidebar.module.css";
 import { useUser } from "../../contexts/UserContext";
+import { groupLabel, groupSubjects, visibleSubjects } from "./grouping";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
 const LOCAL_STORAGE_KEY = "sidebarExpandedGroups";
@@ -34,22 +35,9 @@ const Sidebar = ({ subjects = [], loading = false }) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(expandedGroups));
   }, [expandedGroups]);
 
-  const subjectsToDisplay = subjects.filter((subject) => {
-    const isUserRelated =
-      !user ||
-      user.username === subject.lecturer ||
-      user.username === subject.assistant ||
-      user.username === ADMIN_USERNAME;
-
-    return isUserRelated && subject.isActive;
-  });
-
-  const groupedSubjects = {};
-  subjectsToDisplay.forEach((subject) => {
-    const key = `${subject.level}-${subject.semester}`;
-    if (!groupedSubjects[key]) groupedSubjects[key] = [];
-    groupedSubjects[key].push(subject);
-  });
+  const orderedGroups = groupSubjects(
+    visibleSubjects(subjects, user, ADMIN_USERNAME)
+  );
 
   const toggleGroup = (key) => {
     setExpandedGroups((prev) => ({
@@ -120,30 +108,9 @@ const Sidebar = ({ subjects = [], loading = false }) => {
 
             {showSubjects && (
               <nav className={styles.nav}>
-                {Object.entries(groupedSubjects)
-                  .sort((a, b) => {
-                    const [aLevel, aSemester] = a[0].split("-").map(Number);
-                    const [bLevel, bSemester] = b[0].split("-").map(Number);
-
-                    if (aLevel !== bLevel) return aLevel - bLevel;
-                    if (aSemester !== bSemester) return aSemester - bSemester;
-
-                    // Third criterion: use the smallest 'order' from each group as tiebreaker
-                    const aOrder = a[1]?.[0]?.order ?? 0;
-                    const bOrder = b[1]?.[0]?.order ?? 0;
-                    return aOrder - bOrder;
-                  })
-                  .map(([groupKey, groupSubjects]) => {
-                    const [level, semester] = groupKey.split("-");
+                {orderedGroups.map(([groupKey, subjectsInGroup]) => {
                     const isOpen = !!expandedGroups[groupKey];
-
-                    const cptLevel = cpt.levels[level - 1];
-                    const cptYear = `${
-                      cpt.years[Math.floor((semester - 1) / 2)]
-                    } godina`;
-                    const cptSemester = cpt.semester[semester % 2];
-
-                    const label = `${cptLevel} • ${cptYear} • ${cptSemester}`;
+                    const label = groupLabel(groupKey, cpt);
 
                     return (
                       <div key={groupKey}>
@@ -176,7 +143,7 @@ const Sidebar = ({ subjects = [], loading = false }) => {
 
                         {isOpen && (
                           <ul>
-                            {groupSubjects.map((subject, index) => (
+                            {subjectsInGroup.map((subject, index) => (
                               <NavItem
                                 key={subject.id}
                                 icon={PiNotePencil}
