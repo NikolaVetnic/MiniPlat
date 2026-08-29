@@ -1,0 +1,84 @@
+name: Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Backend/**"
+      - ".github/workflows/backend.yml"
+  pull_request:
+    paths:
+      - "Backend/**"
+      - ".github/workflows/backend.yml"
+  workflow_dispatch:
+
+# A newer push to the same branch makes the in-flight run irrelevant. Keyed on ref rather
+# than SHA: on a SHA key every push gets its own group and nothing ever supersedes anything,
+# so the runs pile up instead of the newest one cancelling the ones it has made obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SOLUTION: Backend/src/MiniPlat/MiniPlat.sln
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # Keyed on the project files: they are what pins the package versions, so a lockless
+      # restore only needs to run again when one of them changes.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Backend/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore "$SOLUTION"
+
+      - name: Build
+        run: dotnet build "$SOLUTION" -c Release --no-restore
+
+      # The solution has no test projects yet. Handing an untested solution to `dotnet test`
+      # is an error, not a no-op, so look first and skip - the step starts running on its own
+      # the day a test project is added, without anyone remembering to edit this file.
+      - name: Test
+        run: |
+          if ! grep -rlE 'Microsoft\.NET\.Test\.Sdk|xunit|NUnit|MSTest' --include='*.csproj' Backend > /dev/null; then
+            echo "No test projects found in Backend - skipping."
+            exit 0
+          fi
+          dotnet test "$SOLUTION" -c Release --no-build --logger "trx;LogFileName=test-results.trx"
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Build only - nothing is pushed. This exists to catch a Dockerfile that no longer
+      # matches the solution (a project added without a matching COPY line restores fine
+      # locally and then fails inside the image), which the build job above cannot see.
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: Backend
+          file: Backend/src/MiniPlat/MiniPlat.Api/Dockerfile
+          push: false
+          load: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

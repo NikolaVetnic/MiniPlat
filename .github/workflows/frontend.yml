@@ -1,0 +1,58 @@
+name: Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Frontend/**"
+      - ".github/workflows/frontend.yml"
+  pull_request:
+    paths:
+      - "Frontend/**"
+      - ".github/workflows/frontend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: Frontend/miniplat-front
+
+jobs:
+  checks:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 20 to match the node:20-alpine image that mp-fe-builder uses in docker-compose. A CI
+      # build that passes on a newer runtime than the one producing the deployed bundle proves
+      # less than it appears to.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: Frontend/miniplat-front/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # .env is gitignored, so this builds with VITE_API_BASE_URL unset - the same as the
+      # docker-proxy setup, where the empty value makes the frontend call same-origin /api
+      # paths through nginx.
+      - name: Build
+        run: npm run build
