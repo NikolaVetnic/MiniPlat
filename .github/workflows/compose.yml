@@ -1,0 +1,40 @@
+name: Compose
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docker-compose/**"
+      - ".github/workflows/compose.yml"
+  pull_request:
+    paths:
+      - "docker-compose/**"
+      - ".github/workflows/compose.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate compose files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The real .env is gitignored. The template carries the same variable names with
+      # placeholder values, which is all `config` needs - it interpolates and validates,
+      # it never connects to anything. This also fails if the two drift apart: a variable
+      # referenced by the compose files but missing from the template interpolates to empty
+      # and gets reported here rather than on a deploy.
+      - name: Seed .env from template
+        working-directory: docker-compose
+        run: cp .env.template .env
+
+      - name: Validate
+        working-directory: docker-compose
+        run: docker compose config --quiet
