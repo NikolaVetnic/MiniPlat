@@ -23,17 +23,3 @@ export interface MaterialDraft {
   link: string;
   order?: number;
 }
-
-/**
- * Et nytt tema bygget i nettleseren. Uten order - serveren utleder den fra
- * posisjonen i listen - og uten revisjonsfeltene, som serveren fyller ut.
- */
-export interface TopicDraft {
-  id: Uuid;
-  title: string;
-  description: string;
-  materials: MaterialDraft[];
-  isHidden: boolean;
-  isDeleted: boolean;
-  lastModifiedAt: string;
-}

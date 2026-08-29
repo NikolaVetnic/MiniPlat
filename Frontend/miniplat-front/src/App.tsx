@@ -7,7 +7,11 @@ import PageNotFound from "./pages/NotFound/PageNotFound";
 import SubjectPage from "./pages/Subject/SubjectPage";
 import { useUser } from "./contexts/UserContext";
 
-function App({ onLogout }) {
+interface AppProps {
+  onLogout: () => void;
+}
+
+function App({ onLogout }: AppProps) {
   const { user, isAuthenticated } = useUser();
 
   return (
@@ -38,7 +42,7 @@ function App({ onLogout }) {
         path="/:username/subjects/:subjectId"
         element={
           isAuthenticated && user ? (
-            <SubjectPage user={user} onLogout={onLogout} />
+            <SubjectPage onLogout={onLogout} />
           ) : (
             <Navigate to="/home" />
           )
@@ -48,7 +52,7 @@ function App({ onLogout }) {
       {/* Public subject route */}
       <Route
         path="/subjects/:subjectId"
-        element={<SubjectPage user={user} onLogout={onLogout} />}
+        element={<SubjectPage onLogout={onLogout} />}
       />
 
       {/* Catch-all */}

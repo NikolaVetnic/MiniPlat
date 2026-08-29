@@ -10,12 +10,6 @@
     "noEmit": true,
     "skipLibCheck": true,
 
-    /* Under migreringen ligger produksjonskoden fortsatt i .js/.jsx. De tas med slik at
-       importer fra .ts lar seg slå opp, men typesjekkes ikke - hver fil begynner å bli
-       sjekket i det den får .ts-endelse. Begge fjernes når siste fil er migrert. */
-    "allowJs": true,
-    "checkJs": false,
-
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
