@@ -9,10 +9,16 @@ export default defineConfig({
     host: true,
   },
   test: {
-    // safeLink leser window.location og session bruker localStorage, så testene
-    // trenger et DOM selv om modulene de dekker ellers er ren logikk.
+    // safeLink reads window.location and session uses localStorage, so the tests need a
+    // DOM even though the modules they cover are otherwise plain logic.
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
     setupFiles: ["src/test/setup.ts"],
+    // SubjectCard and Sidebar read the administrator name at import, and it comes from a
+    // gitignored .env - something each machine has its own value of, and CI none at all.
+    // Pinned here, so the tests exercise the same rule everywhere.
+    env: {
+      VITE_ADMIN_USERNAME: "mp_admin",
+    },
   },
 });

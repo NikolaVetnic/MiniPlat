@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -26,6 +26,12 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- WebApplicationFactory<Program> needs the entry point, which top-level statements
+           make internal. Exposed here rather than by adding a partial class to Program.cs. -->
+      <InternalsVisibleTo Include="MiniPlat.IntegrationTests" />
     </ItemGroup>
 
 </Project>

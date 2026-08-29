@@ -10,7 +10,7 @@ import {
 } from "./downloadYaml";
 
 describe("toYamlDocument", () => {
-  it("oversetter nivå fra tall til navn", () => {
+  it("translates the level from a number to a name", () => {
     expect(
       toYamlDocument([makeSubject({ level: Level.Undergraduate })]).subjects[0]
         .level
@@ -21,15 +21,15 @@ describe("toYamlDocument", () => {
     ).toBe("Master");
   });
 
-  it("skriver tom streng når assistent mangler", () => {
+  it("writes an empty string when there is no assistant", () => {
     expect(
       toYamlDocument([makeSubject({ assistant: null })]).subjects[0].assistant
     ).toBe("");
   });
 
-  it("tåler avkortede svar uten temaer eller materialer", () => {
-    // Typene lover at listene finnes, så castet er med vilje: testen dekker
-    // runtime-vaktene mot et svar som ikke holder det API-et lover.
+  it("tolerates truncated responses with no topics or materials", () => {
+    // The types promise the lists are there, so the cast is deliberate: this covers
+    // the runtime guards against a response that does not keep what the API promises.
     const doc = toYamlDocument([
       makeSubject({ topics: undefined as unknown as Topic[] }),
       makeSubject({
@@ -42,9 +42,9 @@ describe("toYamlDocument", () => {
     expect(doc.subjects[1].topics[0].materials).toEqual([]);
   });
 
-  it("tar bare med de feltene dumpen er ment å ha", () => {
-    // Emnet fra API-et bærer også version, isDeleted og revisjonsfelter. De skal
-    // ikke lekke ut i en fil som deles.
+  it("carries only the fields the dump is meant to have", () => {
+    // The subject from the API also carries version, isDeleted and the audit fields.
+    // None of that belongs in a file that gets shared.
     const doc = toYamlDocument([makeSubject({ version: 42 })]);
 
     expect(Object.keys(doc.subjects[0]).sort()).toEqual([
@@ -61,7 +61,7 @@ describe("toYamlDocument", () => {
     ]);
   });
 
-  it("beholder rekkefølgen på temaer og materialer", () => {
+  it("keeps the order of topics and materials", () => {
     const doc = toYamlDocument([
       makeSubject({
         topics: [
@@ -83,7 +83,7 @@ describe("toYamlDocument", () => {
 });
 
 describe("formatSubjectsYaml", () => {
-  it("produserer YAML som leser tilbake til samme dokument", () => {
+  it("produces YAML that reads back into the same document", () => {
     const subjects = [
       makeSubject(),
       makeSubject({ id: "s2", level: Level.Master }),
@@ -94,22 +94,22 @@ describe("formatSubjectsYaml", () => {
     );
   });
 
-  it("bryter ikke lange lenker over flere linjer", () => {
-    // lineWidth: -1. Uten den brekker js-yaml lange URL-er, og dumpen blir
-    // ubrukelig til å kopiere lenker fra.
-    const lang = `https://example.com/${"a".repeat(200)}.pdf`;
-    const ut = formatSubjectsYaml([
+  it("does not wrap long links across lines", () => {
+    // lineWidth: -1. Without it js-yaml breaks long URLs, and the dump becomes
+    // useless for copying links out of.
+    const long = `https://example.com/${"a".repeat(200)}.pdf`;
+    const output = formatSubjectsYaml([
       makeSubject({
-        topics: [makeTopic({ materials: [makeMaterial({ link: lang })] })],
+        topics: [makeTopic({ materials: [makeMaterial({ link: long })] })],
       }),
     ]);
 
-    expect(ut).toContain(lang);
+    expect(output).toContain(long);
   });
 });
 
 describe("yamlFilename", () => {
-  it("stempler filnavnet med tidspunkt uten tegn som er ulovlige i filnavn", () => {
+  it("stamps the filename with a time that carries no character a filename may not", () => {
     expect(yamlFilename(new Date("2026-08-29T13:45:07.123Z"))).toBe(
       "subjects_2026-08-29_13-45-07.yaml"
     );

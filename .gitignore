@@ -12,6 +12,9 @@ Backend/src/MiniPlat/MiniPlat.Infrastructure/Data/SeedData/actualData.yml
 
 # Ignore built FE
 Frontend/miniplat-front/dist
+Frontend/miniplat-front/dist-e2e
+Frontend/miniplat-front/playwright-report
+Frontend/miniplat-front/test-results
 
 # Ignore generated certs
 */certs/

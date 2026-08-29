@@ -7,104 +7,104 @@ import { groupLabel, groupSubjects, visibleSubjects } from "./grouping";
 const ADMIN = "admin";
 
 describe("visibleSubjects", () => {
-  const egen = subject({ id: "egen", lecturer: "pnikolic" });
-  const somAsistent = subject({
-    id: "asistent",
+  const ownSubject = subject({ id: "own", lecturer: "pnikolic" });
+  const asAssistant = subject({
+    id: "assistant",
     lecturer: "mmarkovic",
     assistant: "pnikolic",
   });
-  const andres = subject({ id: "andres", lecturer: "mmarkovic" });
-  const inaktiv = subject({
-    id: "inaktiv",
+  const someoneElses = subject({ id: "theirs", lecturer: "mmarkovic" });
+  const inactive = subject({
+    id: "inactive",
     lecturer: "pnikolic",
     isActive: false,
   });
-  const alle = [egen, somAsistent, andres, inaktiv];
+  const all = [ownSubject, asAssistant, someoneElses, inactive];
 
-  it("viser alle aktive emner til anonyme besøkende", () => {
-    expect(visibleSubjects(alle, null, ADMIN).map((s) => s.id)).toEqual([
-      "egen",
-      "asistent",
-      "andres",
+  it("shows every running subject to an anonymous visitor", () => {
+    expect(visibleSubjects(all, null, ADMIN).map((s) => s.id)).toEqual([
+      "own",
+      "assistant",
+      "theirs",
     ]);
   });
 
-  it("viser en foreleser bare egne emner, som professor eller asistent", () => {
+  it("shows a lecturer only their own, as lecturer or as assistant", () => {
     const user = { username: "pnikolic" };
 
-    expect(visibleSubjects(alle, user, ADMIN).map((s) => s.id)).toEqual([
-      "egen",
-      "asistent",
+    expect(visibleSubjects(all, user, ADMIN).map((s) => s.id)).toEqual([
+      "own",
+      "assistant",
     ]);
   });
 
-  it("viser admin alt", () => {
+  it("shows an administrator everything", () => {
     const user = { username: ADMIN };
 
-    expect(visibleSubjects(alle, user, ADMIN).map((s) => s.id)).toEqual([
-      "egen",
-      "asistent",
-      "andres",
+    expect(visibleSubjects(all, user, ADMIN).map((s) => s.id)).toEqual([
+      "own",
+      "assistant",
+      "theirs",
     ]);
   });
 
-  it("skjuler inaktive emner for alle, også for eieren og admin", () => {
+  it("hides subjects that are not running from everyone, staff and admin included", () => {
     for (const user of [null, { username: "pnikolic" }, { username: ADMIN }]) {
-      expect(visibleSubjects(alle, user, ADMIN).map((s) => s.id)).not.toContain(
-        "inaktiv",
+      expect(visibleSubjects(all, user, ADMIN).map((s) => s.id)).not.toContain(
+        "inactive",
       );
     }
   });
 });
 
 describe("groupSubjects", () => {
-  it("grupperer på nivå og semester", () => {
-    const grupper = groupSubjects([
+  it("groups on level and semester", () => {
+    const groups = groupSubjects([
       subject({ id: "a", level: 1, semester: 1 }),
       subject({ id: "b", level: 1, semester: 1 }),
       subject({ id: "c", level: 1, semester: 3 }),
     ]);
 
-    expect(grupper.map(([key, s]) => [key, s.map((x) => x.id)])).toEqual([
+    expect(groups.map(([key, s]) => [key, s.map((x) => x.id)])).toEqual([
       ["1-1", ["a", "b"]],
       ["1-3", ["c"]],
     ]);
   });
 
-  it("sorterer på nivå, så semester", () => {
-    const grupper = groupSubjects([
+  it("sorts on level, then semester", () => {
+    const groups = groupSubjects([
       subject({ id: "mss-1", level: 2, semester: 1 }),
       subject({ id: "oss-3", level: 1, semester: 3 }),
       subject({ id: "oss-1", level: 1, semester: 1 }),
     ]);
 
-    expect(grupper.map(([key]) => key)).toEqual(["1-1", "1-3", "2-1"]);
+    expect(groups.map(([key]) => key)).toEqual(["1-1", "1-3", "2-1"]);
   });
 
-  it("sorterer ikke innenfor en gruppe - API-rekkefølgen beholdes", () => {
-    // Dagens adferd. 'order' brukes kun i komparatoren mellom grupper, aldri inne i
-    // en gruppe, så visningsrekkefølgen der arves fra svaret på /api/Subjects.
-    const grupper = groupSubjects([
-      subject({ id: "sen", level: 1, semester: 1, order: 5 }),
-      subject({ id: "tidlig", level: 1, semester: 1, order: 1 }),
+  it("does not sort within a group - the order the API returned is kept", () => {
+    // Current behaviour. 'order' is used only in the comparator between groups, never
+    // inside one, so the display order there is inherited from /api/Subjects.
+    const groups = groupSubjects([
+      subject({ id: "late", level: 1, semester: 1, order: 5 }),
+      subject({ id: "early", level: 1, semester: 1, order: 1 }),
     ]);
 
-    expect(grupper[0][1].map((s) => s.id)).toEqual(["sen", "tidlig"]);
+    expect(groups[0][1].map((s) => s.id)).toEqual(["late", "early"]);
   });
 
-  it("sorterer utelukkende på nivå og semester", () => {
-    // Et tredje kriterium på 'order' sto i komparatoren, men kunne aldri kjøre og er
-    // fjernet. Testen holder fast at rekkefølgen er upåvirket av order.
-    const grupper = groupSubjects([
+  it("sorts on nothing but level and semester", () => {
+    // A third criterion on 'order' used to sit in the comparator, but could never run
+    // and has been removed. This holds the ordering independent of it.
+    const groups = groupSubjects([
       subject({ id: "b", level: 1, semester: 3, order: 0 }),
       subject({ id: "a", level: 1, semester: 1, order: 99 }),
     ]);
 
-    // Rent semester-sortert; order = 99 flytter ikke "a" bakover.
-    expect(grupper.map(([key]) => key)).toEqual(["1-1", "1-3"]);
+    // Purely semester-sorted; order = 99 does not push "a" back.
+    expect(groups.map(([key]) => key)).toEqual(["1-1", "1-3"]);
   });
 
-  it("gir tom liste for tomt innhold", () => {
+  it("gives an empty list for empty input", () => {
     expect(groupSubjects([])).toEqual([]);
   });
 });
@@ -118,7 +118,7 @@ describe("groupLabel", () => {
     ["1-3", "OSS • II godina • Zimski semestar"],
     ["1-6", "OSS • III godina • Letnji semestar"],
     ["2-1", "MSS • I godina • Zimski semestar"],
-  ])("bygger etiketten for %s", (key, forventet) => {
-    expect(groupLabel(key, cpt)).toBe(forventet);
+  ])("builds the label for %s", (key, expected) => {
+    expect(groupLabel(key, cpt)).toBe(expected);
   });
 });

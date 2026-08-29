@@ -112,20 +112,17 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             existingSubject.Topics.SelectMany(t => t.Materials)); // Remove existing materials
         appDbContext.Topics.RemoveRange(existingSubject.Topics); // Remove existing topics
 
-        for (var i = 0; i < newTopics.Count; i++) // Reassign topics with proper state
+        // Everything the caller sent is inserted, keeping the ids it arrived with - which is how
+        // a topic survives the rebuild. Marked Added rather than handed to Add(), because Add
+        // walks the graph and would mark each topic's materials Added a second time.
+        for (var i = 0; i < newTopics.Count; i++)
         {
-            newTopics[i].Order = i;
+            newTopics[i].Order = i; // the position in the list is the order
 
-            if (newTopics[i].Id.Value == Guid.Empty) // Ensure EF can track them correctly
-                appDbContext.Topics.Add(newTopics[i]); // New topic
-            else
-                appDbContext.Entry(newTopics[i]).State = EntityState.Added; // Treat as new
+            appDbContext.Entry(newTopics[i]).State = EntityState.Added;
 
-            foreach (var material in newTopics[i].Materials) // Handle materials inside each topic
-                if (material.Id.Value == Guid.Empty)
-                    appDbContext.Materials.Add(material);
-                else
-                    appDbContext.Entry(material).State = EntityState.Added;
+            foreach (var material in newTopics[i].Materials)
+                appDbContext.Entry(material).State = EntityState.Added;
         }
 
         existingSubject.Topics = newTopics; // Replace entire collection
@@ -134,41 +131,6 @@ public class SubjectsRepository(AppDbContext appDbContext) : ISubjectsRepository
             EntityState.Modified; // Only mark Subject as modified (scalar props only)
 
         await SaveDetectingConflicts(cancellationToken);
-    }
-
-    private void ReplaceMaterials(Topic topic, List<Material> newMaterials)
-    {
-        var materialMap = topic.Materials.ToDictionary(m => m.Id.Value);
-
-        var updatedMaterials = new List<Material>();
-
-        for (int i = 0; i < newMaterials.Count; i++)
-        {
-            var newMat = newMaterials[i];
-
-            if (newMat.Id is not null && newMat.Id.Value != Guid.Empty &&
-                materialMap.TryGetValue(newMat.Id.Value, out var existingMat))
-            {
-                existingMat.Description = newMat.Description;
-                existingMat.Link = newMat.Link;
-                existingMat.Order = i;
-
-                updatedMaterials.Add(existingMat);
-            }
-            else
-            {
-                newMat.Id ??= MaterialId.Of(Guid.NewGuid());
-                newMat.Order = i;
-                updatedMaterials.Add(newMat);
-            }
-        }
-
-        var newMaterialIds = new HashSet<Guid>(updatedMaterials.Select(m => m.Id!.Value));
-        var materialsToRemove = topic.Materials.Where(m => !newMaterialIds.Contains(m.Id.Value)).ToList();
-
-        appDbContext.Materials.RemoveRange(materialsToRemove);
-
-        topic.Materials = updatedMaterials;
     }
 
     /// <summary>

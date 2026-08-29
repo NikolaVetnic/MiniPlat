@@ -14,7 +14,9 @@ public class StronglyTypedIdModelBinder(Func<Guid, object> factory) : IModelBind
     {
         var value = bindingContext.ValueProvider.GetValue(bindingContext.ModelName).FirstValue;
 
-        if (Guid.TryParse(value, out var guid))
+        // The all-zero guid is refused here rather than by the id type, which throws for it -
+        // and an exception out of a model binder is a 500 where this is plainly a 400.
+        if (Guid.TryParse(value, out var guid) && guid != Guid.Empty)
             bindingContext.Result = ModelBindingResult.Success(factory(guid));
         else
             bindingContext.ModelState.TryAddModelError(

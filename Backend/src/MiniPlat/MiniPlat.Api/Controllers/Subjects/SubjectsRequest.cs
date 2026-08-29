@@ -14,16 +14,23 @@ public class CreateSubjectRequest
     public string Assistant { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// A partial update: every field is optional, and one left out of the body is left as it is on
+/// the subject. Nothing carries a default, because a default arrives at the handler looking
+/// exactly like a value the caller meant to send.
+/// </summary>
 public class UpdateSubjectRequest
 {
-    public string Title { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public Level Level { get; set; }
-    public int Semester { get; set; }
-    public string Lecturer { get; set; } = string.Empty;
+    public string? Title { get; set; }
+    public string? Code { get; set; }
+    public string? Description { get; set; }
+    public Level? Level { get; set; }
+    public int? Semester { get; set; }
+    public string? Lecturer { get; set; }
     public string? Assistant { get; set; }
-    public List<Topic> Topics { get; set; } = [];
+
+    /// <summary>Omit to leave the topics alone; send an empty list to remove them all.</summary>
+    public List<Topic>? Topics { get; set; }
 
     /// <summary>Version the client last read; omit to skip the conflict check.</summary>
     public uint Version { get; set; }

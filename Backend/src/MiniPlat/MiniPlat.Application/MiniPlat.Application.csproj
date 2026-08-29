@@ -23,4 +23,9 @@
       <Folder Include="Cqrs\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <!-- The CQRS handlers are internal; the unit tests exercise them directly. -->
+      <InternalsVisibleTo Include="MiniPlat.UnitTests" />
+    </ItemGroup>
+
 </Project>

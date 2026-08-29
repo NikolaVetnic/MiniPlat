@@ -3,43 +3,43 @@ import { describe, expect, it } from "vitest";
 import { safeLink } from "./safeLink";
 
 describe("safeLink", () => {
-  it("slipper gjennom http og https uendret", () => {
+  it("lets http and https through unchanged", () => {
     expect(safeLink("https://example.com/skript.pdf")).toBe(
       "https://example.com/skript.pdf"
     );
     expect(safeLink("http://example.com")).toBe("http://example.com");
   });
 
-  it("avviser javascript-skjemaet", () => {
+  it("rejects the javascript scheme", () => {
     expect(safeLink("javascript:alert(1)")).toBeNull();
   });
 
-  it("avviser javascript uansett bokstavstørrelse og innledende blanktegn", () => {
-    // URL-parseren normaliserer begge deler, så en enkel prefiks-sjekk på strengen
-    // ville sluppet disse gjennom.
+  it("rejects javascript whatever the casing and leading whitespace", () => {
+    // The URL parser normalises both, so a plain prefix check on the string would
+    // have let these through.
     expect(safeLink("JavaScript:alert(1)")).toBeNull();
     expect(safeLink("  javascript:alert(1)")).toBeNull();
   });
 
-  it("avviser andre skjemaer enn http og https", () => {
+  it("rejects schemes other than http and https", () => {
     expect(safeLink("data:text/html,<script>alert(1)</script>")).toBeNull();
-    expect(safeLink("mailto:noen@example.com")).toBeNull();
+    expect(safeLink("mailto:someone@example.com")).toBeNull();
     expect(safeLink("file:///etc/passwd")).toBeNull();
   });
 
-  it("behandler tomme verdier som ingen lenke", () => {
+  it("treats empty values as no link at all", () => {
     expect(safeLink("")).toBeNull();
     expect(safeLink(null)).toBeNull();
     expect(safeLink(undefined)).toBeNull();
   });
 
-  it("beholder relative lenker, som løses mot sidens origin", () => {
+  it("keeps relative links, which resolve against the page's own origin", () => {
     expect(safeLink("/materijali/skripta.pdf")).toBe("/materijali/skripta.pdf");
   });
 
-  it("slipper gjennom tekst uten skjema, fordi den løses som relativ sti", () => {
-    // Dagens adferd, ikke nødvendigvis ønsket: en fritekststreng blir en relativ
-    // lenke i stedet for å avvises. Ufarlig, men verdt å ha låst.
-    expect(safeLink("bare litt tekst")).toBe("bare litt tekst");
+  it("lets text without a scheme through, because it resolves as a relative path", () => {
+    // Current behaviour rather than a decision: a free-text string becomes a relative
+    // link instead of being refused. Harmless, but worth having pinned.
+    expect(safeLink("just some text")).toBe("just some text");
   });
 });
