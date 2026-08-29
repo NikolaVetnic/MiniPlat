@@ -2,7 +2,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeSubject } from "../../test/fixtures";
-import { loggInn, loggUt, renderMedØkt } from "../../test/render";
+import { renderWithSession, signIn, signOut } from "../../test/render";
 import { Level } from "../../types/api";
 import { groupLabel } from "./grouping";
 import sr from "../../locales/sr.json";
@@ -10,14 +10,14 @@ import Sidebar from "./Sidebar";
 
 const cpt = sr.components.sidebar;
 
-// NavItem nummererer teksten - «1 Psihologija» - så emnetitler søkes opp med regex.
+// NavItem numbers the text - "1 Psihologija" - so subject titles are matched by regex.
 
-/** Satt i vite.config.ts, så regelen er den samme her som i CI. */
+/** Set in vite.config.ts, so the rule is the same here as it is in CI. */
 const ADMIN = "mp_admin";
 
-const LAGERNØKKEL = "sidebarExpandedGroups";
+const STORAGE_KEY = "sidebarExpandedGroups";
 
-const emner = [
+const subjects = [
   makeSubject({
     id: "s-1",
     title: "Psihologija",
@@ -44,151 +44,152 @@ const emner = [
   }),
 ];
 
-const førsteGruppe = groupLabel("1-1", cpt);
-const andreGruppe = groupLabel("2-3", cpt);
+const firstGroup = groupLabel("1-1", cpt);
+const secondGroup = groupLabel("2-3", cpt);
 
-const vis = (props: Parameters<typeof Sidebar>[0] = {}) =>
-  renderMedØkt(<Sidebar {...props} />);
+const show = (props: Parameters<typeof Sidebar>[0] = {}) =>
+  renderWithSession(<Sidebar {...props} />);
 
 beforeEach(() => {
-  loggUt();
-  localStorage.removeItem(LAGERNØKKEL);
+  signOut();
+  localStorage.removeItem(STORAGE_KEY);
 });
 
 afterEach(() => {
-  loggUt();
+  signOut();
   localStorage.clear();
   vi.restoreAllMocks();
 });
 
 describe("Sidebar", () => {
-  it("viser en spinner i stedet for treet mens emnene lastes", () => {
-    vis({ subjects: emner, loading: true });
+  it("shows a spinner instead of the tree while the subjects load", () => {
+    show({ subjects, loading: true });
 
-    expect(screen.queryByText(førsteGruppe)).toBeNull();
+    expect(screen.queryByText(firstGroup)).toBeNull();
   });
 
-  it("grupperer emnene på nivå og semester", () => {
-    vis({ subjects: emner });
+  it("groups the subjects on level and semester", () => {
+    show({ subjects });
 
-    expect(screen.getByText(førsteGruppe)).toBeDefined();
-    expect(screen.getByText(andreGruppe)).toBeDefined();
+    expect(screen.getByText(firstGroup)).toBeDefined();
+    expect(screen.getByText(secondGroup)).toBeDefined();
   });
 
-  /** Gruppene starter lukket, så en lang liste ikke ruller ut ved første besøk. */
-  it("starter med gruppene lukket", () => {
-    vis({ subjects: emner });
+  /** The groups start closed, so a long list does not unroll on a first visit. */
+  it("starts with the groups closed", () => {
+    show({ subjects });
 
     expect(screen.queryByText(/Psihologija/)).toBeNull();
   });
 
-  it("åpner en gruppe når den klikkes", () => {
-    vis({ subjects: emner });
+  it("opens a group when it is clicked", () => {
+    show({ subjects });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
 
     expect(screen.getByText(/Psihologija/)).toBeDefined();
     expect(screen.getByText(/Pedagogija/)).toBeDefined();
     expect(screen.queryByText(/Metodika/)).toBeNull();
   });
 
-  it("lukker den igjen ved neste klikk", () => {
-    vis({ subjects: emner });
+  it("closes it again on the next click", () => {
+    show({ subjects });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
+    fireEvent.click(screen.getByText(firstGroup));
 
     expect(screen.queryByText(/Psihologija/)).toBeNull();
   });
 
-  /** Treet skal se ut som det gjorde, ellers må man klikke seg fram igjen hver navigering. */
-  it("husker hvilke grupper som sto åpne", () => {
-    const { unmount } = vis({ subjects: emner });
+  /** The tree should look the way it did, or you click your way back on every navigation. */
+  it("remembers which groups were left open", () => {
+    const { unmount } = show({ subjects });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
     unmount();
 
-    vis({ subjects: emner });
+    show({ subjects });
 
     expect(screen.getByText(/Psihologija/)).toBeDefined();
   });
 
-  it("tåler at det som er lagret ikke gir mening", () => {
-    localStorage.setItem(LAGERNØKKEL, "ikke json");
+  it("tolerates stored data that makes no sense", () => {
+    localStorage.setItem(STORAGE_KEY, "not json");
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    vis({ subjects: emner });
+    show({ subjects });
 
-    expect(screen.getByText(førsteGruppe)).toBeDefined();
+    expect(screen.getByText(firstGroup)).toBeDefined();
     expect(screen.queryByText(/Psihologija/)).toBeNull();
   });
 });
 
-describe("Sidebar og hvilke emner som vises", () => {
-  it("viser alle aktive emner til en besøkende", () => {
-    vis({ subjects: emner });
+describe("Sidebar and which subjects it shows", () => {
+  it("shows every running subject to a visitor", () => {
+    show({ subjects });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
-    fireEvent.click(screen.getByText(andreGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
+    fireEvent.click(screen.getByText(secondGroup));
 
     expect(screen.getByText(/Psihologija/)).toBeDefined();
     expect(screen.getByText(/Metodika/)).toBeDefined();
   });
 
   /**
-   * En innlogget nastavnik ser bare sine egne emner - som foreleser eller assistent.
-   * Serveren avgjør det samme for skrivekallene; dette er navigasjonen som følger etter.
+   * A signed-in member of staff sees only their own subjects - as lecturer or assistant.
+   * The server decides the same thing for the write calls; this is the navigation that
+   * follows from it.
    */
-  it("viser en foreleser bare emnene de har ansvar for", () => {
-    loggInn("pnikolic");
+  it("shows a lecturer only the subjects they are responsible for", () => {
+    signIn("pnikolic");
 
-    vis({ subjects: emner });
+    show({ subjects });
 
-    expect(screen.getByText(førsteGruppe)).toBeDefined();
-    expect(screen.queryByText(andreGruppe)).toBeNull();
+    expect(screen.getByText(firstGroup)).toBeDefined();
+    expect(screen.queryByText(secondGroup)).toBeNull();
 
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
 
     expect(screen.getByText(/Psihologija/)).toBeDefined();
     expect(screen.getByText(/Pedagogija/)).toBeDefined();
   });
 
-  it("viser administratoren alt", () => {
-    loggInn(ADMIN);
+  it("shows the administrator everything", () => {
+    signIn(ADMIN);
 
-    vis({ subjects: emner });
+    show({ subjects });
 
-    expect(screen.getByText(førsteGruppe)).toBeDefined();
-    expect(screen.getByText(andreGruppe)).toBeDefined();
+    expect(screen.getByText(firstGroup)).toBeDefined();
+    expect(screen.getByText(secondGroup)).toBeDefined();
   });
 
-  it("utelater emner som ikke er aktive", () => {
-    vis({
+  it("leaves out subjects that are not running", () => {
+    show({
       subjects: [
-        makeSubject({ id: "s-1", title: "Aktivt", semester: 1, isActive: true }),
-        makeSubject({ id: "s-2", title: "Inaktivt", semester: 1, isActive: false }),
+        makeSubject({ id: "s-1", title: "Running", semester: 1, isActive: true }),
+        makeSubject({ id: "s-2", title: "Inactive", semester: 1, isActive: false }),
       ],
     });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
 
-    expect(screen.getByText(/Aktivt/)).toBeDefined();
-    expect(screen.queryByText(/Inaktivt/)).toBeNull();
+    expect(screen.getByText(/Running/)).toBeDefined();
+    expect(screen.queryByText(/Inactive/)).toBeNull();
   });
 
-  it("viser ingen grupper når det ikke er noen emner", () => {
-    vis({ subjects: [] });
+  it("shows no groups when there are no subjects", () => {
+    show({ subjects: [] });
 
-    expect(screen.queryByText(førsteGruppe)).toBeNull();
+    expect(screen.queryByText(firstGroup)).toBeNull();
     expect(screen.getByText(cpt.home)).toBeDefined();
   });
 });
 
-describe("Sidebar og lenkene", () => {
-  it("peker på de offentlige adressene for en besøkende", () => {
-    vis({ subjects: emner });
+describe("Sidebar and the links", () => {
+  it("points at the public addresses for a visitor", () => {
+    show({ subjects });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
 
     expect(
       screen.getByRole("link", { name: /Psihologija/ }).getAttribute("href")
@@ -198,12 +199,12 @@ describe("Sidebar og lenkene", () => {
     );
   });
 
-  it("peker på brukerens egne adresser når noen er logget inn", () => {
-    loggInn("pnikolic");
+  it("points at the user's own addresses when someone is signed in", () => {
+    signIn("pnikolic");
 
-    vis({ subjects: emner });
+    show({ subjects });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
 
     expect(
       screen.getByRole("link", { name: /Psihologija/ }).getAttribute("href")
@@ -213,14 +214,14 @@ describe("Sidebar og lenkene", () => {
     );
   });
 
-  it("koder emne-id-en inn i adressen", () => {
-    vis({
-      subjects: [makeSubject({ id: "a b/c", title: "Rart", semester: 1 })],
+  it("encodes the subject id into the address", () => {
+    show({
+      subjects: [makeSubject({ id: "a b/c", title: "Odd", semester: 1 })],
     });
 
-    fireEvent.click(screen.getByText(førsteGruppe));
+    fireEvent.click(screen.getByText(firstGroup));
 
-    expect(screen.getByRole("link", { name: /Rart/ }).getAttribute("href")).toBe(
+    expect(screen.getByRole("link", { name: /Odd/ }).getAttribute("href")).toBe(
       "/subjects/a%20b%2Fc"
     );
   });

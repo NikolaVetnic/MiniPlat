@@ -3,22 +3,22 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import useWindowWidth from "./useWindowWidth";
 
-const opprinneligBredde = window.innerWidth;
+const originalWidth = window.innerWidth;
 
-const settBredde = (bredde: number) => {
-  window.innerWidth = bredde;
+const setWidth = (width: number) => {
+  window.innerWidth = width;
   act(() => {
     window.dispatchEvent(new Event("resize"));
   });
 };
 
 afterEach(() => {
-  window.innerWidth = opprinneligBredde;
+  window.innerWidth = originalWidth;
   vi.restoreAllMocks();
 });
 
 describe("useWindowWidth", () => {
-  it("starter på bredden vinduet har", () => {
+  it("starts at the width the window has", () => {
     window.innerWidth = 1024;
 
     const { result } = renderHook(() => useWindowWidth());
@@ -27,53 +27,53 @@ describe("useWindowWidth", () => {
   });
 
   /**
-   * Sidebaren og emnekortene bytter oppsett på en breakpoint. Uten oppdateringen ville
-   * de blitt stående i det oppsettet siden ble lastet i.
+   * The sidebar and the subject cards swap layout on a breakpoint. Without the update
+   * they would stay in whatever layout the page was loaded at.
    */
-  it("følger med når vinduet endrer størrelse", () => {
+  it("follows the window as it is resized", () => {
     window.innerWidth = 1024;
 
     const { result } = renderHook(() => useWindowWidth());
 
-    settBredde(480);
+    setWidth(480);
     expect(result.current).toBe(480);
 
-    settBredde(1440);
+    setWidth(1440);
     expect(result.current).toBe(1440);
   });
 
-  it("lytter én gang uansett hvor mange ganger komponenten tegnes om", () => {
-    const lytt = vi.spyOn(window, "addEventListener");
+  it("listens once however many times the component re-renders", () => {
+    const listen = vi.spyOn(window, "addEventListener");
 
     const { rerender } = renderHook(() => useWindowWidth());
 
     rerender();
     rerender();
 
-    expect(lytt.mock.calls.filter(([type]) => type === "resize")).toHaveLength(1);
+    expect(listen.mock.calls.filter(([type]) => type === "resize")).toHaveLength(1);
   });
 
   /**
-   * Hvert emnekort bruker kroken. Uten opprydningen samler lytterne seg opp for hver
-   * navigering, og alle blir kalt på hver eneste resize.
+   * Every subject card uses the hook. Without the cleanup the listeners accumulate with
+   * each navigation, and all of them run on every resize.
    */
-  it("rydder opp etter seg", () => {
-    const slutt = vi.spyOn(window, "removeEventListener");
+  it("cleans up after itself", () => {
+    const stopListening = vi.spyOn(window, "removeEventListener");
 
     const { unmount } = renderHook(() => useWindowWidth());
 
     unmount();
 
-    expect(slutt.mock.calls.filter(([type]) => type === "resize")).toHaveLength(1);
+    expect(stopListening.mock.calls.filter(([type]) => type === "resize")).toHaveLength(1);
   });
 
-  it("oppdaterer ikke lenger etter opprydningen", () => {
+  it("stops updating once it has been cleaned up", () => {
     window.innerWidth = 1024;
 
     const { result, unmount } = renderHook(() => useWindowWidth());
 
     unmount();
-    settBredde(480);
+    setWidth(480);
 
     expect(result.current).toBe(1024);
   });

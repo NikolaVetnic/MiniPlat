@@ -7,50 +7,50 @@ const load = async () => {
   return { ...session, dropSessionIfRejected };
 };
 
-const svar = (status: number) => new Response(null, { status });
+const response = (status: number) => new Response(null, { status });
 
 beforeEach(() => {
   localStorage.clear();
 });
 
 describe("dropSessionIfRejected", () => {
-  it("dropper økten på 401", async () => {
+  it("drops the session on 401", async () => {
     const { dropSessionIfRejected, getSession, storeSession } = await load();
 
     storeSession("abc123", { username: "pnikolic" });
-    dropSessionIfRejected(svar(401));
+    dropSessionIfRejected(response(401));
 
     expect(getSession()).toEqual({ token: null, user: null });
   });
 
-  it("beholder økten på 403", async () => {
-    // API-et svarer 403 på «du kan bare redigere emner du underviser». Det er en
-    // gyldig økt som møter en eierskapsregel, ikke en død token.
+  it("keeps the session on 403", async () => {
+    // The API answers 403 for "you may only edit subjects you teach". That is a valid
+    // session meeting an ownership rule, not a dead token.
     const { dropSessionIfRejected, getSession, storeSession } = await load();
 
     storeSession("abc123", { username: "pnikolic" });
-    dropSessionIfRejected(svar(403));
+    dropSessionIfRejected(response(403));
 
     expect(getSession().token).toBe("abc123");
   });
 
-  it("rører ikke en økt på 409 eller 500", async () => {
+  it("leaves a session alone on 409 or 500", async () => {
     const { dropSessionIfRejected, getSession, storeSession } = await load();
 
     storeSession("abc123", { username: "pnikolic" });
-    dropSessionIfRejected(svar(409));
-    dropSessionIfRejected(svar(500));
+    dropSessionIfRejected(response(409));
+    dropSessionIfRejected(response(500));
 
     expect(getSession().token).toBe("abc123");
   });
 
-  it("varsler ikke når en anonym besøkende får 401", async () => {
+  it("notifies nobody when an anonymous visitor gets a 401", async () => {
     const { dropSessionIfRejected, subscribe } = await load();
-    const varsler = vi.fn();
+    const listener = vi.fn();
 
-    subscribe(varsler);
-    dropSessionIfRejected(svar(401));
+    subscribe(listener);
+    dropSessionIfRejected(response(401));
 
-    expect(varsler).not.toHaveBeenCalled();
+    expect(listener).not.toHaveBeenCalled();
   });
 });

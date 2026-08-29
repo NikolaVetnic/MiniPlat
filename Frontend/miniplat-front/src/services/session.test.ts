@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
- * session.js leser localStorage én gang ved import og speiler tokenet i en
- * modulvariabel. Hver test må derfor laste modulen på nytt, ellers henger den
- * in-memory kopien igjen fra forrige test.
+ * session.js reads localStorage once at import and mirrors the token in a module
+ * variable. Every test therefore has to load the module again, or the in-memory copy
+ * carries over from the previous one.
  */
 const loadSession = async () => {
   vi.resetModules();
@@ -19,14 +19,14 @@ afterEach(() => {
 });
 
 describe("session", () => {
-  it("gir tom økt når ingenting er lagret", async () => {
+  it("gives an empty session when nothing is stored", async () => {
     const { getToken, readStoredSession } = await loadSession();
 
     expect(getToken()).toBeNull();
     expect(readStoredSession()).toEqual({ token: null, user: null });
   });
 
-  it("leser en lagret økt tilbake ved oppstart", async () => {
+  it("reads a stored session back at startup", async () => {
     localStorage.setItem("token", "abc123");
     localStorage.setItem("user", JSON.stringify({ username: "pnikolic" }));
 
@@ -39,22 +39,22 @@ describe("session", () => {
     });
   });
 
-  it("gjør tokenet lesbart synkront med én gang det lagres", async () => {
+  it("makes the token readable synchronously the moment it is stored", async () => {
     const { getToken, storeSession } = await loadSession();
 
-    storeSession("nytt-token", { username: "pnikolic" });
+    storeSession("new-token", { username: "pnikolic" });
 
-    // Poenget med modulvariabelen: authHeaders kaller getToken utenfor React og
-    // må se tokenet uten å vente på en ny render.
-    expect(getToken()).toBe("nytt-token");
-    expect(localStorage.getItem("token")).toBe("nytt-token");
+    // The point of the module variable: authHeaders calls getToken outside React and
+    // has to see the token without waiting for a render.
+    expect(getToken()).toBe("new-token");
+    expect(localStorage.getItem("token")).toBe("new-token");
     expect(localStorage.getItem("user")).toBe('{"username":"pnikolic"}');
   });
 
-  it("tømmer både lager og in-memory kopi ved utlogging", async () => {
+  it("empties both storage and the in-memory copy on sign-out", async () => {
     const { clearSession, getToken, storeSession } = await loadSession();
 
-    storeSession("nytt-token", { username: "pnikolic" });
+    storeSession("new-token", { username: "pnikolic" });
     clearSession();
 
     expect(getToken()).toBeNull();
@@ -62,41 +62,41 @@ describe("session", () => {
     expect(localStorage.getItem("user")).toBeNull();
   });
 
-  it("behandler korrupt brukerdata som ingen bruker i stedet for å kaste", async () => {
-    // Var tidligere en krasj i UserProvider ved mount: JSON.parse lå utenfor
-    // try/catch-en i read(). Tokenet beholdes, så leseendepunktene fortsetter å
-    // svare med foreleserens utvidede innhold; brukeren framstår som utlogget.
+  it("treats corrupt user data as no user rather than throwing", async () => {
+    // This used to crash UserProvider on mount: JSON.parse sat outside the try/catch in
+    // read(). The token is kept, so the read endpoints keep answering with the
+    // lecturer's extended content; the user simply appears signed out.
     localStorage.setItem("token", "abc123");
-    localStorage.setItem("user", "{ikke json");
+    localStorage.setItem("user", "{not json");
 
     const { readStoredSession } = await loadSession();
 
     expect(readStoredSession()).toEqual({ token: "abc123", user: null });
   });
 
-  it("leser tokenet friskt, ikke fra kopien tatt ved import", async () => {
-    // Modulen lastes med tomt lager, og tokenet skrives etterpå - slik en annen fane
-    // ville gjort det. Speilet skal fange opp skrivingen, ikke bli hengende igjen.
+  it("reads the token fresh rather than from the copy taken at import", async () => {
+    // The module is loaded against empty storage and the token written afterwards, the
+    // way another tab would. The mirror has to pick the write up, not lag behind it.
     const { getToken, readStoredSession } = await loadSession();
     expect(getToken()).toBeNull();
 
-    localStorage.setItem("token", "skrevet-senere");
+    localStorage.setItem("token", "written-later");
 
-    expect(readStoredSession().token).toBe("skrevet-senere");
-    expect(getToken()).toBe("skrevet-senere");
+    expect(readStoredSession().token).toBe("written-later");
+    expect(getToken()).toBe("written-later");
   });
 
-  it("avviser lagret bruker uten brukernavn", async () => {
-    // Hver konsument leser user.username, så et objekt uten det feltet er ubrukelig
-    // og skal ikke sendes videre til en render.
-    localStorage.setItem("user", JSON.stringify({ epost: "a@b.c" }));
+  it("refuses a stored user without a username", async () => {
+    // Every consumer reads user.username, so an object without that field is unusable
+    // and must not be handed on to a render.
+    localStorage.setItem("user", JSON.stringify({ email: "a@b.c" }));
 
     const { readStoredSession } = await loadSession();
 
     expect(readStoredSession().user).toBeNull();
   });
 
-  it("avviser lagret bruker som ikke er et objekt", async () => {
+  it("refuses a stored user that is not an object", async () => {
     localStorage.setItem("user", '"pnikolic"');
 
     const { readStoredSession } = await loadSession();
@@ -105,8 +105,8 @@ describe("session", () => {
   });
 });
 
-describe("utløp", () => {
-  it("beholder tokenet så lenge det er gyldig", async () => {
+describe("session expiry", () => {
+  it("keeps the token for as long as it is valid", async () => {
     const { getToken, storeSession } = await loadSession();
 
     storeSession("abc123", { username: "pnikolic" }, 3600);
@@ -114,7 +114,7 @@ describe("utløp", () => {
     expect(getToken()).toBe("abc123");
   });
 
-  it("dropper økten når tokenet er utløpt, uten å spørre serveren", async () => {
+  it("drops the session once the token has expired, without asking the server", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-29T12:00:00Z"));
 
@@ -124,54 +124,55 @@ describe("utløp", () => {
     vi.setSystemTime(new Date("2026-08-29T13:00:01Z"));
 
     expect(getToken()).toBeNull();
-    // Ikke bare skjult: økten er faktisk ryddet bort, så UI-et slutter å si innlogget.
+    // Not merely hidden: the session is actually cleared, so the UI stops claiming to
+    // be signed in.
     expect(getSession()).toEqual({ token: null, user: null });
     expect(localStorage.getItem("token")).toBeNull();
   });
 
-  it("lar en økt uten utløpstid stå", async () => {
+  it("leaves a session without an expiry standing", async () => {
     const { getToken, storeSession } = await loadSession();
 
-    // Serveren oppga ingen expires_in. Da er det bare et 401 som kan avslutte økten.
+    // The server gave no expires_in. Only a 401 can end this session.
     storeSession("abc123", { username: "pnikolic" });
 
     expect(getToken()).toBe("abc123");
   });
 });
 
-describe("abonnenter", () => {
-  it("varsler ved innlogging og utlogging", async () => {
+describe("session subscribers", () => {
+  it("notifies on sign-in and on sign-out", async () => {
     const { clearSession, storeSession, subscribe } = await loadSession();
-    const varsler = vi.fn();
+    const listener = vi.fn();
 
-    subscribe(varsler);
+    subscribe(listener);
 
     storeSession("abc123", { username: "pnikolic" });
-    expect(varsler).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledTimes(1);
 
     clearSession();
-    expect(varsler).toHaveBeenCalledTimes(2);
+    expect(listener).toHaveBeenCalledTimes(2);
   });
 
-  it("varsler ikke når det ikke fantes noen økt å rydde", async () => {
-    // Et 401 fra et endepunkt en anonym besøkende aldri var innlogget på skal ikke
-    // presse en render gjennom hele treet.
+  it("notifies nobody when there was no session to clear", async () => {
+    // A 401 from an endpoint an anonymous visitor was never signed in for must not
+    // push a render through the whole tree.
     const { clearSession, subscribe } = await loadSession();
-    const varsler = vi.fn();
+    const listener = vi.fn();
 
-    subscribe(varsler);
+    subscribe(listener);
     clearSession();
 
-    expect(varsler).not.toHaveBeenCalled();
+    expect(listener).not.toHaveBeenCalled();
   });
 
-  it("slutter å varsle etter avmelding", async () => {
+  it("stops notifying once unsubscribed", async () => {
     const { storeSession, subscribe } = await loadSession();
-    const varsler = vi.fn();
+    const listener = vi.fn();
 
-    subscribe(varsler)();
+    subscribe(listener)();
     storeSession("abc123", { username: "pnikolic" });
 
-    expect(varsler).not.toHaveBeenCalled();
+    expect(listener).not.toHaveBeenCalled();
   });
 });

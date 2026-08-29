@@ -5,9 +5,9 @@ import sr from "../../../locales/sr.json";
 import TopicModal from "./TopicModal";
 
 const cpt = sr.components.cards.topic;
-const feil = sr.components.modals.topic.errors;
+const errors = sr.components.modals.topic.errors;
 
-const vis = (over: Partial<Parameters<typeof TopicModal>[0]> = {}) => {
+const show = (over: Partial<Parameters<typeof TopicModal>[0]> = {}) => {
   const spies = {
     onTitleChange: vi.fn(),
     onDescriptionChange: vi.fn(),
@@ -18,7 +18,7 @@ const vis = (over: Partial<Parameters<typeof TopicModal>[0]> = {}) => {
     onCancel: vi.fn(),
   };
 
-  const resultat = render(
+  const rendered = render(
     <TopicModal
       title="Prva tema"
       description="Opis teme"
@@ -29,82 +29,82 @@ const vis = (over: Partial<Parameters<typeof TopicModal>[0]> = {}) => {
     />
   );
 
-  return { ...spies, ...resultat };
+  return { ...spies, ...rendered };
 };
 
-const lagre = () =>
+const save = () =>
   fireEvent.click(screen.getByRole("button", { name: cpt.buttons.save }));
 
 describe("TopicModal", () => {
-  it("viser innholdet det ble åpnet med", () => {
-    vis({ title: "Prva tema", description: "Opis teme" });
+  it("shows the content it was opened with", () => {
+    show({ title: "Prva tema", description: "Opis teme" });
 
     expect(screen.getByDisplayValue("Prva tema")).toBeDefined();
     expect(screen.getByDisplayValue("Opis teme")).toBeDefined();
   });
 
-  /** Overskriften sier om dette er en ny tema eller en som redigeres. */
+  /** The heading says whether this is a new topic or one being edited. */
   it.each([
-    ["et nytt tema", "", cpt.titles.create],
-    ["et som redigeres", "Prva tema", cpt.titles.update],
-  ])("kaller vinduet for %s", (_navn, title, overskrift) => {
-    vis({ title });
+    ["a new topic", "", cpt.titles.create],
+    ["one being edited", "Prva tema", cpt.titles.update],
+  ])("names the dialog for %s", (_name, title, heading) => {
+    show({ title });
 
-    expect(screen.getByRole("heading", { name: overskrift })).toBeDefined();
+    expect(screen.getByRole("heading", { name: heading })).toBeDefined();
   });
 
-  it("melder fra om hvert tastetrykk i tittelen", () => {
-    const { onTitleChange } = vis();
+  it("reports every keystroke in the title", () => {
+    const { onTitleChange } = show();
 
     fireEvent.change(screen.getByLabelText(/Naslov/), { target: { value: "Ny" } });
 
     expect(onTitleChange).toHaveBeenCalledWith("Ny");
   });
 
-  it("lagrer når begge feltene er fylt ut", () => {
-    const { onSave } = vis();
+  it("saves once both fields are filled in", () => {
+    const { onSave } = show();
 
-    lagre();
+    save();
 
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
   /**
-   * Et tema uten tittel eller beskrivelse ville blitt en tom rad i emnet. Vinduet blir
-   * stående med feilen i stedet for å lukke seg og sende noe halvferdig videre.
+   * A topic with no title or description would become an empty row on the subject. The
+   * dialog stays open with the error rather than closing and sending something half done.
    */
   it.each([
-    ["tittelen", "", "Opis teme", feil.titleIsMandatory],
-    ["beskrivelsen", "Prva tema", "", feil.descriptionIsMandatory],
-    ["bare mellomrom i tittelen", "   ", "Opis teme", feil.titleIsMandatory],
-  ])("nekter å lagre når %s mangler", (_navn, title, description, melding) => {
-    const { onSave } = vis({ title, description });
+    ["the title", "", "Opis teme", errors.titleIsMandatory],
+    ["the description", "Prva tema", "", errors.descriptionIsMandatory],
+    ["nothing but spaces in the title", "   ", "Opis teme", errors.titleIsMandatory],
+  ])("refuses to save when %s is missing", (_name, title, description, message) => {
+    const { onSave } = show({ title, description });
 
-    lagre();
+    save();
 
     expect(onSave).not.toHaveBeenCalled();
-    expect(screen.getByText(melding)).toBeDefined();
+    expect(screen.getByText(message)).toBeDefined();
   });
 
-  it("melder om begge feltene når begge mangler", () => {
-    vis({ title: "", description: "" });
+  it("reports both fields when both are missing", () => {
+    show({ title: "", description: "" });
 
-    lagre();
+    save();
 
-    expect(screen.getByText(feil.titleIsMandatory)).toBeDefined();
-    expect(screen.getByText(feil.descriptionIsMandatory)).toBeDefined();
+    expect(screen.getByText(errors.titleIsMandatory)).toBeDefined();
+    expect(screen.getByText(errors.descriptionIsMandatory)).toBeDefined();
   });
 
-  /** Feilen forsvinner så snart feltet får innhold, ikke først ved neste lagring. */
-  it("fjerner feilen når feltet fylles ut", () => {
-    const { rerender } = vis({ title: "", description: "Opis teme" });
+  /** The error goes as soon as the field has content, not at the next save. */
+  it("clears the error once the field is filled in", () => {
+    const { rerender } = show({ title: "", description: "Opis teme" });
 
-    lagre();
-    expect(screen.getByText(feil.titleIsMandatory)).toBeDefined();
+    save();
+    expect(screen.getByText(errors.titleIsMandatory)).toBeDefined();
 
     rerender(
       <TopicModal
-        title="Nå har den tittel"
+        title="It has a title now"
         description="Opis teme"
         materials={[]}
         cpt={cpt}
@@ -118,11 +118,11 @@ describe("TopicModal", () => {
       />
     );
 
-    expect(screen.queryByText(feil.titleIsMandatory)).toBeNull();
+    expect(screen.queryByText(errors.titleIsMandatory)).toBeNull();
   });
 
-  it("avbryter uten å lagre", () => {
-    const { onCancel, onSave } = vis();
+  it("cancels without saving", () => {
+    const { onCancel, onSave } = show();
 
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.cancel }));
 
@@ -131,43 +131,43 @@ describe("TopicModal", () => {
   });
 });
 
-describe("TopicModal og materialradene", () => {
-  const materialer = [
+describe("TopicModal and the material rows", () => {
+  const materials = [
     { description: "Skripta", link: "https://example.com/s.pdf" },
     { description: "Video", link: "https://example.com/v" },
   ];
 
-  it("viser en rad per materiale", () => {
-    vis({ materials: materialer });
+  it("shows one row per material", () => {
+    show({ materials });
 
     expect(screen.getByDisplayValue("Skripta")).toBeDefined();
     expect(screen.getByDisplayValue("https://example.com/v")).toBeDefined();
   });
 
-  it("ber om en ny rad", () => {
-    const { onAddMaterial } = vis();
+  it("asks for a new row", () => {
+    const { onAddMaterial } = show();
 
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.addMaterial }));
 
     expect(onAddMaterial).toHaveBeenCalledTimes(1);
   });
 
-  it("melder fra om endringer med raden og feltet det gjelder", () => {
-    const { onMaterialChange } = vis({ materials: materialer });
+  it("reports a change with the row and the field it concerns", () => {
+    const { onMaterialChange } = show({ materials });
 
     fireEvent.change(screen.getByDisplayValue("Video"), { target: { value: "Snimak" } });
 
     expect(onMaterialChange).toHaveBeenCalledWith(1, "description", "Snimak");
   });
 
-  it("melder fra om hvilken rad som skal fjernes", () => {
-    const { onRemoveMaterial } = vis({ materials: materialer });
+  it("reports which row is to be removed", () => {
+    const { onRemoveMaterial } = show({ materials });
 
-    const knapper = screen
+    const iconButtons = screen
       .getAllByRole("button")
-      .filter((b) => b.textContent === "");
+      .filter((button) => button.textContent === "");
 
-    fireEvent.click(knapper[1]);
+    fireEvent.click(iconButtons[1]);
 
     expect(onRemoveMaterial).toHaveBeenCalledWith(1);
   });

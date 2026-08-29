@@ -1,84 +1,86 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { LECTURER } from "../playwright.config";
 
 /**
- * Fire stier gjennom hele stakken. De prøver ikke logikk - den er dekket lag for lag av
- * enhets- og integrasjonstestene - men at lagene faktisk er koblet sammen: at pakken som
- * bygges snakker med API-et som kjører, at et token utstedt av OpenIddict blir godtatt på
- * neste kall, og at noe som lagres er der etter en ny lasting.
+ * Four paths through the whole stack. They do not exercise logic - that is covered layer
+ * by layer by the unit and integration tests - but that the layers are actually joined up:
+ * that the bundle being built talks to the API that is running, that a token issued by
+ * OpenIddict is accepted on the next call, and that something saved is there after a
+ * reload.
  */
 
-/** Fra initialData.yml. Pedagogija undervises av USRa; Književnost er ikke aktivt. */
+/** From initialData.yml. Pedagogija is taught by USRa; Književnost is not running. */
 const PEDAGOGIJA = "Pedagogija";
-const FØRSTE_TEMA = "Prvo predavanje";
-const GRUPPE_OSS_I_ZIMSKI = "OSS • I godina • Zimski semestar";
+const FIRST_TOPIC = "Prvo predavanje";
+const GROUP_OSS_I_WINTER = "OSS • I godina • Zimski semestar";
 
-const loggInn = async (page: import("@playwright/test").Page) => {
+const signIn = async (page: Page) => {
   await page.goto("/login");
 
   await page.getByPlaceholder("Korisničko ime (email)").fill(LECTURER.username);
   await page.getByPlaceholder("Lozinka").fill(LECTURER.password);
   await page.getByRole("button", { name: "Prijava" }).click();
 
-  await expect(page.getByText(`Ulogovani ste kao`)).toBeVisible();
+  await expect(page.getByText("Ulogovani ste kao")).toBeVisible();
 };
 
-const åpnePedagogija = async (page: import("@playwright/test").Page) => {
-  await page.getByRole("heading", { name: GRUPPE_OSS_I_ZIMSKI }).click();
+const openPedagogija = async (page: Page) => {
+  await page.getByRole("heading", { name: GROUP_OSS_I_WINTER }).click();
   await page.getByRole("link", { name: new RegExp(PEDAGOGIJA) }).click();
 
   await expect(page.getByRole("heading", { level: 1, name: PEDAGOGIJA })).toBeVisible();
 };
 
-test("en besøkende ser katalogen", async ({ page }) => {
+test("a visitor sees the catalogue", async ({ page }) => {
   await page.goto("/");
 
   await expect(page).toHaveURL(/\/home$/);
   await expect(page.getByText("Poštovani studenti")).toBeVisible();
 
-  // Emnene kommer fra API-et, som leser dem fra databasen - hele veien ned.
-  await page.getByRole("heading", { name: GRUPPE_OSS_I_ZIMSKI }).click();
+  // The subjects come from the API, which reads them from the database - the whole way down.
+  await page.getByRole("heading", { name: GROUP_OSS_I_WINTER }).click();
   await expect(page.getByRole("link", { name: new RegExp(PEDAGOGIJA) })).toBeVisible();
 
-  // Književnost er ikke aktivt og hører ikke hjemme i den offentlige katalogen.
+  // Književnost is not running and does not belong in the public catalogue.
   await expect(page.getByRole("link", { name: /Književnost/ })).toHaveCount(0);
 });
 
-test("en besøkende åpner et fag og ser temaene, men ingen knapper", async ({ page }) => {
+test("a visitor opens a subject and sees the topics, but no buttons", async ({ page }) => {
   await page.goto("/home");
-  await åpnePedagogija(page);
+  await openPedagogija(page);
 
-  await expect(page.getByText(FØRSTE_TEMA)).toBeVisible();
+  await expect(page.getByText(FIRST_TOPIC)).toBeVisible();
   await expect(page.getByRole("button", { name: "Ažuriraj" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Dodaj temu" })).toHaveCount(0);
 });
 
-test("en foreleser logger inn", async ({ page }) => {
-  await loggInn(page);
+test("a lecturer signs in", async ({ page }) => {
+  await signIn(page);
 
   await expect(page).toHaveURL(new RegExp(`/${LECTURER.username}/home$`));
   await expect(page.getByText("Poštovani profesori")).toBeVisible();
 
-  // Katalogen er nå begrenset til emnene USRa har ansvar for.
-  await expect(page.getByRole("heading", { name: GRUPPE_OSS_I_ZIMSKI })).toBeVisible();
+  // The catalogue is now limited to the subjects USRa is responsible for.
+  await expect(page.getByRole("heading", { name: GROUP_OSS_I_WINTER })).toBeVisible();
   await expect(page.getByText("Poštovani studenti")).toHaveCount(0);
 });
 
-test("en foreleser redigerer et tema, og endringen blir stående", async ({ page }) => {
-  const nyTittel = `Prvo predavanje (redigert ${Date.now()})`;
+test("a lecturer edits a topic, and the change stays", async ({ page }) => {
+  const newTitle = `Prvo predavanje (edited ${Date.now()})`;
 
-  await loggInn(page);
-  await åpnePedagogija(page);
+  await signIn(page);
+  await openPedagogija(page);
 
   await page.getByRole("button", { name: "Ažuriraj" }).first().click();
 
-  await page.getByRole("textbox").first().fill(nyTittel);
+  await page.getByRole("textbox").first().fill(newTitle);
 
-  // Siden viser endringen med én gang og lagrer i bakgrunnen. Uten å vente på selve svaret
-  // ville reload lenger nede avbrutt forespørselen mens den var underveis, og testen ville
-  // meldt om et produkt som mister data når det er testen som river gulvet vekk.
-  const lagret = page.waitForResponse(
+  // The page shows the change at once and saves in the background. Without waiting for the
+  // response itself, the reload below would abort the request while it was still in
+  // flight, and the test would report a product that loses data when it is the test
+  // pulling the floor away.
+  const saved = page.waitForResponse(
     (response) =>
       response.request().method() === "PUT" &&
       response.url().includes("/api/Subjects/")
@@ -86,14 +88,14 @@ test("en foreleser redigerer et tema, og endringen blir stående", async ({ page
 
   await page.getByRole("button", { name: "Sačuvaj izmene" }).click();
 
-  expect((await lagret).status()).toBe(200);
+  expect((await saved).status()).toBe(200);
 
-  await expect(page.getByText(nyTittel)).toBeVisible();
+  await expect(page.getByText(newTitle)).toBeVisible();
   await expect(page.getByRole("alert")).toHaveCount(0);
 
-  // Det som teller: at den nye tittelen kommer tilbake fra databasen etter en ny lasting.
+  // What counts: that the new title comes back from the database after a fresh load.
   await page.reload();
 
-  await expect(page.getByText(nyTittel)).toBeVisible();
-  await expect(page.getByText(FØRSTE_TEMA, { exact: true })).toHaveCount(0);
+  await expect(page.getByText(newTitle)).toBeVisible();
+  await expect(page.getByText(FIRST_TOPIC, { exact: true })).toHaveCount(0);
 });

@@ -3,12 +3,12 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 /**
- * Fire røykstier gjennom hele stakken: nettleser → bygget frontend → API → Postgres.
+ * Four smoke paths through the whole stack: browser -> built frontend -> API -> Postgres.
  *
- * Alt startes av kjøringen selv, så det eneste som må stå klart på forhånd er Docker og
- * .NET-utviklingssertifikatet (dotnet dev-certs https). API-et må snakke https: OpenIddict
- * nekter å utstede et token over en ren forbindelse, og i den utplasserte stakken er det
- * nginx som gjør forbindelsen til https.
+ * The run starts everything itself, so the only things that have to be in place are Docker
+ * and the .NET development certificate (dotnet dev-certs https). The API has to speak
+ * https: OpenIddict refuses to issue a token over a plain connection, and in the deployed
+ * stack it is nginx that makes the connection https.
  */
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -21,15 +21,15 @@ const WEB_PORT = 4174;
 const API_URL = `https://localhost:${API_PORT}`;
 const WEB_URL = `http://localhost:${WEB_PORT}`;
 
-/** Kontoen initialData.yml seeder, og passordet seederen får det med. */
+/** The account initialData.yml seeds, and the password the seeder is given for it. */
 export const ADMIN = { username: "mp_admin", password: "T3st-admin!password" };
 
-/** USRa underviser Pedagogija og har ett emne som ikke er aktivt. */
+/** USRa teaches Pedagogija and has one subject that is not running. */
 export const LECTURER = { username: "USRa", password: "P@ssw0rd!123" };
 
 export default defineConfig({
   testDir: "./e2e",
-  // Én database, delt mellom stiene, og den siste skriver til den.
+  // One database, shared between the paths, and the last of them writes to it.
   workers: 1,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -40,7 +40,7 @@ export default defineConfig({
 
   use: {
     baseURL: WEB_URL,
-    // API-et kjører på utviklingssertifikatet, som ingen nettleser stoler på.
+    // The API runs on the development certificate, which no browser trusts.
     ignoreHTTPSErrors: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
@@ -53,8 +53,8 @@ export default defineConfig({
       command: "./e2e/start-api.sh",
       url: `${API_URL}/health`,
       ignoreHTTPSErrors: true,
-      // Aldri gjenbruk: skriptet lager databasen på nytt når API-et starter, så en
-      // gjenbrukt server ville betydd at forrige kjørings endringer fortsatt sto der.
+      // Never reused: the script recreates the database when the API starts, so a reused
+      // server would mean the previous run's changes were still there.
       reuseExistingServer: false,
       timeout: 240_000,
       stdout: "pipe",
@@ -68,20 +68,20 @@ export default defineConfig({
         Seed__FileName: "initialData.yml",
         Seed__AdminUsername: ADMIN.username,
         Seed__AdminPassword: ADMIN.password,
-        // Ryddejobben ville ellers kjørt en runde mot den samme databasen testene leser.
+        // The cleanup job would otherwise run a pass against the same database the tests read.
         TopicCleanup__Enabled: "false",
         AllowedOrigins__0: WEB_URL,
-        // Uten dette drukner en ekte oppstartsfeil i én linje per spørring.
+        // Without this a real startup failure drowns in one line per query.
         Logging__LogLevel__Default: "Warning",
-        // EF advarer om spørringsdeling på hvert emneoppslag; det er en ytelsesnotis om
-        // applikasjonen, ikke noe denne kjøringen kan si noe om.
+        // EF warns about query splitting on every subject lookup; that is a performance
+        // note about the application, not something this run can say anything about.
         "Logging__LogLevel__Microsoft.EntityFrameworkCore": "Error",
       },
     },
     {
-      // Den bygde pakken, ikke utviklingsserveren: det er artefakten som utplasseres.
-      // Bygget havner utenfor dist/, så en kjøring ikke etterlater utvikleren en pakke
-      // som peker på en API-adresse som bare finnes under testing.
+      // The built bundle rather than the dev server: that is the artifact that gets
+      // deployed. The build lands outside dist/, so a run does not leave the developer a
+      // bundle pointing at an API address that only exists while testing.
       command: `npx vite build --outDir dist-e2e && npx vite preview --outDir dist-e2e --port ${WEB_PORT} --strictPort`,
       url: WEB_URL,
       reuseExistingServer: false,

@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { deferred } from "../../test/http";
-import { loggInn, loggUt } from "../../test/render";
+import { signIn, signOut } from "../../test/render";
 import { UserProvider } from "../../contexts/UserContext";
 import { getSession } from "../../services/session";
 import { login, type LoginResult } from "../../services/authService";
@@ -14,23 +14,23 @@ vi.mock("../../services/authService", () => ({
   login: vi.fn(),
 }));
 
-const loggInnMotServer = vi.mocked(login);
+const signInOnServer = vi.mocked(login);
 
 const cpt = sr.pages.login;
 
-const vis = () =>
+const show = () =>
   render(
     <MemoryRouter initialEntries={["/login"]}>
       <UserProvider>
         <Routes>
           <Route path="/login" element={<LoginPage onLogout={vi.fn()} />} />
-          <Route path="/:username/home" element={<div>innlogget forside</div>} />
+          <Route path="/:username/home" element={<div>signed-in home</div>} />
         </Routes>
       </UserProvider>
     </MemoryRouter>
   );
 
-const fyllUt = (username: string, password: string) => {
+const fillIn = (username: string, password: string) => {
   fireEvent.change(screen.getByPlaceholderText(cpt.placeholders.username), {
     target: { value: username },
   });
@@ -40,127 +40,126 @@ const fyllUt = (username: string, password: string) => {
   fireEvent.click(screen.getByRole("button", { name: cpt.buttons.login }));
 };
 
-const godkjent: LoginResult = {
+const accepted: LoginResult = {
   token: "abc123",
   user: { username: "pnikolic" },
   expiresIn: 3600,
 };
 
 beforeEach(() => {
-  loggUt();
-  loggInnMotServer.mockReset();
+  signOut();
+  signInOnServer.mockReset();
 });
 
 afterEach(() => {
-  loggUt();
+  signOut();
   vi.restoreAllMocks();
 });
 
 describe("LoginPage", () => {
-  it("viser skjemaet", () => {
-    vis();
+  it("shows the form", () => {
+    show();
 
     expect(screen.getByPlaceholderText(cpt.placeholders.username)).toBeDefined();
     expect(screen.getByPlaceholderText(cpt.placeholders.password)).toBeDefined();
     expect(screen.getByRole("button", { name: cpt.buttons.login })).toBeDefined();
   });
 
-  it("sender det som ble skrevet inn til innloggingen", async () => {
-    loggInnMotServer.mockResolvedValue(godkjent);
+  it("sends what was typed in to the sign-in call", async () => {
+    signInOnServer.mockResolvedValue(accepted);
 
-    vis();
-    fyllUt("pnikolic", "hemmelig");
+    show();
+    fillIn("pnikolic", "secret");
 
     await waitFor(() =>
-      expect(loggInnMotServer).toHaveBeenCalledWith("pnikolic", "hemmelig")
+      expect(signInOnServer).toHaveBeenCalledWith("pnikolic", "secret")
     );
   });
 
   /**
-   * Økten lagres gjennom konteksten, som skriver den til session-modulen - der
-   * authHeaders leser den fra utenfor komponenttreet.
+   * The session is stored through the context, which writes it to the session module -
+   * where authHeaders reads it from, outside the component tree.
    */
-  it("lagrer økten og går til forsiden når innloggingen går gjennom", async () => {
-    loggInnMotServer.mockResolvedValue(godkjent);
+  it("stores the session and goes to the home page when the sign-in succeeds", async () => {
+    signInOnServer.mockResolvedValue(accepted);
 
-    vis();
-    fyllUt("pnikolic", "hemmelig");
+    show();
+    fillIn("pnikolic", "secret");
 
-    expect(await screen.findByText("innlogget forside")).toBeDefined();
+    expect(await screen.findByText("signed-in home")).toBeDefined();
     expect(getSession()).toEqual({ token: "abc123", user: { username: "pnikolic" } });
   });
 
   /**
-   * Grunnen serveren oppga blir stående i tilstanden, men det som vises er den samme
-   * setningen uansett - om brukernavnet finnes eller ikke er ikke noe en innloggingsside
-   * skal røpe.
+   * The reason the server gave is kept in state, but what is shown is the same sentence
+   * either way - whether a username exists is not something a sign-in page should reveal.
    */
-  it("viser den samme beskjeden uansett hva som var galt", async () => {
-    loggInnMotServer.mockRejectedValue(new Error("Feil brukernavn eller passord."));
+  it("shows the same message whatever was wrong", async () => {
+    signInOnServer.mockRejectedValue(new Error("Wrong username or password."));
 
-    vis();
-    fyllUt("pnikolic", "feil");
+    show();
+    fillIn("pnikolic", "wrong");
 
     expect(await screen.findByText(cpt.error)).toBeDefined();
-    expect(screen.queryByText("Feil brukernavn eller passord.")).toBeNull();
+    expect(screen.queryByText("Wrong username or password.")).toBeNull();
   });
 
-  it("lagrer ingen økt når innloggingen ble avvist", async () => {
-    loggInnMotServer.mockRejectedValue(new Error("Login failed"));
+  it("stores no session when the sign-in was refused", async () => {
+    signInOnServer.mockRejectedValue(new Error("Login failed"));
 
-    vis();
-    fyllUt("pnikolic", "feil");
+    show();
+    fillIn("pnikolic", "wrong");
 
     await screen.findByText(cpt.error);
 
     expect(getSession()).toEqual({ token: null, user: null });
   });
 
-  it("lar deg prøve igjen etter en avvist innlogging", async () => {
-    loggInnMotServer.mockRejectedValueOnce(new Error("Login failed"));
-    loggInnMotServer.mockResolvedValueOnce(godkjent);
+  it("lets you try again after a refused sign-in", async () => {
+    signInOnServer.mockRejectedValueOnce(new Error("Login failed"));
+    signInOnServer.mockResolvedValueOnce(accepted);
 
-    vis();
-    fyllUt("pnikolic", "feil");
+    show();
+    fillIn("pnikolic", "wrong");
     await screen.findByText(cpt.error);
 
-    fyllUt("pnikolic", "hemmelig");
+    fillIn("pnikolic", "secret");
 
-    expect(await screen.findByText("innlogget forside")).toBeDefined();
+    expect(await screen.findByText("signed-in home")).toBeDefined();
   });
 
-  it("bytter ut skjemaet med en spinner mens innloggingen står ute", async () => {
-    const svar = deferred<LoginResult>();
-    loggInnMotServer.mockReturnValue(svar.promise);
+  it("swaps the form for a spinner while the sign-in is out", async () => {
+    const response = deferred<LoginResult>();
+    signInOnServer.mockReturnValue(response.promise);
 
-    vis();
-    fyllUt("pnikolic", "hemmelig");
+    show();
+    fillIn("pnikolic", "secret");
 
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: cpt.buttons.login })).toBeNull()
     );
 
-    svar.resolve(godkjent);
+    response.resolve(accepted);
 
-    expect(await screen.findByText("innlogget forside")).toBeDefined();
+    expect(await screen.findByText("signed-in home")).toBeDefined();
   });
 
   /**
-   * Den som allerede er logget inn har ingenting på innloggingssiden å gjøre - en
-   * bokmerket /login skal ikke se ut som at økten er borte.
+   * Someone already signed in has no business on the sign-in page - a bookmarked /login
+   * should not look as though the session is gone.
    */
-  it("sender en som allerede er logget inn videre med én gang", async () => {
-    loggInn("pnikolic");
+  it("sends someone already signed in straight on", async () => {
+    signIn("pnikolic");
 
-    vis();
+    show();
 
-    expect(await screen.findByText("innlogget forside")).toBeDefined();
-    expect(loggInnMotServer).not.toHaveBeenCalled();
+    expect(await screen.findByText("signed-in home")).toBeDefined();
+    expect(signInOnServer).not.toHaveBeenCalled();
   });
 
-  /** Siden låser rullingen mens den er oppe, og slipper den igjen når den forlates. */
-  it("legger tilbake rullingen på siden når den forlates", () => {
-    const { unmount } = vis();
+  /** The page locks scrolling while it is up, and lets it go again when it is left. */
+  it("puts scrolling back when the page is left", () => {
+    const { unmount } = show();
 
     expect(document.body.style.overflow).toBe("hidden");
 

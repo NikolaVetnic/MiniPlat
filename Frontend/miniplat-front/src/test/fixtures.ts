@@ -1,8 +1,8 @@
 import { Level, type Material, type Subject, type Topic } from "../types/api";
 
 /**
- * Fullstendige objekter i API-form, slik at tester slipper å gjenta revisjonsfeltene.
- * Kun importert fra testfiler, så ingenting av dette havner i bundelen.
+ * Complete objects in the shape the API returns, so tests do not have to repeat the
+ * audit fields. Only imported from test files, so none of this reaches the bundle.
  */
 
 export const makeMaterial = (over: Partial<Material> = {}): Material => ({

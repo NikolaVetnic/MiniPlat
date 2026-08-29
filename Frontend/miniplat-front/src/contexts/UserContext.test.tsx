@@ -2,8 +2,9 @@ import { act, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
- * Økten leses fra localStorage når session-modulen evalueres, altså ved sidelast i den
- * ekte appen. Testene må derfor seede lageret før modulene importeres, ikke etterpå.
+ * The session is read from localStorage when the session module is evaluated, which in
+ * the real app is page load. Tests therefore have to seed storage before the modules are
+ * imported, not after.
  */
 const load = async () => {
   vi.resetModules();
@@ -27,14 +28,14 @@ const load = async () => {
   return { ...session, UserProvider, useUser, Probe };
 };
 
-const vist = () => screen.getByRole("status").textContent;
+const shown = () => screen.getByRole("status").textContent;
 
 beforeEach(() => {
   localStorage.clear();
 });
 
 describe("UserProvider", () => {
-  it("starter tom når ingenting er lagret", async () => {
+  it("starts empty when nothing is stored", async () => {
     const { Probe, UserProvider } = await load();
 
     render(
@@ -43,12 +44,12 @@ describe("UserProvider", () => {
       </UserProvider>
     );
 
-    expect(vist()).toBe(
+    expect(shown()).toBe(
       JSON.stringify({ username: null, token: null, isAuthenticated: false })
     );
   });
 
-  it("viser en lagret økt allerede på første render", async () => {
+  it("shows a stored session on the very first render", async () => {
     localStorage.setItem("token", "abc123");
     localStorage.setItem("user", JSON.stringify({ username: "pnikolic" }));
 
@@ -60,7 +61,7 @@ describe("UserProvider", () => {
       </UserProvider>
     );
 
-    expect(vist()).toBe(
+    expect(shown()).toBe(
       JSON.stringify({
         username: "pnikolic",
         token: "abc123",
@@ -69,9 +70,9 @@ describe("UserProvider", () => {
     );
   });
 
-  it("monterer uten å kaste når lagret bruker er korrupt", async () => {
+  it("mounts without throwing when the stored user is corrupt", async () => {
     localStorage.setItem("token", "abc123");
-    localStorage.setItem("user", "{ikke json");
+    localStorage.setItem("user", "{not json");
 
     const { Probe, UserProvider } = await load();
 
@@ -84,9 +85,10 @@ describe("UserProvider", () => {
     ).not.toThrow();
   });
 
-  it("følger med når tjenestelaget dropper økten utenfor komponenttreet", async () => {
-    // Kjernen i 401-håndteringen: services kaller clearSession fra utenfor React, og
-    // UI-et må slutte å si innlogget uten at noen komponent rører state selv.
+  it("follows along when the services drop the session outside the tree", async () => {
+    // The heart of the 401 handling: the services call clearSession from outside React,
+    // and the UI has to stop claiming to be signed in without any component touching
+    // state itself.
     localStorage.setItem("token", "abc123");
     localStorage.setItem("user", JSON.stringify({ username: "pnikolic" }));
 
@@ -98,23 +100,23 @@ describe("UserProvider", () => {
       </UserProvider>
     );
 
-    expect(vist()).toContain("pnikolic");
+    expect(shown()).toContain("pnikolic");
 
     act(() => {
       clearSession();
     });
 
-    expect(vist()).toBe(
+    expect(shown()).toBe(
       JSON.stringify({ username: null, token: null, isAuthenticated: false })
     );
   });
 });
 
 describe("useUser", () => {
-  it("kaster med en forklarende melding utenfor en provider", async () => {
+  it("throws with an explanatory message outside a provider", async () => {
     const { Probe } = await load();
 
-    // React logger feilen selv; demp den så testutskriften holder seg lesbar.
+    // React logs the error itself; silence it so the test output stays readable.
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => render(<Probe />)).toThrow(/within a UserProvider/);

@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeSubject } from "../../test/fixtures";
-import { loggInn, loggUt } from "../../test/render";
+import { signIn, signOut } from "../../test/render";
 import { UserProvider } from "../../contexts/UserContext";
 import { fetchSubjects } from "../../services/subjectsService";
 import { fetchLecturer, fetchLecturers } from "../../services/lecturersService";
@@ -24,14 +24,14 @@ vi.mock("../../services/authService", () => ({
   fetchUserInfo: vi.fn(),
 }));
 
-const hentEmner = vi.mocked(fetchSubjects);
+const fetchCatalogue = vi.mocked(fetchSubjects);
 
 const cpt = sr.pages.home;
 
-/** Satt i vite.config.ts, så regelen er den samme her som i CI. */
+/** Set in vite.config.ts, so the rule is the same here as it is in CI. */
 const ADMIN = "mp_admin";
 
-const vis = (route: string) =>
+const show = (route: string) =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <UserProvider>
@@ -44,10 +44,10 @@ const vis = (route: string) =>
   );
 
 beforeEach(() => {
-  loggUt();
+  signOut();
   localStorage.clear();
 
-  hentEmner.mockReset().mockResolvedValue([makeSubject({ id: "s-1", semester: 1 })]);
+  fetchCatalogue.mockReset().mockResolvedValue([makeSubject({ id: "s-1", semester: 1 })]);
   vi.mocked(fetchLecturer).mockResolvedValue(null);
   vi.mocked(fetchLecturers).mockResolvedValue([]);
   vi.mocked(fetchUserInfo).mockResolvedValue({
@@ -64,44 +64,45 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  loggUt();
+  signOut();
   localStorage.clear();
   vi.restoreAllMocks();
 });
 
-describe("HomePage og hvem som ser hva", () => {
-  it("viser studentveiledningen til en besøkende", async () => {
-    vis("/home");
+describe("HomePage and who sees what", () => {
+  it("shows the student guide to a visitor", async () => {
+    show("/home");
 
     expect(await screen.findByText(/Poštovani studenti/)).toBeDefined();
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(cpt.home);
   });
 
-  it("viser lærerveiledningen til en innlogget nastavnik", async () => {
-    loggInn("pnikolic");
+  it("shows the staff guide to a signed-in lecturer", async () => {
+    signIn("pnikolic");
 
-    vis("/pnikolic/home");
+    show("/pnikolic/home");
 
     expect(await screen.findByText(/Poštovani profesori/)).toBeDefined();
     expect(screen.queryByText(/Poštovani studenti/)).toBeNull();
   });
 
-  it("viser kontrollpanelet til administratoren", async () => {
-    loggInn(ADMIN);
+  it("shows the control panel to the administrator", async () => {
+    signIn(ADMIN);
 
-    vis(`/${ADMIN}/home`);
+    show(`/${ADMIN}/home`);
 
-    expect(await screen.findByRole("button", { name: cpt.buttons.dumpDatabaseAsYaml }))
-      .toBeDefined();
+    expect(
+      await screen.findByRole("button", { name: cpt.buttons.dumpDatabaseAsYaml })
+    ).toBeDefined();
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
       cpt.adminControlPanel
     );
   });
 
-  it("viser ikke nedlastingsknappen til noen andre", async () => {
-    loggInn("pnikolic");
+  it("shows the download button to nobody else", async () => {
+    signIn("pnikolic");
 
-    vis("/pnikolic/home");
+    show("/pnikolic/home");
 
     await screen.findByText(/Poštovani profesori/);
 
@@ -111,53 +112,54 @@ describe("HomePage og hvem som ser hva", () => {
   });
 });
 
-describe("HomePage og den private ruten", () => {
+describe("HomePage and the private route", () => {
   /**
-   * /noen/home er noens egen side. Uten økt finnes den ikke, og da er den offentlige
-   * forsiden svaret - ikke en tom side med noen andres navn i adressen.
+   * /someone/home is that person's own page. Without a session it does not exist, and the
+   * public home page is the answer - not an empty page with someone else's name in the
+   * address.
    */
-  it("sender en uten økt til den offentlige forsiden", async () => {
-    vis("/pnikolic/home");
+  it("sends someone without a session to the public home page", async () => {
+    show("/pnikolic/home");
 
     expect(await screen.findByText(/Poštovani studenti/)).toBeDefined();
   });
 
   /**
-   * Å skrive inn en kollegas brukernavn i adressen skal ikke vise kollegaens side.
-   * Serveren avgjør uansett hvilke emner som kommer tilbake, men ruten skal heller
-   * ikke gi inntrykk av noe annet.
+   * Typing a colleague's username into the address must not show the colleague's page.
+   * The server decides which subjects come back anyway, but the route should not suggest
+   * otherwise either.
    */
-  it("sender deg til din egen side når adressen nevner en annen", async () => {
-    loggInn("pnikolic");
+  it("sends you to your own page when the address names someone else", async () => {
+    signIn("pnikolic");
 
-    vis("/mmarkovic/home");
+    show("/mmarkovic/home");
 
     expect(await screen.findByText(/Poštovani profesori/)).toBeDefined();
   });
 
-  it("lar deg være på din egen side", async () => {
-    loggInn("pnikolic");
+  it("lets you stay on your own page", async () => {
+    signIn("pnikolic");
 
-    vis("/pnikolic/home");
+    show("/pnikolic/home");
 
     expect(await screen.findByText(/Poštovani profesori/)).toBeDefined();
   });
 });
 
-describe("HomePage og emnene", () => {
-  it("henter katalogen én gang", async () => {
-    vis("/home");
+describe("HomePage and the subjects", () => {
+  it("fetches the catalogue once", async () => {
+    show("/home");
 
     await screen.findByText(/Poštovani studenti/);
 
-    await waitFor(() => expect(hentEmner).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(fetchCatalogue).toHaveBeenCalledTimes(1));
   });
 
-  /** En katalog som ikke kan hentes gir en tom sidebar, ikke en side som ikke tegnes. */
-  it("viser siden også når katalogen ikke kunne hentes", async () => {
-    hentEmner.mockRejectedValue(new Error("500"));
+  /** A catalogue that cannot be fetched gives an empty sidebar, not a page that fails to render. */
+  it("shows the page even when the catalogue could not be fetched", async () => {
+    fetchCatalogue.mockRejectedValue(new Error("500"));
 
-    vis("/home");
+    show("/home");
 
     expect(await screen.findByText(/Poštovani studenti/)).toBeDefined();
   });

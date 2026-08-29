@@ -1,8 +1,8 @@
 import { expect, vi } from "vitest";
 
 /**
- * Felles rigg for tjenestetestene: en fetch-attrapp, og hjelpere for å lese ut hva
- * som faktisk ble sendt. Kun importert fra testfiler.
+ * Shared rig for the service tests: a fetch stub, and helpers for reading back what was
+ * actually sent. Only imported from test files.
  */
 
 export const API = "https://api.test";
@@ -32,7 +32,7 @@ export const installFetch = () => {
 const callOf = (mock: FetchMock, index: number) => {
   const call = mock.mock.calls[index];
 
-  expect(call, `fetch ble kalt ${mock.mock.calls.length} ganger`).toBeDefined();
+  expect(call, `fetch was called ${mock.mock.calls.length} times`).toBeDefined();
 
   return call;
 };
@@ -45,11 +45,11 @@ export const initOf = (mock: FetchMock, index = 0): RequestInit =>
 export const headersOf = (mock: FetchMock, index = 0): Record<string, string> =>
   (initOf(mock, index).headers ?? {}) as Record<string, string>;
 
-/** Kroppen slik den ble sendt, tolket tilbake fra JSON. */
+/** The body as it was sent, read back from JSON. */
 export const bodyOf = <T,>(mock: FetchMock, index = 0): T =>
   JSON.parse(initOf(mock, index).body as string) as T;
 
-/** Et løfte testen selv bestemmer når - og i hvilken rekkefølge - skal fullføres. */
+/** A promise the test itself decides when - and in what order - to settle. */
 export const deferred = <T,>() => {
   let resolve!: (value: T) => void;
   let reject!: (reason: unknown) => void;

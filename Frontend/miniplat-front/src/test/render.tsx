@@ -6,25 +6,28 @@ import { UserProvider } from "../contexts/UserContext";
 import { clearSession, storeSession } from "../services/session";
 
 /**
- * Komponentene leser hvem som er logget inn gjennom UserProvider, som abonnerer på
- * session-modulen. Testene setter derfor økten der i stedet for å stikke en verdi inn i
- * konteksten - da er det den samme veien som i nettleseren som prøves.
+ * The components read who is signed in through UserProvider, which subscribes to the
+ * session module. Tests therefore set the session there rather than pushing a value into
+ * the context, so what is exercised is the same path the browser takes.
  *
- * Kun importert fra testfiler, så ingenting av dette havner i bundelen.
+ * Only imported from test files, so none of this reaches the bundle.
  */
 
-export const loggInn = (username = "pnikolic"): void => {
+export const signIn = (username = "pnikolic"): void => {
   storeSession("test-token", { username });
 };
 
-export const loggUt = (): void => clearSession();
+export const signOut = (): void => clearSession();
 
 interface RenderOptions {
-  /** Adressen treet starter på, for komponenter som leser ruten. */
+  /** The address the tree starts on, for components that read the route. */
   route?: string;
 }
 
-export const renderMedØkt = (ui: ReactElement, { route = "/" }: RenderOptions = {}) =>
+export const renderWithSession = (
+  ui: ReactElement,
+  { route = "/" }: RenderOptions = {}
+) =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <UserProvider>{ui}</UserProvider>

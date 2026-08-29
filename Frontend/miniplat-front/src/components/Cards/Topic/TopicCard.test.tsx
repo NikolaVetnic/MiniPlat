@@ -2,7 +2,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeMaterial, makeTopic } from "../../../test/fixtures";
-import { loggInn, loggUt, renderMedØkt } from "../../../test/render";
+import { renderWithSession, signIn, signOut } from "../../../test/render";
 import sr from "../../../locales/sr.json";
 import TopicCard from "./TopicCard";
 import type { Topic } from "../../../types/api";
@@ -17,13 +17,13 @@ const handlers = () => ({
   onToggleDeletion: vi.fn(),
 });
 
-const vis = (
+const show = (
   topic: Topic,
   { index = 0, total = 1, ...rest }: { index?: number; total?: number } = {}
 ) => {
   const spies = handlers();
 
-  renderMedØkt(
+  renderWithSession(
     <TopicCard topic={topic} index={index} total={total} {...spies} {...rest} />
   );
 
@@ -31,16 +31,16 @@ const vis = (
 };
 
 beforeEach(() => {
-  loggUt();
+  signOut();
 });
 
 afterEach(() => {
-  loggUt();
+  signOut();
 });
 
-describe("TopicCard, sett av en besøkende", () => {
-  it("viser tittel, beskrivelse og materialer", () => {
-    vis(
+describe("TopicCard, as a visitor sees it", () => {
+  it("shows the title, the description and the materials", () => {
+    show(
       makeTopic({
         title: "Prvo predavanje",
         description: "Uvod u temu",
@@ -54,33 +54,33 @@ describe("TopicCard, sett av en besøkende", () => {
   });
 
   /**
-   * Knappene finnes ikke i treet i det hele tatt for en som ikke er logget inn - de er
-   * ikke bare skjult med css, som ville latt dem klikkes fra konsollen.
+   * The buttons are not in the tree at all for someone who is not signed in - they are
+   * not merely hidden with css, which would leave them clickable from the console.
    */
-  it("har ingen redigeringsknapper", () => {
-    vis(makeTopic(), { index: 1, total: 3 });
+  it("has no editing controls", () => {
+    show(makeTopic(), { index: 1, total: 3 });
 
     expect(screen.queryByRole("button")).toBeNull();
   });
 
   /**
-   * Statuslinjen forteller om et tema er skjult eller slettet. Serveren sender uansett
-   * ingen skjulte temaer til en besøkende, men linjen hører til redigeringsvisningen.
+   * The status bar says whether a topic is hidden or deleted. The server sends a visitor
+   * no hidden topics anyway, but the bar belongs to the editing view.
    */
-  it("har ingen statuslinje", () => {
-    vis(makeTopic());
+  it("has no status bar", () => {
+    show(makeTopic());
 
     expect(screen.queryByText(cpt.status.active)).toBeNull();
   });
 });
 
-describe("TopicCard, sett av en innlogget", () => {
+describe("TopicCard, as a signed-in user sees it", () => {
   beforeEach(() => {
-    loggInn();
+    signIn();
   });
 
-  it("viser knappene for å redigere, skjule og slette", () => {
-    vis(makeTopic());
+  it("shows the buttons for editing, hiding and deleting", () => {
+    show(makeTopic());
 
     expect(screen.getByRole("button", { name: cpt.buttons.edit })).toBeDefined();
     expect(screen.getByRole("button", { name: cpt.buttons.hide })).toBeDefined();
@@ -88,23 +88,23 @@ describe("TopicCard, sett av en innlogget", () => {
   });
 
   /**
-   * Pilene finnes bare der de har noe å gjøre: det øverste temaet kan ikke flyttes opp,
-   * og det nederste ikke ned.
+   * The arrows exist only where they have something to do: the top topic cannot move up,
+   * and the bottom one cannot move down.
    */
   it.each([
-    ["det første av tre", 0, 3, false, true],
-    ["et i midten", 1, 3, true, true],
-    ["det siste av tre", 2, 3, true, false],
-    ["det eneste", 0, 1, false, false],
-  ])("viser pilene som passer for %s", (_navn, index, total, opp, ned) => {
-    vis(makeTopic(), { index, total });
+    ["the first of three", 0, 3, false, true],
+    ["one in the middle", 1, 3, true, true],
+    ["the last of three", 2, 3, true, false],
+    ["the only one", 0, 1, false, false],
+  ])("shows the arrows that suit %s", (_name, index, total, up, down) => {
+    show(makeTopic(), { index, total });
 
-    expect(screen.queryByRole("button", { name: "↑" }) !== null).toBe(opp);
-    expect(screen.queryByRole("button", { name: "↓" }) !== null).toBe(ned);
+    expect(screen.queryByRole("button", { name: "↑" }) !== null).toBe(up);
+    expect(screen.queryByRole("button", { name: "↓" }) !== null).toBe(down);
   });
 
-  it("melder fra om flytting med posisjonen sin", () => {
-    const spies = vis(makeTopic(), { index: 1, total: 3 });
+  it("reports a move with its own position", () => {
+    const spies = show(makeTopic(), { index: 1, total: 3 });
 
     fireEvent.click(screen.getByRole("button", { name: "↑" }));
     fireEvent.click(screen.getByRole("button", { name: "↓" }));
@@ -113,8 +113,8 @@ describe("TopicCard, sett av en innlogget", () => {
     expect(spies.onMoveDown).toHaveBeenCalledWith(1);
   });
 
-  it("melder fra om skjuling og sletting med tema-id-en", () => {
-    const spies = vis(makeTopic({ id: "t-1" }));
+  it("reports hiding and deleting with the topic id", () => {
+    const spies = show(makeTopic({ id: "t-1" }));
 
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.hide }));
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.delete }));
@@ -123,40 +123,40 @@ describe("TopicCard, sett av en innlogget", () => {
     expect(spies.onToggleDeletion).toHaveBeenCalledWith("t-1");
   });
 
-  /** Knappen sier hva den gjør nå, ikke hvilken tilstand temaet er i. */
+  /** The button says what it will do, not what state the topic is in. */
   it.each([
-    ["et synlig tema", false, cpt.buttons.hide],
-    ["et skjult tema", true, cpt.buttons.show],
-  ])("tilbyr %s riktig handling", (_navn, isHidden, tekst) => {
-    vis(makeTopic({ isHidden }));
+    ["a visible topic", false, cpt.buttons.hide],
+    ["a hidden topic", true, cpt.buttons.show],
+  ])("offers %s the right action", (_name, isHidden, label) => {
+    show(makeTopic({ isHidden }));
 
-    expect(screen.getByRole("button", { name: tekst })).toBeDefined();
+    expect(screen.getByRole("button", { name: label })).toBeDefined();
   });
 
   it.each([
-    ["et levende tema", false, cpt.buttons.delete],
-    ["et slettet tema", true, cpt.buttons.putBack],
-  ])("tilbyr %s riktig handling", (_navn, isDeleted, tekst) => {
-    vis(makeTopic({ isDeleted }));
+    ["a live topic", false, cpt.buttons.delete],
+    ["a deleted topic", true, cpt.buttons.putBack],
+  ])("offers %s the right action", (_name, isDeleted, label) => {
+    show(makeTopic({ isDeleted }));
 
-    expect(screen.getByRole("button", { name: tekst })).toBeDefined();
+    expect(screen.getByRole("button", { name: label })).toBeDefined();
   });
 
   it.each([
-    ["aktiv", false, false, cpt.status.active],
-    ["skjult", true, false, cpt.status.hidden],
-    ["slettet", false, true, cpt.status.deleted],
-    ["skjult og slettet", true, true, cpt.status.hiddenAndDeleted],
-  ])("viser statusen %s", (_navn, isHidden, isDeleted, tekst) => {
-    vis(makeTopic({ isHidden, isDeleted }));
+    ["active", false, false, cpt.status.active],
+    ["hidden", true, false, cpt.status.hidden],
+    ["deleted", false, true, cpt.status.deleted],
+    ["hidden and deleted", true, true, cpt.status.hiddenAndDeleted],
+  ])("shows the status %s", (_name, isHidden, isDeleted, label) => {
+    show(makeTopic({ isHidden, isDeleted }));
 
-    expect(screen.getByText(tekst)).toBeDefined();
+    expect(screen.getByText(label)).toBeDefined();
   });
 });
 
-describe("TopicCard og materialene", () => {
-  it("lenker til et materiale med en trygg adresse", () => {
-    vis(
+describe("TopicCard and the materials", () => {
+  it("links to a material with a safe address", () => {
+    show(
       makeTopic({
         materials: [
           makeMaterial({ description: "Skripta", link: "https://example.com/s.pdf" }),
@@ -164,118 +164,118 @@ describe("TopicCard og materialene", () => {
       })
     );
 
-    const lenke = screen.getByRole("link", { name: "https://example.com/s.pdf" });
+    const link = screen.getByRole("link", { name: "https://example.com/s.pdf" });
 
-    expect(lenke.getAttribute("href")).toBe("https://example.com/s.pdf");
-    expect(lenke.getAttribute("rel")).toBe("noopener noreferrer");
-    expect(lenke.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("href")).toBe("https://example.com/s.pdf");
+    expect(link.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(link.getAttribute("target")).toBe("_blank");
   });
 
   /**
-   * En foreleser kunne lagret en javascript-adresse. Den vises som tekst, ikke som noe
-   * en student kan klikke - lenken finnes rett og slett ikke i treet.
+   * A lecturer could have stored a script address. It is shown as text, not as something
+   * a student can click - the link simply does not exist in the tree.
    */
   it.each([
-    ["javascript", "javascript:alert(1)"],
-    ["data", "data:text/html,<script>alert(1)</script>"],
-    ["file", "file:///etc/passwd"],
-  ])("lenker ikke til en %s-adresse", (_navn, link) => {
-    vis(makeTopic({ materials: [makeMaterial({ link })] }));
+    ["a javascript", "javascript:alert(1)"],
+    ["a data", "data:text/html,<script>alert(1)</script>"],
+    ["a file", "file:///etc/passwd"],
+  ])("does not link to %s address", (_name, link) => {
+    show(makeTopic({ materials: [makeMaterial({ link })] }));
 
     expect(screen.queryByRole("link")).toBeNull();
     expect(screen.getByText(link)).toBeDefined();
   });
 
-  it("viser ingen materialdel når temaet ikke har noen", () => {
-    vis(makeTopic({ materials: [] }));
+  it("shows no materials section when the topic has none", () => {
+    show(makeTopic({ materials: [] }));
 
     expect(screen.queryByText(`${cpt.materials}:`)).toBeNull();
   });
 });
 
-describe("TopicCard og tidsstempelet", () => {
-  it("viser når temaet sist ble endret", () => {
-    vis(makeTopic({ lastModifiedAt: "2026-03-14T10:00:00.000Z" }));
+describe("TopicCard and the timestamp", () => {
+  it("shows when the topic was last changed", () => {
+    show(makeTopic({ lastModifiedAt: "2026-03-14T10:00:00.000Z" }));
 
     expect(screen.getByText(new RegExp(cpt.updatedAt))).toBeDefined();
   });
 
   /**
-   * Uten tidsstempel droppes hele linjen. new Date(null) er epoken, og
-   * "sist endret 1. januar 1970" ser ut som en ekte dato.
+   * Without a timestamp the whole line is dropped. new Date(null) is the epoch, and
+   * "last changed 1 January 1970" looks like a real date.
    */
-  it("dropper linjen helt når tidsstempelet mangler", () => {
-    vis(makeTopic({ lastModifiedAt: null }));
+  it("drops the line entirely when the timestamp is missing", () => {
+    show(makeTopic({ lastModifiedAt: null }));
 
     expect(screen.queryByText(new RegExp(cpt.updatedAt))).toBeNull();
   });
 });
 
-describe("TopicCard og redigeringsvinduet", () => {
+describe("TopicCard and the edit dialog", () => {
   beforeEach(() => {
-    loggInn();
+    signIn();
   });
 
-  const åpne = () =>
+  const open = () =>
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.edit }));
 
-  it("åpner med temaets nåværende innhold", () => {
-    vis(makeTopic({ title: "Prvo predavanje", description: "Uvod" }));
+  it("opens with the topic's current content", () => {
+    show(makeTopic({ title: "Prvo predavanje", description: "Uvod" }));
 
-    åpne();
+    open();
 
     expect(screen.getByDisplayValue("Prvo predavanje")).toBeDefined();
     expect(screen.getByDisplayValue("Uvod")).toBeDefined();
   });
 
-  it("sender det redigerte temaet videre med id-en i behold", () => {
-    const spies = vis(makeTopic({ id: "t-1", title: "Før" }));
+  it("hands the edited topic on with its id intact", () => {
+    const spies = show(makeTopic({ id: "t-1", title: "Before" }));
 
-    åpne();
+    open();
 
-    fireEvent.change(screen.getByDisplayValue("Før"), { target: { value: "Etter" } });
+    fireEvent.change(screen.getByDisplayValue("Before"), {
+      target: { value: "After" },
+    });
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.save }));
 
     expect(spies.onEdit).toHaveBeenCalledTimes(1);
 
-    const sendt = spies.onEdit.mock.calls[0][0] as Topic;
+    const sent = spies.onEdit.mock.calls[0][0] as Topic;
 
-    expect(sendt.id).toBe("t-1");
-    expect(sendt.title).toBe("Etter");
+    expect(sent.id).toBe("t-1");
+    expect(sent.title).toBe("After");
   });
 
-  it("stempler endringen med tidspunktet den ble gjort", () => {
-    const spies = vis(makeTopic({ lastModifiedAt: "2020-01-01T00:00:00.000Z" }));
+  it("stamps the change with the moment it was made", () => {
+    const spies = show(makeTopic({ lastModifiedAt: "2020-01-01T00:00:00.000Z" }));
 
-    åpne();
+    open();
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.save }));
 
-    const sendt = spies.onEdit.mock.calls[0][0] as Topic;
+    const sent = spies.onEdit.mock.calls[0][0] as Topic;
 
-    expect(sendt.lastModifiedAt).not.toBe("2020-01-01T00:00:00.000Z");
-    expect(Date.parse(sendt.lastModifiedAt!)).toBeGreaterThan(0);
+    expect(sent.lastModifiedAt).not.toBe("2020-01-01T00:00:00.000Z");
+    expect(Date.parse(sent.lastModifiedAt!)).toBeGreaterThan(0);
   });
 
   /**
-   * Materialrader som ble stående helt tomme faller bort på veien ut, så et uhell i
-   * skjemaet ikke blir en tom rad i emnet.
+   * Material rows left entirely blank fall away on the way out, so a slip in the form
+   * does not become an empty row on the subject.
    */
-  it("dropper materialrader som ble stående tomme", () => {
-    const spies = vis(makeTopic({ materials: [] }));
+  it("drops material rows that were left blank", () => {
+    const spies = show(makeTopic({ materials: [] }));
 
-    åpne();
-    fireEvent.click(
-      screen.getByRole("button", { name: cpt.buttons.addMaterial })
-    );
+    open();
+    fireEvent.click(screen.getByRole("button", { name: cpt.buttons.addMaterial }));
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.save }));
 
     expect((spies.onEdit.mock.calls[0][0] as Topic).materials).toEqual([]);
   });
 
-  it("lukker vinduet uten å melde fra når redigeringen avbrytes", () => {
-    const spies = vis(makeTopic());
+  it("closes without reporting anything when the edit is cancelled", () => {
+    const spies = show(makeTopic());
 
-    åpne();
+    open();
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.cancel }));
 
     expect(spies.onEdit).not.toHaveBeenCalled();
@@ -283,30 +283,31 @@ describe("TopicCard og redigeringsvinduet", () => {
   });
 
   /**
-   * Knappen leser feltene av temaet på nytt hver gang. Uten det ville vinduet vist det
-   * som sto der forrige gang det var åpent, etter at emnet er lagret og lest på nytt.
+   * The button reads the fields off the topic again every time. Without that the dialog
+   * would show whatever was left there last, after the subject has been saved and read
+   * back.
    */
-  it("henter innholdet på nytt hver gang det åpnes", () => {
-    const spies = vis(makeTopic({ title: "Original" }));
+  it("takes the content fresh every time it opens", () => {
+    const spies = show(makeTopic({ title: "Original" }));
 
-    åpne();
+    open();
 
     fireEvent.change(screen.getByDisplayValue("Original"), {
-      target: { value: "Forkastet" },
+      target: { value: "Discarded" },
     });
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.cancel }));
 
-    åpne();
+    open();
 
     expect(screen.getByDisplayValue("Original")).toBeDefined();
     expect(spies.onEdit).not.toHaveBeenCalled();
   });
 
-  it("nekter å lagre et tema uten tittel", () => {
-    const spies = vis(makeTopic({ title: "Har tittel" }));
+  it("refuses to save a topic without a title", () => {
+    const spies = show(makeTopic({ title: "Has a title" }));
 
-    åpne();
-    fireEvent.change(screen.getByDisplayValue("Har tittel"), { target: { value: "" } });
+    open();
+    fireEvent.change(screen.getByDisplayValue("Has a title"), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.save }));
 
     expect(spies.onEdit).not.toHaveBeenCalled();

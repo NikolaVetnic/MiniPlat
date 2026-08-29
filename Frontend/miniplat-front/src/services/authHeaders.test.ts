@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
- * authHeaders leser tokenet gjennom session, som holder en modulvariabel. Begge må
- * lastes på nytt sammen, ellers ser headeren en annen økt enn testen lagret.
+ * authHeaders reads the token through session, which keeps a module variable. Both have
+ * to be loaded together, or the header sees a different session than the test stored.
  */
 const load = async () => {
   vi.resetModules();
@@ -22,13 +22,13 @@ afterEach(() => {
 });
 
 describe("authHeaders", () => {
-  it("sender ingen header når ingen er logget inn", async () => {
+  it("sends no header when nobody is signed in", async () => {
     const { authHeaders } = await load();
 
     expect(authHeaders()).toEqual({});
   });
 
-  it("sender bearer-tokenet når noen er logget inn", async () => {
+  it("sends the bearer token when someone is signed in", async () => {
     const { authHeaders, storeSession } = await load();
 
     storeSession("abc123", { username: "pnikolic" });
@@ -37,11 +37,11 @@ describe("authHeaders", () => {
   });
 
   /**
-   * Leseendepunktene svarer et utløpt token med det offentlige synet i stedet for en
-   * feil. Headeren faller derfor bort av seg selv, og siden viser det en besøkende
-   * skal se - i stedet for å be om noe serveren uansett ikke gir.
+   * The read endpoints answer an expired token with the public view rather than an
+   * error. The header therefore falls away on its own, and the page shows what a
+   * visitor is meant to see - instead of asking for something the server will not give.
    */
-  it("faller tilbake til anonymt når tokenet er utløpt", async () => {
+  it("falls back to anonymous once the token has expired", async () => {
     vi.useFakeTimers();
 
     const { authHeaders, storeSession } = await load();
@@ -52,7 +52,7 @@ describe("authHeaders", () => {
     expect(authHeaders()).toEqual({});
   });
 
-  it("sender tokenet så lenge det ennå er gyldig", async () => {
+  it("sends the token for as long as it is still valid", async () => {
     vi.useFakeTimers();
 
     const { authHeaders, storeSession } = await load();

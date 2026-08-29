@@ -14,8 +14,8 @@ import {
 let fetchMock: FetchMock;
 
 /**
- * lecturersService holder det pågående roster-kallet i en modulvariabel, så modulen må
- * lastes på nytt for hver test - ellers arver neste test forrige tests mellomlager.
+ * lecturersService holds the in-flight roster request in a module variable, so the module
+ * has to be loaded again per test - otherwise one test inherits the previous one's cache.
  */
 const load = async () => {
   vi.resetModules();
@@ -26,7 +26,7 @@ const load = async () => {
   return { ...session, ...lecturers };
 };
 
-const detaljer = {
+const details = {
   username: "pnikolic",
   title: "dr",
   firstName: "Petar",
@@ -47,20 +47,20 @@ afterEach(() => {
 });
 
 describe("fetchLecturer", () => {
-  it("henter én foreleser på brukernavn", async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ lecturer: detaljer }));
+  it("fetches one lecturer by username", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ lecturer: details }));
 
     const { fetchLecturer } = await load();
 
-    expect(await fetchLecturer("pnikolic")).toEqual(detaljer);
+    expect(await fetchLecturer("pnikolic")).toEqual(details);
     expect(urlOf(fetchMock)).toBe(`${API}/api/Lecturers/pnikolic`);
   });
 
   /**
-   * Sto som `|| []` før: en tom liste i stedet for et manglende objekt, som så leste
-   * som til stede overalt nedstrøms fordi [] er truthy.
+   * This used to be `|| []`: an empty array standing in for a missing object, which then
+   * read as present everywhere downstream because [] is truthy.
    */
-  it("gir null når svaret ikke har noen foreleser i seg", async () => {
+  it("gives null when the answer carries no lecturer", async () => {
     fetchMock.mockResolvedValue(jsonResponse({}));
 
     const { fetchLecturer } = await load();
@@ -68,7 +68,7 @@ describe("fetchLecturer", () => {
     expect(await fetchLecturer("ingen")).toBeNull();
   });
 
-  it("gir null når foreleseren i svaret er null", async () => {
+  it("gives null when the lecturer in the answer is null", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ lecturer: null }));
 
     const { fetchLecturer } = await load();
@@ -77,29 +77,29 @@ describe("fetchLecturer", () => {
   });
 
   /**
-   * Et brukernavn er fritekst fra Identity. Interpolert rått ville et skråstrek- eller
-   * spørsmålstegn endret hvilken rute som kalles, ikke hvilken foreleser det spørres om.
+   * A username is free text from Identity. Interpolated raw, a slash or a question mark
+   * would change which route is called rather than which lecturer is asked for.
    */
   it.each([
-    ["skråstrek", "pn/../Subjects", "pn%2F..%2FSubjects"],
-    ["spørsmålstegn", "pn?x=1", "pn%3Fx%3D1"],
-    ["mellomrom", "petar nikolic", "petar%20nikolic"],
-    ["skarpe tegn", "pnikolić", "pnikoli%C4%87"],
-  ])("koder %s i brukernavnet", async (_navn, brukernavn, kodet) => {
-    fetchMock.mockResolvedValue(jsonResponse({ lecturer: detaljer }));
+    ["a slash", "pn/../Subjects", "pn%2F..%2FSubjects"],
+    ["a question mark", "pn?x=1", "pn%3Fx%3D1"],
+    ["a space", "petar nikolic", "petar%20nikolic"],
+    ["an accented letter", "pnikolić", "pnikoli%C4%87"],
+  ])("encodes %s in the username", async (_name, username, encoded) => {
+    fetchMock.mockResolvedValue(jsonResponse({ lecturer: details }));
 
     const { fetchLecturer } = await load();
-    await fetchLecturer(brukernavn);
+    await fetchLecturer(username);
 
-    expect(urlOf(fetchMock)).toBe(`${API}/api/Lecturers/${kodet}`);
+    expect(urlOf(fetchMock)).toBe(`${API}/api/Lecturers/${encoded}`);
   });
 
   /**
-   * Profilen er åpen, men serveren bruker tokenet til å avgjøre hva den tar med -
-   * så headeren følger med når noen er logget inn, og uteblir ellers.
+   * The profile is open, but the server uses the token to decide what to include - so the
+   * header goes along when someone is signed in, and stays away otherwise.
    */
-  it("sender tokenet når noen er logget inn", async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ lecturer: detaljer }));
+  it("sends the token when someone is signed in", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ lecturer: details }));
 
     const { fetchLecturer, storeSession } = await load();
 
@@ -109,8 +109,8 @@ describe("fetchLecturer", () => {
     expect(headersOf(fetchMock).Authorization).toBe("Bearer abc123");
   });
 
-  it("spør anonymt når ingen er logget inn", async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ lecturer: detaljer }));
+  it("asks anonymously when nobody is signed in", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ lecturer: details }));
 
     const { fetchLecturer } = await load();
     await fetchLecturer("pnikolic");
@@ -118,7 +118,7 @@ describe("fetchLecturer", () => {
     expect(headersOf(fetchMock).Authorization).toBeUndefined();
   });
 
-  it("kaster med statusen når foreleseren ikke finnes", async () => {
+  it("throws with the status when the lecturer does not exist", async () => {
     fetchMock.mockResolvedValue(emptyResponse(404));
 
     const { fetchLecturer } = await load();
@@ -128,7 +128,7 @@ describe("fetchLecturer", () => {
     );
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { fetchLecturer, getSession, storeSession } = await load();
@@ -146,7 +146,7 @@ describe("fetchLecturers", () => {
     { username: "mmarkovic", title: "MA", firstName: "Milica", lastName: "Markovic" },
   ];
 
-  it("henter hele staben", async () => {
+  it("fetches the whole roster", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ lecturers: roster }));
 
     const { fetchLecturers } = await load();
@@ -155,7 +155,7 @@ describe("fetchLecturers", () => {
     expect(urlOf(fetchMock)).toBe(`${API}/api/Lecturers`);
   });
 
-  it("gir tom liste når svaret ikke har noen stab i seg", async () => {
+  it("gives an empty list when the answer carries no roster", async () => {
     fetchMock.mockResolvedValue(jsonResponse({}));
 
     const { fetchLecturers } = await load();
@@ -164,27 +164,27 @@ describe("fetchLecturers", () => {
   });
 
   /**
-   * Hvert emnekort som åpnes for redigering ber om staben. Uten det delte løftet blir
-   * det ett kall per kort, alle mot samme uforanderlige liste.
+   * Every subject card opened for editing asks for the roster. Without the shared promise
+   * that is one request per card, all for the same unchanging list.
    */
-  it("slår sammen kall som skjer samtidig til ett", async () => {
-    const svar = deferred<Response>();
-    fetchMock.mockReturnValue(svar.promise);
+  it("collapses concurrent calls into one request", async () => {
+    const response = deferred<Response>();
+    fetchMock.mockReturnValue(response.promise);
 
     const { fetchLecturers } = await load();
 
-    const begge = Promise.all([fetchLecturers(), fetchLecturers(), fetchLecturers()]);
-    svar.resolve(jsonResponse({ lecturers: roster }));
+    const all = Promise.all([fetchLecturers(), fetchLecturers(), fetchLecturers()]);
+    response.resolve(jsonResponse({ lecturers: roster }));
 
-    expect(await begge).toEqual([roster, roster, roster]);
+    expect(await all).toEqual([roster, roster, roster]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   /**
-   * Bevisst: staben er den samme for alle og endrer seg ikke mens siden står oppe.
-   * En nyregistrert foreleser dukker først opp etter en ny lasting av siden.
+   * Deliberate: the roster is the same for everyone and does not change while the page is
+   * up. A newly registered lecturer appears only after the page is loaded again.
    */
-  it("henter ikke på nytt når listen allerede er hentet", async () => {
+  it("does not fetch again once the list has been fetched", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ lecturers: roster }));
 
     const { fetchLecturers } = await load();
@@ -196,10 +196,10 @@ describe("fetchLecturers", () => {
   });
 
   /**
-   * Et mislykket kall må ikke mellomlagres som resultat, ellers hadde ett nettverksglipp
-   * gjort forelesernedtrekkene tomme for resten av besøket.
+   * A failed call must not be cached as a result, or one network hiccup would leave the
+   * lecturer dropdowns empty for the rest of the visit.
    */
-  it("lar neste forsøk gå på nytt etter en feil", async () => {
+  it("lets the next attempt try again after a failure", async () => {
     fetchMock.mockResolvedValueOnce(emptyResponse(500));
     fetchMock.mockResolvedValueOnce(jsonResponse({ lecturers: roster }));
 
@@ -210,17 +210,17 @@ describe("fetchLecturers", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("lar neste forsøk gå på nytt etter at nettverket falt bort", async () => {
-    fetchMock.mockRejectedValueOnce(new Error("nettverket falt bort"));
+  it("lets the next attempt try again after the network dropped", async () => {
+    fetchMock.mockRejectedValueOnce(new Error("the network dropped"));
     fetchMock.mockResolvedValueOnce(jsonResponse({ lecturers: roster }));
 
     const { fetchLecturers } = await load();
 
-    await expect(fetchLecturers()).rejects.toThrow("nettverket falt bort");
+    await expect(fetchLecturers()).rejects.toThrow("the network dropped");
     expect(await fetchLecturers()).toEqual(roster);
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { fetchLecturers, getSession, storeSession } = await load();
@@ -231,7 +231,7 @@ describe("fetchLecturers", () => {
     expect(getSession()).toEqual({ token: null, user: null });
   });
 
-  it("sender tokenet - staben er stengt for anonyme", async () => {
+  it("sends the token - the roster is closed to anonymous callers", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ lecturers: roster }));
 
     const { fetchLecturers, storeSession } = await load();

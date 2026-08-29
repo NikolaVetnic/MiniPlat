@@ -10,7 +10,7 @@ vi.mock("../services/lecturersService", () => ({
   fetchLecturers: vi.fn(),
 }));
 
-const hentStaben = vi.mocked(fetchLecturers);
+const fetchRoster = vi.mocked(fetchLecturers);
 
 const roster: LecturerSummary[] = [
   { username: "pnikolic", title: "dr", firstName: "Petar", lastName: "Nikolic" },
@@ -18,9 +18,9 @@ const roster: LecturerSummary[] = [
 ];
 
 beforeEach(() => {
-  hentStaben.mockReset();
+  fetchRoster.mockReset();
 
-  // Kroken logger feilen før den viser en beskjed. Nyttig i nettleseren, støy her.
+  // The hook logs the failure before it shows a message. Useful in the browser, noise here.
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -29,8 +29,8 @@ afterEach(() => {
 });
 
 describe("useLecturers", () => {
-  it("henter staben og gir den videre", async () => {
-    hentStaben.mockResolvedValue(roster);
+  it("fetches the roster and hands it on", async () => {
+    fetchRoster.mockResolvedValue(roster);
 
     const { result } = renderHook(() => useLecturers());
 
@@ -40,34 +40,34 @@ describe("useLecturers", () => {
     expect(result.current.error).toBeNull();
   });
 
-  it("er i gang mens kallet står ute", async () => {
-    const svar = deferred<LecturerSummary[]>();
-    hentStaben.mockReturnValue(svar.promise);
+  it("reports itself busy while the request is out", async () => {
+    const response = deferred<LecturerSummary[]>();
+    fetchRoster.mockReturnValue(response.promise);
 
     const { result } = renderHook(() => useLecturers());
 
     await waitFor(() => expect(result.current.loading).toBe(true));
     expect(result.current.lecturers).toEqual([]);
 
-    svar.resolve(roster);
+    response.resolve(roster);
 
     await waitFor(() => expect(result.current.loading).toBe(false));
   });
 
   /**
-   * Nedtrekkene finnes bare i redigeringsmodus. Uten bryteren ville hvert emnekort på
-   * siden bedt om staben ved første tegning, lenge før noen åpner en editor.
+   * The dropdowns exist only in edit mode. Without the switch every subject card on the
+   * page would ask for the roster on its first render, long before anyone opens an editor.
    */
-  it("ber ikke om noe før den er slått på", () => {
+  it("asks for nothing until it is switched on", () => {
     const { result } = renderHook(() => useLecturers(false));
 
-    expect(hentStaben).not.toHaveBeenCalled();
+    expect(fetchRoster).not.toHaveBeenCalled();
     expect(result.current.loading).toBe(false);
     expect(result.current.lecturers).toEqual([]);
   });
 
-  it("henter når den slås på", async () => {
-    hentStaben.mockResolvedValue(roster);
+  it("fetches once it is switched on", async () => {
+    fetchRoster.mockResolvedValue(roster);
 
     const { result, rerender } = renderHook(
       ({ enabled }: { enabled: boolean }) => useLecturers(enabled),
@@ -77,11 +77,11 @@ describe("useLecturers", () => {
     rerender({ enabled: true });
 
     await waitFor(() => expect(result.current.lecturers).toEqual(roster));
-    expect(hentStaben).toHaveBeenCalledTimes(1);
+    expect(fetchRoster).toHaveBeenCalledTimes(1);
   });
 
-  it("henter ikke på nytt når editoren tegnes om", async () => {
-    hentStaben.mockResolvedValue(roster);
+  it("does not fetch again when the editor re-renders", async () => {
+    fetchRoster.mockResolvedValue(roster);
 
     const { result, rerender } = renderHook(() => useLecturers(true));
 
@@ -89,11 +89,11 @@ describe("useLecturers", () => {
     rerender();
     rerender();
 
-    expect(hentStaben).toHaveBeenCalledTimes(1);
+    expect(fetchRoster).toHaveBeenCalledTimes(1);
   });
 
-  it("viser en beskjed når staben ikke kan hentes", async () => {
-    hentStaben.mockRejectedValue(new Error("nettverket falt bort"));
+  it("shows a message when the roster cannot be fetched", async () => {
+    fetchRoster.mockRejectedValue(new Error("the network dropped"));
 
     const { result } = renderHook(() => useLecturers());
 
@@ -106,15 +106,15 @@ describe("useLecturers", () => {
   });
 
   /**
-   * Editoren kan lukkes og åpnes igjen mens det første kallet fortsatt står ute. Kommer
-   * det svaret tilbake sist, må det ikke legge seg over det nyere - opprydningen i
-   * effekten merker det som forlatt, og det er den vakten dette prøver.
+   * The editor can be closed and opened again while the first request is still out. If
+   * that answer comes back last it must not land on top of the newer one - the effect's
+   * cleanup marks it abandoned, and that is the guard this exercises.
    */
-  it("lar et forlatt svar ligge når et nyere allerede er kommet", async () => {
-    const første = deferred<LecturerSummary[]>();
-    const andre = deferred<LecturerSummary[]>();
+  it("leaves an abandoned answer where it is once a newer one has arrived", async () => {
+    const first = deferred<LecturerSummary[]>();
+    const second = deferred<LecturerSummary[]>();
 
-    hentStaben.mockReturnValueOnce(første.promise).mockReturnValueOnce(andre.promise);
+    fetchRoster.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
 
     const { result, rerender } = renderHook(
       ({ enabled }: { enabled: boolean }) => useLecturers(enabled),
@@ -124,14 +124,15 @@ describe("useLecturers", () => {
     rerender({ enabled: false });
     rerender({ enabled: true });
 
-    andre.resolve(roster);
+    second.resolve(roster);
     await waitFor(() => expect(result.current.lecturers).toEqual(roster));
 
-    // act() lar .then-kjeden og tilstandsoppdateringen den ville utløst kjøre ferdig,
-    // så påstanden under sier noe om hva som faktisk skjedde og ikke om timingen.
+    // act() lets the .then chain and the state update it would have caused run to
+    // completion, so the assertion below says something about what actually happened
+    // rather than about timing.
     await act(async () => {
-      første.resolve([]);
-      await første.promise;
+      first.resolve([]);
+      await first.promise;
     });
 
     expect(result.current.lecturers).toEqual(roster);

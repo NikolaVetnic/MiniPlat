@@ -1,9 +1,9 @@
 #!/bin/sh
-# Starter databasen og deretter API-et, i den rekkefølgen.
+# Starts the database and then the API, in that order.
 #
-# Begge er ett kommandotrinn med vilje: API-et migrerer og seeder ved oppstart og starter
-# ikke uten en database å gjøre det mot, og Playwright gir ingen garanti for at globalSetup
-# kjører før webServer. Her er rekkefølgen umulig å ta feil av.
+# Both are one command step on purpose: the API migrates and seeds at startup and will not
+# start without a database to do it against, and Playwright gives no guarantee that
+# globalSetup runs before webServer. As one step the order cannot be got wrong.
 set -e
 
 CONTAINER="${E2E_DB_CONTAINER:-miniplat-e2e-db}"
@@ -22,7 +22,7 @@ i=0
 until docker exec "$CONTAINER" pg_isready -U postgres >/dev/null 2>&1; do
   i=$((i + 1))
   if [ "$i" -gt 60 ]; then
-    echo "Databasen ble ikke klar innen 60 sekunder." >&2
+    echo "The database was not ready within 60 seconds." >&2
     exit 1
   fi
   sleep 1

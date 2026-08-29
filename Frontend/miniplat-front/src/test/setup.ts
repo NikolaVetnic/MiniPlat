@@ -1,8 +1,8 @@
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
 
-// Uten globals: true registrerer ikke Testing Library sin egen opprydding seg, og
-// to render() i samme fil etterlater begge trærne i dokumentet.
+// Without globals: true, Testing Library does not register its own cleanup, and two
+// render() calls in one file leave both trees in the document.
 afterEach(() => {
   cleanup();
 });

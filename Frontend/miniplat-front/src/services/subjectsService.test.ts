@@ -17,7 +17,7 @@ import type { Subject } from "../types/api";
 
 let fetchMock: FetchMock;
 
-type Tjenester = Awaited<ReturnType<typeof load>>;
+type Services = Awaited<ReturnType<typeof load>>;
 
 const load = async () => {
   vi.resetModules();
@@ -33,7 +33,8 @@ beforeEach(() => {
   vi.stubEnv("VITE_API_BASE_URL", API);
   fetchMock = installFetch();
 
-  // Tjenestene logger serversvaret før de kaster. Nyttig i nettleseren, støy her.
+  // The services log the server response before they throw. Useful in the browser,
+  // noise here.
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -48,10 +49,10 @@ const page = (data: Subject[]) =>
 
 describe("fetchSubjects", () => {
   /**
-   * Katalogen hentes i én forespørsel - siden viser alle emner gruppert, og en
-   * sidevisning ville bare ha delt opp den grupperingen.
+   * The catalogue is fetched in one request - the page shows every subject grouped, and
+   * paging would only have split that grouping up.
    */
-  it("henter hele katalogen i ett kall", async () => {
+  it("fetches the whole catalogue in one call", async () => {
     fetchMock.mockResolvedValue(page([makeSubject()]));
 
     const { fetchSubjects } = await load();
@@ -62,7 +63,7 @@ describe("fetchSubjects", () => {
     expect(initOf(fetchMock).method).toBe("GET");
   });
 
-  it("pakker emnene ut av sideomslaget", async () => {
+  it("unwraps the subjects from the page envelope", async () => {
     fetchMock.mockResolvedValue(page([makeSubject({ code: "PSI-101" })]));
 
     const { fetchSubjects } = await load();
@@ -70,7 +71,7 @@ describe("fetchSubjects", () => {
     expect((await fetchSubjects())[0].code).toBe("PSI-101");
   });
 
-  it("gir tom liste når siden ikke har noen data", async () => {
+  it("gives an empty list when the page carries no data", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({ subjects: { pageIndex: 0, pageSize: 1000, count: 0, data: null } })
     );
@@ -80,7 +81,7 @@ describe("fetchSubjects", () => {
     expect(await fetchSubjects()).toEqual([]);
   });
 
-  it("kaster med statusen når katalogen ikke kan hentes", async () => {
+  it("throws with the status when the catalogue cannot be fetched", async () => {
     fetchMock.mockResolvedValue(emptyResponse(500));
 
     const { fetchSubjects } = await load();
@@ -88,7 +89,7 @@ describe("fetchSubjects", () => {
     await expect(fetchSubjects()).rejects.toThrow("Failed to fetch subjects: 500");
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { fetchSubjects, getSession, storeSession } = await load();
@@ -100,10 +101,10 @@ describe("fetchSubjects", () => {
   });
 
   /**
-   * Katalogen er åpen, men en foreleser får sine skjulte temaer med - så tokenet
-   * følger med når det finnes.
+   * The catalogue is open, but a lecturer gets their own hidden topics with it - so the
+   * token goes along whenever there is one.
    */
-  it("sender tokenet når noen er logget inn", async () => {
+  it("sends the token when someone is signed in", async () => {
     fetchMock.mockResolvedValue(page([]));
 
     const { fetchSubjects, storeSession } = await load();
@@ -116,112 +117,113 @@ describe("fetchSubjects", () => {
 });
 
 describe("updateSubjectTopics", () => {
-  const emne = makeSubject({ id: "s-1", version: 7 });
+  const subject = makeSubject({ id: "s-1", version: 7 });
 
-  it("legger de nye temaene på emnet og sender hele grafen", async () => {
+  it("puts the new topics on the subject and sends the whole graph", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateSubjectTopics } = await load();
-    const temaer = [makeTopic({ id: "t-1", title: "Nytt tema" })];
+    const topics = [makeTopic({ id: "t-1", title: "New topic" })];
 
-    await updateSubjectTopics(emne, temaer);
+    await updateSubjectTopics(subject, topics);
 
-    const sendt = bodyOf<Subject>(fetchMock);
+    const sent = bodyOf<Subject>(fetchMock);
 
     expect(urlOf(fetchMock)).toBe(`${API}/api/Subjects/s-1`);
     expect(initOf(fetchMock).method).toBe("PUT");
-    expect(sendt.topics).toHaveLength(1);
-    expect(sendt.topics[0].title).toBe("Nytt tema");
-    expect(sendt.code).toBe(emne.code);
+    expect(sent.topics).toHaveLength(1);
+    expect(sent.topics[0].title).toBe("New topic");
+    expect(sent.code).toBe(subject.code);
   });
 
   /**
-   * Versjonen må være med, ellers hopper serveren over konfliktsjekken og en samtidig
-   * lagring blir overskrevet i stillhet.
+   * The version has to be there, or the server skips the conflict check and a concurrent
+   * save is overwritten in silence.
    */
-  it("sender versjonen emnet ble lest med", async () => {
+  it("sends the version the subject was read with", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateSubjectTopics } = await load();
-    await updateSubjectTopics(emne, []);
+    await updateSubjectTopics(subject, []);
 
     expect(bodyOf<Subject>(fetchMock).version).toBe(7);
   });
 
-  it("sender foreleser og assistent tilbake uendret", async () => {
+  it("sends the lecturer and assistant back unchanged", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateSubjectTopics } = await load();
-    await updateSubjectTopics(emne, []);
+    await updateSubjectTopics(subject, []);
 
-    const sendt = bodyOf<Subject>(fetchMock);
+    const sent = bodyOf<Subject>(fetchMock);
 
-    expect(sendt.lecturer).toBe(emne.lecturer);
-    expect(sendt.assistant).toBe(emne.assistant);
+    expect(sent.lecturer).toBe(subject.lecturer);
+    expect(sent.assistant).toBe(subject.assistant);
   });
 
-  it("rører ikke emnet den fikk", async () => {
+  it("leaves the subject it was handed alone", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateSubjectTopics } = await load();
-    await updateSubjectTopics(emne, [makeTopic()]);
+    await updateSubjectTopics(subject, [makeTopic()]);
 
-    expect(emne.topics).toEqual([]);
+    expect(subject.topics).toEqual([]);
   });
 
   /**
-   * 409 er sin egen feiltype, så siden kan skille «noen andre lagret først» fra alt
-   * annet med instanceof i stedet for å lete etter et felt som bare finnes iblant.
+   * 409 gets its own error type, so the page can tell "someone else saved first" from
+   * everything else with instanceof rather than reaching for a field that only sometimes
+   * exists.
    */
-  it("gir en konfliktfeil når noen andre lagret først", async () => {
-    fetchMock.mockResolvedValue(textResponse("konflikt", 409));
+  it("gives a conflict error when someone else saved first", async () => {
+    fetchMock.mockResolvedValue(textResponse("conflict", 409));
 
     const { ConflictError, updateSubjectTopics } = await load();
 
-    await expect(updateSubjectTopics(emne, [])).rejects.toBeInstanceOf(ConflictError);
+    await expect(updateSubjectTopics(subject, [])).rejects.toBeInstanceOf(ConflictError);
   });
 
-  it("gir en vanlig feil for alt annet enn konflikt", async () => {
-    fetchMock.mockResolvedValue(textResponse("nei", 400));
+  it("gives an ordinary error for anything but a conflict", async () => {
+    fetchMock.mockResolvedValue(textResponse("no", 400));
 
     const { ConflictError, updateSubjectTopics } = await load();
 
-    const feil = await updateSubjectTopics(emne, []).catch((e: unknown) => e);
+    const error = await updateSubjectTopics(subject, []).catch((e: unknown) => e);
 
-    expect(feil).toBeInstanceOf(Error);
-    expect(feil).not.toBeInstanceOf(ConflictError);
-    expect((feil as Error).message).toBe("Failed to update subject s-1");
+    expect(error).toBeInstanceOf(Error);
+    expect(error).not.toBeInstanceOf(ConflictError);
+    expect((error as Error).message).toBe("Failed to update subject s-1");
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { getSession, storeSession, updateSubjectTopics } = await load();
 
     storeSession("abc123", { username: "pnikolic" });
-    await expect(updateSubjectTopics(emne, [])).rejects.toThrow();
+    await expect(updateSubjectTopics(subject, [])).rejects.toThrow();
 
     expect(getSession()).toEqual({ token: null, user: null });
   });
 
   /**
-   * 403 er «du kan bare redigere emner du underviser» - en gyldig økt som møter en
-   * eierskapsregel, ikke et dødt token.
+   * 403 is "you may only edit subjects you teach" - a valid session meeting an ownership
+   * rule, not a dead token.
    */
-  it("beholder økten når serveren svarer 403", async () => {
+  it("keeps the session when the server answers 403", async () => {
     fetchMock.mockResolvedValue(emptyResponse(403));
 
     const { getSession, storeSession, updateSubjectTopics } = await load();
 
     storeSession("abc123", { username: "pnikolic" });
-    await expect(updateSubjectTopics(emne, [])).rejects.toThrow();
+    await expect(updateSubjectTopics(subject, [])).rejects.toThrow();
 
     expect(getSession().token).toBe("abc123");
   });
 });
 
 describe("updateTopicOrder", () => {
-  it("sender bare rekkefølgen, ikke hele emnet", async () => {
+  it("sends the order only, not the whole subject", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateTopicOrder } = await load();
@@ -232,7 +234,7 @@ describe("updateTopicOrder", () => {
     expect(bodyOf(fetchMock)).toEqual({ topicIds: ["t-2", "t-1"] });
   });
 
-  it("beholder rekkefølgen den fikk", async () => {
+  it("keeps the order it was handed", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateTopicOrder } = await load();
@@ -241,8 +243,8 @@ describe("updateTopicOrder", () => {
     expect(bodyOf<{ topicIds: string[] }>(fetchMock).topicIds).toEqual(["c", "a", "b"]);
   });
 
-  it("kaster når rekkefølgen avvises", async () => {
-    fetchMock.mockResolvedValue(textResponse("nei", 400));
+  it("throws when the order is refused", async () => {
+    fetchMock.mockResolvedValue(textResponse("no", 400));
 
     const { updateTopicOrder } = await load();
 
@@ -251,7 +253,7 @@ describe("updateTopicOrder", () => {
     );
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { getSession, storeSession, updateTopicOrder } = await load();
@@ -264,7 +266,7 @@ describe("updateTopicOrder", () => {
 });
 
 describe("updateTopicState", () => {
-  it("sender flagget som en patch mot det ene temaet", async () => {
+  it("sends the flag as a patch against the one topic", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateTopicState } = await load();
@@ -276,10 +278,10 @@ describe("updateTopicState", () => {
   });
 
   /**
-   * Et utelatt flagg lar serveren la feltet stå. Sendte tjenesten begge hver gang,
-   * ville det å skjule et tema også skrevet slettetilstanden på nytt.
+   * An omitted flag lets the server leave that field as it is. Were the service to send
+   * both every time, hiding a topic would rewrite its deletion state as well.
    */
-  it("sender bare flaggene den fikk", async () => {
+  it("sends only the flags it was handed", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateTopicState } = await load();
@@ -288,7 +290,7 @@ describe("updateTopicState", () => {
     expect(bodyOf(fetchMock)).toEqual({ isDeleted: true });
   });
 
-  it("kan sende begge flaggene på én gang", async () => {
+  it("can send both flags at once", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateTopicState } = await load();
@@ -297,8 +299,8 @@ describe("updateTopicState", () => {
     expect(bodyOf(fetchMock)).toEqual({ isHidden: true, isDeleted: false });
   });
 
-  it("kaster med tema-id-en når endringen avvises", async () => {
-    fetchMock.mockResolvedValue(textResponse("nei", 404));
+  it("throws with the topic id when the change is refused", async () => {
+    fetchMock.mockResolvedValue(textResponse("no", 404));
 
     const { updateTopicState } = await load();
 
@@ -307,7 +309,7 @@ describe("updateTopicState", () => {
     );
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { getSession, storeSession, updateTopicState } = await load();
@@ -320,7 +322,7 @@ describe("updateTopicState", () => {
 });
 
 describe("updateSubjectPeople", () => {
-  it("sender staben til sitt eget endepunkt", async () => {
+  it("sends the staff to their own endpoint", async () => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateSubjectPeople } = await load();
@@ -335,32 +337,32 @@ describe("updateSubjectPeople", () => {
   });
 
   /**
-   * Én form for «ingen assistent». Den vanlige emneoppdateringen kan ikke uttrykke det
-   * i det hele tatt, fordi null der betyr «la feltet stå».
+   * One representation of "no assistant". The general subject update cannot express it at
+   * all, because null there means "leave this field alone".
    */
   it.each([
     ["null", null],
-    ["tom streng", ""],
-  ])("gjør %s om til ingen assistent", async (_navn, assistent) => {
+    ["an empty string", ""],
+  ])("turns %s into no assistant at all", async (_name, assistant) => {
     fetchMock.mockResolvedValue(emptyResponse(200));
 
     const { updateSubjectPeople } = await load();
-    await updateSubjectPeople("s-1", "pnikolic", assistent);
+    await updateSubjectPeople("s-1", "pnikolic", assistant);
 
     expect(bodyOf(fetchMock)).toEqual({ lecturer: "pnikolic", assistant: null });
   });
 
-  it("kaster med emne-id-en når staben avvises", async () => {
-    fetchMock.mockResolvedValue(textResponse("finnes ikke", 400));
+  it("throws with the subject id when the staff is refused", async () => {
+    fetchMock.mockResolvedValue(textResponse("no such lecturer", 400));
 
     const { updateSubjectPeople } = await load();
 
-    await expect(updateSubjectPeople("s-1", "ingen", null)).rejects.toThrow(
+    await expect(updateSubjectPeople("s-1", "nobody", null)).rejects.toThrow(
       "Failed to update staff on subject s-1"
     );
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { getSession, storeSession, updateSubjectPeople } = await load();
@@ -373,26 +375,26 @@ describe("updateSubjectPeople", () => {
 });
 
 /**
- * Alle skrivekallene går gjennom den samme headerbyggeren. Innholdstypen og tokenet
- * hører sammen: et skrivekall uten token er 401, og uten json-headeren 415.
+ * Every write goes through the same header builder. The content type and the token belong
+ * together: a write without a token is a 401, and without the json header a 415.
  */
-describe("skrivekallene", () => {
-  const kall = {
-    updateSubjectTopics: (s: Tjenester) => s.updateSubjectTopics(makeSubject(), []),
-    updateTopicOrder: (s: Tjenester) => s.updateTopicOrder("s-1", []),
-    updateTopicState: (s: Tjenester) => s.updateTopicState("s-1", "t-1", { isHidden: true }),
-    updateSubjectPeople: (s: Tjenester) => s.updateSubjectPeople("s-1", "pnikolic", null),
+describe("the write calls", () => {
+  const calls = {
+    updateSubjectTopics: (s: Services) => s.updateSubjectTopics(makeSubject(), []),
+    updateTopicOrder: (s: Services) => s.updateTopicOrder("s-1", []),
+    updateTopicState: (s: Services) => s.updateTopicState("s-1", "t-1", { isHidden: true }),
+    updateSubjectPeople: (s: Services) => s.updateSubjectPeople("s-1", "pnikolic", null),
   };
 
-  it.each(Object.keys(kall) as (keyof typeof kall)[])(
-    "%s sender json og tokenet",
-    async (navn) => {
+  it.each(Object.keys(calls) as (keyof typeof calls)[])(
+    "%s sends json and the token",
+    async (name) => {
       fetchMock.mockResolvedValue(emptyResponse(200));
 
-      const tjenester = await load();
-      tjenester.storeSession("abc123", { username: "pnikolic" });
+      const services = await load();
+      services.storeSession("abc123", { username: "pnikolic" });
 
-      await kall[navn](tjenester);
+      await calls[name](services);
 
       expect(headersOf(fetchMock)["Content-Type"]).toBe("application/json");
       expect(headersOf(fetchMock).Authorization).toBe("Bearer abc123");

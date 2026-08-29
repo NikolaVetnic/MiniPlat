@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeSubject, makeTopic } from "../../test/fixtures";
-import { loggInn, loggUt } from "../../test/render";
+import { signIn, signOut } from "../../test/render";
 import { UserProvider } from "../../contexts/UserContext";
 import {
   ConflictError,
@@ -17,8 +17,8 @@ import sr from "../../locales/sr.json";
 import SubjectPage from "./SubjectPage";
 import type { Subject } from "../../types/api";
 
-// importActual beholder ConflictError som den ekte klassen, ellers ville instanceof
-// i siden aldri slått til og konfliktbeskjeden vært utestbar.
+// importActual keeps ConflictError as the real class; otherwise the instanceof check in
+// the page would never match and the conflict message would be untestable.
 vi.mock("../../services/subjectsService", async (importActual) => ({
   ...(await importActual<typeof import("../../services/subjectsService")>()),
   fetchSubjects: vi.fn(),
@@ -32,15 +32,15 @@ vi.mock("../../services/lecturersService", () => ({
   fetchLecturers: vi.fn(),
 }));
 
-const hentEmner = vi.mocked(fetchSubjects);
-const lagreTemaer = vi.mocked(updateSubjectTopics);
-const lagreRekkefølge = vi.mocked(updateTopicOrder);
-const lagreTemastatus = vi.mocked(updateTopicState);
+const fetchCatalogue = vi.mocked(fetchSubjects);
+const saveTopics = vi.mocked(updateSubjectTopics);
+const saveOrder = vi.mocked(updateTopicOrder);
+const saveTopicState = vi.mocked(updateTopicState);
 
 const cpt = sr.pages.subject;
-const temaCpt = sr.components.cards.topic;
+const topicCpt = sr.components.cards.topic;
 
-const emne = (over: Partial<Subject> = {}) =>
+const subject = (over: Partial<Subject> = {}) =>
   makeSubject({
     id: "s-1",
     title: "Psihologija",
@@ -51,7 +51,7 @@ const emne = (over: Partial<Subject> = {}) =>
     ...over,
   });
 
-const vis = (subjectId = "s-1") =>
+const show = (subjectId = "s-1") =>
   render(
     <MemoryRouter initialEntries={[`/subjects/${subjectId}`]}>
       <UserProvider>
@@ -60,39 +60,39 @@ const vis = (subjectId = "s-1") =>
             path="/subjects/:subjectId"
             element={<SubjectPage onLogout={vi.fn()} />}
           />
-          <Route path="/home" element={<div>hjemmesiden</div>} />
+          <Route path="/home" element={<div>home page</div>} />
         </Routes>
       </UserProvider>
     </MemoryRouter>
   );
 
-const visOgVent = async (subjectId = "s-1") => {
-  const resultat = vis(subjectId);
+const showAndWait = async (subjectId = "s-1") => {
+  const rendered = show(subjectId);
   await screen.findByRole("heading", { level: 1 });
-  return resultat;
+  return rendered;
 };
 
 beforeEach(() => {
-  loggUt();
+  signOut();
   vi.mocked(fetchLecturer).mockResolvedValue(null);
   vi.mocked(fetchLecturers).mockResolvedValue([]);
 
-  hentEmner.mockReset().mockResolvedValue([emne()]);
-  lagreTemaer.mockReset().mockResolvedValue(undefined);
-  lagreRekkefølge.mockReset().mockResolvedValue(undefined);
-  lagreTemastatus.mockReset().mockResolvedValue(undefined);
+  fetchCatalogue.mockReset().mockResolvedValue([subject()]);
+  saveTopics.mockReset().mockResolvedValue(undefined);
+  saveOrder.mockReset().mockResolvedValue(undefined);
+  saveTopicState.mockReset().mockResolvedValue(undefined);
 
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
-  loggUt();
+  signOut();
   vi.restoreAllMocks();
 });
 
-describe("SubjectPage, det som vises", () => {
-  it("viser emnet og temaene det har", async () => {
-    await visOgVent();
+describe("SubjectPage, what is shown", () => {
+  it("shows the subject and the topics it has", async () => {
+    await showAndWait();
 
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Psihologija");
     expect(screen.getByText("Prva tema")).toBeDefined();
@@ -100,239 +100,242 @@ describe("SubjectPage, det som vises", () => {
   });
 
   /**
-   * En id som ikke er noe emne rendret før en tom side og kastet så på subject.title.
-   * Nå havner man på hjemmesiden, samme behandling som en rute som ikke kan serveres.
+   * An id that names no subject used to render a blank page and then throw on
+   * subject.title. Now it lands on the home page, the same treatment a route that cannot
+   * be served gets.
    */
-  it("sender deg til hjemmesiden når id-en ikke er noe emne", async () => {
-    vis("finnes-ikke");
+  it("sends you to the home page when the id names no subject", async () => {
+    show("does-not-exist");
 
-    expect(await screen.findByText("hjemmesiden")).toBeDefined();
+    expect(await screen.findByText("home page")).toBeDefined();
   });
 
-  it("sender deg til hjemmesiden når emnene ikke kunne hentes", async () => {
-    hentEmner.mockRejectedValue(new Error("500"));
+  it("sends you to the home page when the subjects could not be fetched", async () => {
+    fetchCatalogue.mockRejectedValue(new Error("500"));
 
-    vis();
+    show();
 
-    expect(await screen.findByText("hjemmesiden")).toBeDefined();
+    expect(await screen.findByText("home page")).toBeDefined();
   });
 
   /**
-   * Serveren sender uansett ingen skjulte temaer til en besøkende. Filteret her er det
-   * samme skillet uttrykt i klienten, for det tilfellet at noe likevel kommer med.
+   * The server sends a visitor no hidden topics anyway. The filter here is the same
+   * distinction expressed in the client, for the case where something arrives regardless.
    */
-  it("skjuler skjulte og slettede temaer for en besøkende", async () => {
-    hentEmner.mockResolvedValue([
-      emne({
+  it("hides hidden and deleted topics from a visitor", async () => {
+    fetchCatalogue.mockResolvedValue([
+      subject({
         topics: [
-          makeTopic({ id: "t-1", title: "Synlig" }),
-          makeTopic({ id: "t-2", title: "Skjult", isHidden: true }),
-          makeTopic({ id: "t-3", title: "Slettet", isDeleted: true }),
+          makeTopic({ id: "t-1", title: "Visible" }),
+          makeTopic({ id: "t-2", title: "Hidden", isHidden: true }),
+          makeTopic({ id: "t-3", title: "Deleted", isDeleted: true }),
         ],
       }),
     ]);
 
-    await visOgVent();
+    await showAndWait();
 
-    expect(screen.getByText("Synlig")).toBeDefined();
-    expect(screen.queryByText("Skjult")).toBeNull();
-    expect(screen.queryByText("Slettet")).toBeNull();
+    expect(screen.getByText("Visible")).toBeDefined();
+    expect(screen.queryByText("Hidden")).toBeNull();
+    expect(screen.queryByText("Deleted")).toBeNull();
   });
 
-  it("viser dem til en som er logget inn", async () => {
-    loggInn();
-    hentEmner.mockResolvedValue([
-      emne({
+  it("shows them to someone who is signed in", async () => {
+    signIn();
+    fetchCatalogue.mockResolvedValue([
+      subject({
         topics: [
-          makeTopic({ id: "t-1", title: "Synlig" }),
-          makeTopic({ id: "t-2", title: "Skjult", isHidden: true }),
+          makeTopic({ id: "t-1", title: "Visible" }),
+          makeTopic({ id: "t-2", title: "Hidden", isHidden: true }),
         ],
       }),
     ]);
 
-    await visOgVent();
+    await showAndWait();
 
-    expect(screen.getByText("Skjult")).toBeDefined();
+    expect(screen.getByText("Hidden")).toBeDefined();
   });
 
-  it("tilbyr ikke å legge til tema for en besøkende", async () => {
-    await visOgVent();
+  it("does not offer to add a topic to a visitor", async () => {
+    await showAndWait();
 
     expect(screen.queryByRole("button", { name: cpt.buttons.addTopic })).toBeNull();
   });
 
-  it("tilbyr det til en som er logget inn", async () => {
-    loggInn();
+  it("offers it to someone who is signed in", async () => {
+    signIn();
 
-    await visOgVent();
+    await showAndWait();
 
     expect(screen.getByRole("button", { name: cpt.buttons.addTopic })).toBeDefined();
   });
 });
 
-describe("SubjectPage og temaene", () => {
+describe("SubjectPage and the topics", () => {
   beforeEach(() => {
-    loggInn();
+    signIn();
   });
 
-  it("skjuler et tema gjennom sitt eget endepunkt", async () => {
-    await visOgVent();
+  it("hides a topic through its own endpoint", async () => {
+    await showAndWait();
 
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.hide })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.hide })[0]);
 
     await waitFor(() =>
-      expect(lagreTemastatus).toHaveBeenCalledWith("s-1", "t-1", { isHidden: true })
+      expect(saveTopicState).toHaveBeenCalledWith("s-1", "t-1", { isHidden: true })
     );
-    expect(lagreTemaer).not.toHaveBeenCalled();
+    expect(saveTopics).not.toHaveBeenCalled();
   });
 
-  it("markerer et tema for sletting gjennom det samme endepunktet", async () => {
-    await visOgVent();
+  it("marks a topic for deletion through the same endpoint", async () => {
+    await showAndWait();
 
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.delete })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.delete })[0]);
 
     await waitFor(() =>
-      expect(lagreTemastatus).toHaveBeenCalledWith("s-1", "t-1", { isDeleted: true })
+      expect(saveTopicState).toHaveBeenCalledWith("s-1", "t-1", { isDeleted: true })
     );
   });
 
-  /** Flagget vendes: et skjult tema blir synlig igjen. */
-  it("viser et skjult tema igjen", async () => {
-    hentEmner.mockResolvedValue([
-      emne({ topics: [makeTopic({ id: "t-1", title: "Skjult", isHidden: true })] }),
+  /** The flag is turned over: a hidden topic becomes visible again. */
+  it("shows a hidden topic again", async () => {
+    fetchCatalogue.mockResolvedValue([
+      subject({ topics: [makeTopic({ id: "t-1", title: "Hidden", isHidden: true })] }),
     ]);
 
-    await visOgVent();
+    await showAndWait();
 
-    fireEvent.click(screen.getByRole("button", { name: temaCpt.buttons.show }));
+    fireEvent.click(screen.getByRole("button", { name: topicCpt.buttons.show }));
 
     await waitFor(() =>
-      expect(lagreTemastatus).toHaveBeenCalledWith("s-1", "t-1", { isHidden: false })
+      expect(saveTopicState).toHaveBeenCalledWith("s-1", "t-1", { isHidden: false })
     );
   });
 
-  it("viser endringen med én gang, uten å vente på serveren", async () => {
-    await visOgVent();
+  it("shows the change at once, without waiting for the server", async () => {
+    await showAndWait();
 
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.hide })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.hide })[0]);
 
-    expect(screen.getAllByRole("button", { name: temaCpt.buttons.show })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: topicCpt.buttons.show })).toHaveLength(1);
   });
 
   /**
-   * Bare rekkefølgen endret seg, så den går til sitt eget endepunkt i stedet for at
-   * hele grafen sendes og serveren bygger hvert tema og materiale opp igjen.
+   * Only the order changed, so it goes to its own endpoint rather than sending the whole
+   * graph and having the server rebuild every topic and material.
    */
-  it("flytter et tema gjennom rekkefølge-endepunktet", async () => {
-    await visOgVent();
+  it("moves a topic through the reorder endpoint", async () => {
+    await showAndWait();
 
     fireEvent.click(screen.getByRole("button", { name: "↓" }));
 
-    await waitFor(() =>
-      expect(lagreRekkefølge).toHaveBeenCalledWith("s-1", ["t-2", "t-1"])
-    );
-    expect(lagreTemaer).not.toHaveBeenCalled();
+    await waitFor(() => expect(saveOrder).toHaveBeenCalledWith("s-1", ["t-2", "t-1"]));
+    expect(saveTopics).not.toHaveBeenCalled();
   });
 
-  it("sender hele grafen når et tema redigeres", async () => {
-    await visOgVent();
+  it("sends the whole graph when a topic is edited", async () => {
+    await showAndWait();
 
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.edit })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.edit })[0]);
     fireEvent.change(screen.getByDisplayValue("Prva tema"), {
-      target: { value: "Endret" },
+      target: { value: "Changed" },
     });
-    fireEvent.click(screen.getByRole("button", { name: temaCpt.buttons.save }));
+    fireEvent.click(screen.getByRole("button", { name: topicCpt.buttons.save }));
 
-    await waitFor(() => expect(lagreTemaer).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(saveTopics).toHaveBeenCalledTimes(1));
 
-    const [, temaer] = lagreTemaer.mock.calls[0];
+    const [, topics] = saveTopics.mock.calls[0];
 
-    expect(temaer.map((t) => t.title)).toEqual(["Endret", "Druga tema"]);
+    expect(topics.map((topic) => topic.title)).toEqual(["Changed", "Druga tema"]);
   });
 
-  it("legger et nytt tema bakerst", async () => {
-    await visOgVent();
+  it("puts a new topic last", async () => {
+    await showAndWait();
 
     fireEvent.click(screen.getByRole("button", { name: cpt.buttons.addTopic }));
     fireEvent.change(screen.getByLabelText(/Naslov/), {
       target: { value: "Treća tema" },
     });
-    fireEvent.change(screen.getByLabelText(new RegExp(temaCpt.description)), {
+    fireEvent.change(screen.getByLabelText(new RegExp(topicCpt.description)), {
       target: { value: "Opis teme" },
     });
-    fireEvent.click(screen.getByRole("button", { name: temaCpt.buttons.save }));
+    fireEvent.click(screen.getByRole("button", { name: topicCpt.buttons.save }));
 
-    await waitFor(() => expect(lagreTemaer).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(saveTopics).toHaveBeenCalledTimes(1));
 
-    const [, temaer] = lagreTemaer.mock.calls[0];
+    const [, topics] = saveTopics.mock.calls[0];
 
-    expect(temaer.map((t) => t.title)).toEqual(["Prva tema", "Druga tema", "Treća tema"]);
+    expect(topics.map((topic) => topic.title)).toEqual([
+      "Prva tema",
+      "Druga tema",
+      "Treća tema",
+    ]);
   });
 });
 
-describe("SubjectPage når lagringen ikke går gjennom", () => {
+describe("SubjectPage when the save does not go through", () => {
   beforeEach(() => {
-    loggInn();
+    signIn();
   });
 
-  const redigerFørsteTema = () => {
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.edit })[0]);
-    fireEvent.click(screen.getByRole("button", { name: temaCpt.buttons.save }));
+  const editFirstTopic = () => {
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.edit })[0]);
+    fireEvent.click(screen.getByRole("button", { name: topicCpt.buttons.save }));
   };
 
   /**
-   * En konflikt er ikke det samme som en feil: noen andre lagret først, og brukeren må
-   * hente den nye versjonen - ikke bare prøve igjen. Derfor sin egen beskjed.
+   * A conflict is not the same as a failure: someone else saved first, and the user has
+   * to fetch the newer version rather than simply try again. Hence its own message.
    */
-  it("sier fra om en konflikt med sin egen beskjed", async () => {
-    lagreTemaer.mockRejectedValue(new ConflictError("s-1 was changed by someone else"));
+  it("reports a conflict with its own message", async () => {
+    saveTopics.mockRejectedValue(new ConflictError("s-1 was changed by someone else"));
 
-    await visOgVent();
-    redigerFørsteTema();
+    await showAndWait();
+    editFirstTopic();
 
-    const varsel = await screen.findByRole("alert");
+    const alert = await screen.findByRole("alert");
 
-    expect(varsel.textContent).toBe(cpt.saveConflict);
+    expect(alert.textContent).toBe(cpt.saveConflict);
   });
 
-  it("sier fra om en vanlig feil med den vanlige beskjeden", async () => {
-    lagreTemaer.mockRejectedValue(new Error("500"));
+  it("reports an ordinary failure with the ordinary message", async () => {
+    saveTopics.mockRejectedValue(new Error("500"));
 
-    await visOgVent();
-    redigerFørsteTema();
+    await showAndWait();
+    editFirstTopic();
 
-    const varsel = await screen.findByRole("alert");
+    const alert = await screen.findByRole("alert");
 
-    expect(varsel.textContent).toBe(cpt.saveFailed);
+    expect(alert.textContent).toBe(cpt.saveFailed);
   });
 
-  it("sier fra når en omrokkering ikke ble lagret", async () => {
-    lagreRekkefølge.mockRejectedValue(new Error("400"));
+  it("says so when a reorder was not saved", async () => {
+    saveOrder.mockRejectedValue(new Error("400"));
 
-    await visOgVent();
+    await showAndWait();
     fireEvent.click(screen.getByRole("button", { name: "↓" }));
 
     expect((await screen.findByRole("alert")).textContent).toBe(cpt.saveFailed);
   });
 
-  it("sier fra når et flagg ikke ble lagret", async () => {
-    lagreTemastatus.mockRejectedValue(new Error("403"));
+  it("says so when a flag was not saved", async () => {
+    saveTopicState.mockRejectedValue(new Error("403"));
 
-    await visOgVent();
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.hide })[0]);
+    await showAndWait();
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.hide })[0]);
 
     expect((await screen.findByRole("alert")).textContent).toBe(cpt.saveFailed);
   });
 
-  /** En ny handling nullstiller beskjeden, så den ikke blir stående etter at det gikk bra. */
-  it("fjerner beskjeden når neste handling går gjennom", async () => {
-    lagreTemastatus.mockRejectedValueOnce(new Error("403"));
+  /** A new action clears the message, so it does not linger after something succeeded. */
+  it("clears the message once the next action goes through", async () => {
+    saveTopicState.mockRejectedValueOnce(new Error("403"));
 
-    await visOgVent();
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.hide })[0]);
+    await showAndWait();
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.hide })[0]);
     await screen.findByRole("alert");
 
-    fireEvent.click(screen.getAllByRole("button", { name: temaCpt.buttons.delete })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: topicCpt.buttons.delete })[0]);
 
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
   });

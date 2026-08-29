@@ -10,22 +10,22 @@ vi.mock("../services/lecturersService", () => ({
   fetchLecturer: vi.fn(),
 }));
 
-const hentForeleser = vi.mocked(fetchLecturer);
+const fetchOne = vi.mocked(fetchLecturer);
 
 const person = (username: string): LecturerDetails => ({
   username,
   title: "dr",
-  firstName: "Fornavn",
-  lastName: "Etternavn",
+  firstName: "Ime",
+  lastName: "Prezime",
   department: "Psihologija",
   email: `${username}@example.com`,
 });
 
-const foreleser = person("pnikolic");
-const assistent = person("mmarkovic");
+const lecturer = person("pnikolic");
+const assistant = person("mmarkovic");
 
 beforeEach(() => {
-  hentForeleser.mockReset();
+  fetchOne.mockReset();
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -34,62 +34,60 @@ afterEach(() => {
 });
 
 describe("useSubjectPeople", () => {
-  it("henter foreleser og assistent samtidig", async () => {
-    hentForeleser.mockImplementation(async (username) =>
-      username === "pnikolic" ? foreleser : assistent
+  it("fetches the lecturer and the assistant at once", async () => {
+    fetchOne.mockImplementation(async (username) =>
+      username === "pnikolic" ? lecturer : assistant
     );
 
     const { result } = renderHook(() => useSubjectPeople("pnikolic", "mmarkovic"));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.lecturer).toEqual(foreleser);
-    expect(result.current.assistant).toEqual(assistent);
+    expect(result.current.lecturer).toEqual(lecturer);
+    expect(result.current.assistant).toEqual(assistant);
     expect(result.current.error).toBeNull();
   });
 
   /**
-   * De fleste emner har ingen assistent. Å be om en tom streng ville blitt
-   * /api/Lecturers/ - en helt annen rute, som svarer 401.
+   * Most subjects have no assistant. Asking for an empty string would become
+   * /api/Lecturers/ - an entirely different route, which answers 401.
    */
   it.each([
     ["null", null],
     ["undefined", undefined],
-    ["tom streng", ""],
-  ])("spør ikke etter en assistent som er %s", async (_navn, assistentnavn) => {
-    hentForeleser.mockResolvedValue(foreleser);
+    ["an empty string", ""],
+  ])("does not ask for an assistant that is %s", async (_name, assistantName) => {
+    fetchOne.mockResolvedValue(lecturer);
 
-    const { result } = renderHook(() =>
-      useSubjectPeople("pnikolic", assistentnavn)
-    );
+    const { result } = renderHook(() => useSubjectPeople("pnikolic", assistantName));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(hentForeleser).toHaveBeenCalledTimes(1);
-    expect(hentForeleser).toHaveBeenCalledWith("pnikolic");
+    expect(fetchOne).toHaveBeenCalledTimes(1);
+    expect(fetchOne).toHaveBeenCalledWith("pnikolic");
     expect(result.current.assistant).toBeNull();
   });
 
-  it("spør ikke etter noen når emnet ikke har noen stab", async () => {
+  it("asks for nobody when the subject has no staff at all", async () => {
     const { result } = renderHook(() => useSubjectPeople(null, null));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(hentForeleser).not.toHaveBeenCalled();
+    expect(fetchOne).not.toHaveBeenCalled();
     expect(result.current.lecturer).toBeNull();
     expect(result.current.assistant).toBeNull();
   });
 
-  it("er i gang fra første tegning", () => {
-    hentForeleser.mockReturnValue(deferred<LecturerDetails | null>().promise);
+  it("reports itself busy from the very first render", () => {
+    fetchOne.mockReturnValue(deferred<LecturerDetails | null>().promise);
 
     const { result } = renderHook(() => useSubjectPeople("pnikolic", null));
 
     expect(result.current.loading).toBe(true);
   });
 
-  it("viser en beskjed når oppslaget feiler", async () => {
-    hentForeleser.mockRejectedValue(new Error("404"));
+  it("shows a message when the lookup fails", async () => {
+    fetchOne.mockRejectedValue(new Error("404"));
 
     const { result } = renderHook(() => useSubjectPeople("pnikolic", null));
 
@@ -100,81 +98,79 @@ describe("useSubjectPeople", () => {
     expect(result.current.loading).toBe(false);
   });
 
-  it("henter på nytt når emnet får en annen stab", async () => {
-    hentForeleser.mockResolvedValue(foreleser);
+  it("fetches again when the subject gets different staff", async () => {
+    fetchOne.mockResolvedValue(lecturer);
 
     const { result, rerender } = renderHook(
-      ({ navn }: { navn: string }) => useSubjectPeople(navn, null),
-      { initialProps: { navn: "pnikolic" } }
+      ({ name }: { name: string }) => useSubjectPeople(name, null),
+      { initialProps: { name: "pnikolic" } }
     );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    hentForeleser.mockResolvedValue(assistent);
-    rerender({ navn: "mmarkovic" });
+    fetchOne.mockResolvedValue(assistant);
+    rerender({ name: "mmarkovic" });
 
-    await waitFor(() => expect(result.current.lecturer).toEqual(assistent));
+    await waitFor(() => expect(result.current.lecturer).toEqual(assistant));
   });
 
-  it("henter ikke på nytt når kortet tegnes om med de samme navnene", async () => {
-    hentForeleser.mockResolvedValue(foreleser);
+  it("does not fetch again when the card re-renders with the same names", async () => {
+    fetchOne.mockResolvedValue(lecturer);
 
-    const { result, rerender } = renderHook(() =>
-      useSubjectPeople("pnikolic", null)
-    );
+    const { result, rerender } = renderHook(() => useSubjectPeople("pnikolic", null));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     rerender();
     rerender();
 
-    expect(hentForeleser).toHaveBeenCalledTimes(1);
+    expect(fetchOne).toHaveBeenCalledTimes(1);
   });
 
-  it("laster om på forespørsel med nye navn", async () => {
-    hentForeleser.mockResolvedValue(foreleser);
+  it("reloads on request with new names", async () => {
+    fetchOne.mockResolvedValue(lecturer);
 
     const { result } = renderHook(() => useSubjectPeople("pnikolic", null));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    hentForeleser.mockResolvedValue(assistent);
+    fetchOne.mockResolvedValue(assistant);
     await act(async () => {
       await result.current.refetch("mmarkovic", null);
     });
 
-    expect(result.current.lecturer).toEqual(assistent);
+    expect(result.current.lecturer).toEqual(assistant);
   });
 
   /**
-   * Etter at staben er lagret laster kortet om. Lykkes det, er den forrige feilen ikke
-   * sann lenger, og beskjeden må forsvinne sammen med den.
+   * The card reloads once the staff has been saved. If that succeeds the previous failure
+   * is no longer true, and the message has to go with it.
    */
-  it("fjerner en tidligere feil når oppslaget lykkes", async () => {
-    hentForeleser.mockRejectedValue(new Error("404"));
+  it("clears an earlier failure once the lookup succeeds", async () => {
+    fetchOne.mockRejectedValue(new Error("404"));
 
-    const { result } = renderHook(() => useSubjectPeople("ingen", null));
+    const { result } = renderHook(() => useSubjectPeople("nobody", null));
 
     await waitFor(() => expect(result.current.error).not.toBeNull());
 
-    hentForeleser.mockResolvedValue(foreleser);
+    fetchOne.mockResolvedValue(lecturer);
     await act(async () => {
       await result.current.refetch("pnikolic", null);
     });
 
     expect(result.current.error).toBeNull();
-    expect(result.current.lecturer).toEqual(foreleser);
+    expect(result.current.lecturer).toEqual(lecturer);
   });
 
   /**
-   * Å lagre staben og laste om starter et nytt oppslag mens det første fortsatt står
-   * ute. Kommer det gamle svaret tilbake sist, ville kortet vist forrige foreleser igjen
-   * rett etter at brukeren nettopp byttet den - derav sekvensnummeret i kroken.
+   * Saving the staff and reloading starts a second lookup while the first is still out.
+   * If the old answer comes back last, the card would show the previous lecturer again
+   * right after the user changed them - hence the sequence number in the hook.
    */
-  it("lar et utdatert svar ligge når et nyere allerede er kommet", async () => {
-    const første = deferred<LecturerDetails | null>();
-    const andre = deferred<LecturerDetails | null>();
+  it("leaves a stale answer where it is once a newer one has arrived", async () => {
+    const first = deferred<LecturerDetails | null>();
+    const second = deferred<LecturerDetails | null>();
 
-    hentForeleser.mockReturnValueOnce(første.promise).mockReturnValueOnce(andre.promise);
+    fetchOne.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
 
     const { result } = renderHook(() => useSubjectPeople("pnikolic", null));
 
@@ -183,29 +179,29 @@ describe("useSubjectPeople", () => {
     });
 
     await act(async () => {
-      andre.resolve(assistent);
-      await andre.promise;
+      second.resolve(assistant);
+      await second.promise;
     });
 
-    expect(result.current.lecturer).toEqual(assistent);
+    expect(result.current.lecturer).toEqual(assistant);
 
     await act(async () => {
-      første.resolve(foreleser);
-      await første.promise;
+      first.resolve(lecturer);
+      await first.promise;
     });
 
-    expect(result.current.lecturer).toEqual(assistent);
+    expect(result.current.lecturer).toEqual(assistant);
   });
 
   /**
-   * Samme sekvensnummer styrer loading. Uten det ville det utdaterte svaret slått av
-   * spinneren mens det nyere oppslaget fortsatt sto ute.
+   * The same sequence number drives loading. Without it the stale answer would switch the
+   * spinner off while the newer lookup was still out.
    */
-  it("blir stående i gang til det nyeste oppslaget er ferdig", async () => {
-    const første = deferred<LecturerDetails | null>();
-    const andre = deferred<LecturerDetails | null>();
+  it("stays busy until the newest lookup has finished", async () => {
+    const first = deferred<LecturerDetails | null>();
+    const second = deferred<LecturerDetails | null>();
 
-    hentForeleser.mockReturnValueOnce(første.promise).mockReturnValueOnce(andre.promise);
+    fetchOne.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
 
     const { result } = renderHook(() => useSubjectPeople("pnikolic", null));
 
@@ -214,29 +210,29 @@ describe("useSubjectPeople", () => {
     });
 
     await act(async () => {
-      første.resolve(foreleser);
-      await første.promise;
+      first.resolve(lecturer);
+      await first.promise;
     });
 
     expect(result.current.loading).toBe(true);
 
     await act(async () => {
-      andre.resolve(assistent);
-      await andre.promise;
+      second.resolve(assistant);
+      await second.promise;
     });
 
     expect(result.current.loading).toBe(false);
   });
 
   /**
-   * En feil fra det utdaterte oppslaget må heller ikke vises: brukeren ser på resultatet
-   * av det nyere, som gikk bra.
+   * A failure from the stale lookup must not be shown either: the user is looking at the
+   * result of the newer one, which went fine.
    */
-  it("viser ikke en feil fra et utdatert oppslag", async () => {
-    const første = deferred<LecturerDetails | null>();
-    const andre = deferred<LecturerDetails | null>();
+  it("does not show a failure from a stale lookup", async () => {
+    const first = deferred<LecturerDetails | null>();
+    const second = deferred<LecturerDetails | null>();
 
-    hentForeleser.mockReturnValueOnce(første.promise).mockReturnValueOnce(andre.promise);
+    fetchOne.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
 
     const { result } = renderHook(() => useSubjectPeople("pnikolic", null));
 
@@ -245,13 +241,13 @@ describe("useSubjectPeople", () => {
     });
 
     await act(async () => {
-      andre.resolve(assistent);
-      await andre.promise;
+      second.resolve(assistant);
+      await second.promise;
     });
 
     await act(async () => {
-      første.reject(new Error("404"));
-      await første.promise.catch(() => undefined);
+      first.reject(new Error("404"));
+      await first.promise.catch(() => undefined);
     });
 
     expect(result.current.error).toBeNull();

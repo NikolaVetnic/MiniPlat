@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { deferred } from "../../../test/http";
-import { loggInn, loggUt, renderMedØkt } from "../../../test/render";
+import { renderWithSession, signIn, signOut } from "../../../test/render";
 import { Level, type LecturerDetails, type LecturerSummary } from "../../../types/api";
 import { fetchLecturer, fetchLecturers } from "../../../services/lecturersService";
 import { updateSubjectPeople } from "../../../services/subjectsService";
@@ -18,13 +18,13 @@ vi.mock("../../../services/subjectsService", () => ({
   updateSubjectPeople: vi.fn(),
 }));
 
-const hentForeleser = vi.mocked(fetchLecturer);
-const hentStaben = vi.mocked(fetchLecturers);
-const lagreStab = vi.mocked(updateSubjectPeople);
+const fetchOne = vi.mocked(fetchLecturer);
+const fetchRoster = vi.mocked(fetchLecturers);
+const saveStaff = vi.mocked(updateSubjectPeople);
 
 const cpt = sr.components.cards.subject;
 
-/** Satt i vite.config.ts, så regelen er den samme her som i CI. */
+/** Set in vite.config.ts, so the rule is the same here as it is in CI. */
 const ADMIN = "mp_admin";
 
 const person = (username: string, over: Partial<LecturerDetails> = {}): LecturerDetails => ({
@@ -37,7 +37,7 @@ const person = (username: string, over: Partial<LecturerDetails> = {}): Lecturer
   ...over,
 });
 
-const oppføring = (username: string, over: Partial<LecturerSummary> = {}): LecturerSummary => ({
+const entry = (username: string, over: Partial<LecturerSummary> = {}): LecturerSummary => ({
   username,
   title: "dr",
   firstName: "Ime",
@@ -45,8 +45,8 @@ const oppføring = (username: string, over: Partial<LecturerSummary> = {}): Lect
   ...over,
 });
 
-const vis = (over: Partial<Parameters<typeof SubjectCard>[0]> = {}) =>
-  renderMedØkt(
+const show = (over: Partial<Parameters<typeof SubjectCard>[0]> = {}) =>
+  renderWithSession(
     <SubjectCard
       id="s-1"
       title="Psihologija"
@@ -60,45 +60,44 @@ const vis = (over: Partial<Parameters<typeof SubjectCard>[0]> = {}) =>
     />
   );
 
-/** Venter til lastetilstanden er borte, som er når kortet har innhold. */
-const ferdigLastet = () =>
-  waitFor(() => expect(screen.queryByText(cpt.loading)).toBeNull());
+/** Waits until the loading state is gone, which is when the card has content. */
+const loaded = () => waitFor(() => expect(screen.queryByText(cpt.loading)).toBeNull());
 
 beforeEach(() => {
-  loggUt();
-  hentForeleser.mockReset();
-  hentStaben.mockReset();
-  lagreStab.mockReset();
+  signOut();
+  fetchOne.mockReset();
+  fetchRoster.mockReset();
+  saveStaff.mockReset();
 
-  hentForeleser.mockImplementation(async (username) => person(username));
-  hentStaben.mockResolvedValue([oppføring("pnikolic"), oppføring("mmarkovic"), oppføring("jjovic")]);
-  lagreStab.mockResolvedValue(undefined);
+  fetchOne.mockImplementation(async (username) => person(username));
+  fetchRoster.mockResolvedValue([entry("pnikolic"), entry("mmarkovic"), entry("jjovic")]);
+  saveStaff.mockResolvedValue(undefined);
 
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
-  loggUt();
+  signOut();
   vi.restoreAllMocks();
 });
 
-describe("SubjectCard mens den laster", () => {
-  it("sier fra at emnet lastes til foreleseren er hentet", async () => {
-    const svar = deferred<LecturerDetails | null>();
-    hentForeleser.mockReturnValue(svar.promise);
+describe("SubjectCard while it loads", () => {
+  it("says the subject is loading until the lecturer has arrived", async () => {
+    const response = deferred<LecturerDetails | null>();
+    fetchOne.mockReturnValue(response.promise);
 
-    vis();
+    show();
 
     expect(screen.getByText(cpt.loading)).toBeDefined();
 
-    svar.resolve(person("pnikolic"));
-    await ferdigLastet();
+    response.resolve(person("pnikolic"));
+    await loaded();
   });
 
-  it("viser feilen i stedet for kortet når oppslaget feiler", async () => {
-    hentForeleser.mockRejectedValue(new Error("404"));
+  it("shows the failure instead of the card when the lookup fails", async () => {
+    fetchOne.mockRejectedValue(new Error("404"));
 
-    vis();
+    show();
 
     expect(
       await screen.findByText("Unable to fetch lecturer information.")
@@ -106,27 +105,27 @@ describe("SubjectCard mens den laster", () => {
   });
 });
 
-describe("SubjectCard, det som alltid vises", () => {
-  it("viser emnekoden", async () => {
-    vis({ code: "PSI-101" });
-    await ferdigLastet();
+describe("SubjectCard, what is always shown", () => {
+  it("shows the subject code", async () => {
+    show({ code: "PSI-101" });
+    await loaded();
 
     expect(screen.getByText("PSI-101")).toBeDefined();
   });
 
   it.each([
-    ["grunnstudier", Level.Undergraduate, cpt.level.undergraduate],
+    ["undergraduate", Level.Undergraduate, cpt.level.undergraduate],
     ["master", Level.Master, cpt.level.master],
-  ])("viser nivået for %s", async (_navn, level, tekst) => {
-    vis({ level });
-    await ferdigLastet();
+  ])("shows the level for %s", async (_name, level, label) => {
+    show({ level });
+    await loaded();
 
-    expect(screen.getByText(tekst)).toBeDefined();
+    expect(screen.getByText(label)).toBeDefined();
   });
 
   /**
-   * Studieåret regnes ut av semesteret: to semestre per år, oddetall er høst og
-   * partall er vår.
+   * The year of study is derived from the semester: two semesters a year, odd ones in
+   * winter and even ones in summer.
    */
   it.each([
     [1, 1, cpt.semester.winter],
@@ -134,32 +133,32 @@ describe("SubjectCard, det som alltid vises", () => {
     [3, 2, cpt.semester.winter],
     [4, 2, cpt.semester.summer],
     [6, 3, cpt.semester.summer],
-  ])("regner semester %i som år %i, %s", async (semester, år, sesong) => {
-    vis({ semester });
-    await ferdigLastet();
+  ])("reads semester %i as year %i, %s", async (semester, year, season) => {
+    show({ semester });
+    await loaded();
 
-    expect(screen.getByText(`${år} (${sesong} semestar)`)).toBeDefined();
+    expect(screen.getByText(`${year} (${season} semestar)`)).toBeDefined();
   });
 
   it.each([
-    ["et aktivt emne", true, cpt.active.true],
-    ["et inaktivt emne", false, cpt.active.false],
-  ])("viser statuslinjen for %s", async (_navn, isActive, tekst) => {
-    vis({ isActive });
-    await ferdigLastet();
+    ["a running subject", true, cpt.active.true],
+    ["one that is not running", false, cpt.active.false],
+  ])("shows the status bar for %s", async (_name, isActive, label) => {
+    show({ isActive });
+    await loaded();
 
-    expect(screen.getByText(tekst)).toBeDefined();
+    expect(screen.getByText(label)).toBeDefined();
   });
 
-  it("viser foreleser og assistent med tittel, navn og e-post", async () => {
-    hentForeleser.mockImplementation(async (username) =>
+  it("shows the lecturer and the assistant with title, name and e-mail", async () => {
+    fetchOne.mockImplementation(async (username) =>
       username === "pnikolic"
         ? person("pnikolic", { firstName: "Petar", lastName: "Nikolic" })
         : person("mmarkovic", { title: "MA", firstName: "Milica", lastName: "Markovic" })
     );
 
-    vis();
-    await ferdigLastet();
+    show();
+    await loaded();
 
     expect(screen.getByText(/dr Petar Nikolic/)).toBeDefined();
     expect(screen.getByText(/MA Milica Markovic/)).toBeDefined();
@@ -168,150 +167,148 @@ describe("SubjectCard, det som alltid vises", () => {
     ).toBe("mailto:pnikolic@example.com");
   });
 
-  it("hopper over assistentraden når emnet ikke har noen", async () => {
-    vis({ assistantUsername: null });
-    await ferdigLastet();
+  it("skips the assistant row when the subject has none", async () => {
+    show({ assistantUsername: null });
+    await loaded();
 
-    expect(hentForeleser).toHaveBeenCalledTimes(1);
+    expect(fetchOne).toHaveBeenCalledTimes(1);
     expect(screen.queryByText(new RegExp(`${cpt.assistant}:`))).toBeNull();
   });
 
-  it("utelater e-postlenken for en som ikke har noen", async () => {
-    hentForeleser.mockImplementation(async (username) => person(username, { email: null }));
+  it("leaves out the mail link for someone who has no address", async () => {
+    fetchOne.mockImplementation(async (username) => person(username, { email: null }));
 
-    vis({ assistantUsername: null });
-    await ferdigLastet();
+    show({ assistantUsername: null });
+    await loaded();
 
     expect(screen.queryByRole("link")).toBeNull();
   });
 });
 
-describe("SubjectCard og hvem som får redigere", () => {
-  it("viser ingen redigeringsknapp for en besøkende", async () => {
-    vis();
-    await ferdigLastet();
+describe("SubjectCard and who gets to edit", () => {
+  it("shows no edit button to a visitor", async () => {
+    show();
+    await loaded();
 
     expect(screen.queryByRole("button")).toBeNull();
   });
 
   /**
-   * Redigering av staben er forbeholdt administratoren - serveren svarer 403 på alle
-   * andre, og knappen finnes ikke i treet for dem.
+   * Editing the staff is the administrator's alone - the server answers 403 for everyone
+   * else, and the button is not in the tree for them.
    */
-  it("viser ingen redigeringsknapp for en vanlig foreleser", async () => {
-    loggInn("pnikolic");
+  it("shows no edit button to an ordinary lecturer", async () => {
+    signIn("pnikolic");
 
-    vis();
-    await ferdigLastet();
+    show();
+    await loaded();
 
     expect(screen.queryByRole("button")).toBeNull();
   });
 
-  it("viser redigeringsknappen og emnetittelen for administratoren", async () => {
-    loggInn(ADMIN);
+  it("shows the edit button and the subject title to the administrator", async () => {
+    signIn(ADMIN);
 
-    vis({ title: "Psihologija" });
-    await ferdigLastet();
+    show({ title: "Psihologija" });
+    await loaded();
 
     expect(screen.getAllByRole("button")).toHaveLength(1);
     expect(screen.getByText("Psihologija")).toBeDefined();
   });
 });
 
-describe("SubjectCard i redigeringsmodus", () => {
-  const åpneEditoren = async () => {
-    loggInn(ADMIN);
-    vis();
-    await ferdigLastet();
+describe("SubjectCard in edit mode", () => {
+  const openEditor = async () => {
+    signIn(ADMIN);
+    show();
+    await loaded();
 
     fireEvent.click(screen.getAllByRole("button")[0]);
 
     await waitFor(() => expect(screen.getAllByRole("combobox")).toHaveLength(2));
 
-    const [foreleser, assistent] = screen.getAllByRole("combobox");
+    const [lecturer, assistant] = screen.getAllByRole("combobox");
 
-    return { foreleser, assistent };
+    return { lecturer, assistant };
   };
 
-  /** Staben hentes først når editoren åpnes, så en besøkende aldri drar ned listen. */
-  it("ber ikke om staben før editoren åpnes", async () => {
-    loggInn(ADMIN);
-    vis();
-    await ferdigLastet();
+  /** The roster is fetched only once the editor is open, so a visitor never pulls it. */
+  it("does not ask for the roster before the editor is opened", async () => {
+    signIn(ADMIN);
+    show();
+    await loaded();
 
-    expect(hentStaben).not.toHaveBeenCalled();
+    expect(fetchRoster).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getAllByRole("button")[0]);
 
-    await waitFor(() => expect(hentStaben).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(fetchRoster).toHaveBeenCalledTimes(1));
   });
 
-  it("starter med de som allerede står på emnet", async () => {
-    const { foreleser, assistent } = await åpneEditoren();
+  it("starts on the people already assigned to the subject", async () => {
+    const { lecturer, assistant } = await openEditor();
 
-    expect((foreleser as HTMLSelectElement).value).toBe("pnikolic");
-    expect((assistent as HTMLSelectElement).value).toBe("mmarkovic");
+    expect((lecturer as HTMLSelectElement).value).toBe("pnikolic");
+    expect((assistant as HTMLSelectElement).value).toBe("mmarkovic");
   });
 
-  it("lar assistenten fjernes med det tomme valget", async () => {
-    const { assistent } = await åpneEditoren();
+  it("lets the assistant be removed with the blank option", async () => {
+    const { assistant } = await openEditor();
 
-    fireEvent.change(assistent, { target: { value: "" } });
+    fireEvent.change(assistant, { target: { value: "" } });
 
-    expect((assistent as HTMLSelectElement).value).toBe("");
-  });
-
-  /**
-   * Den ene kan ikke også være den andre. Serveren avviser det med 400, og listene her
-   * utelater hverandres valg så det ikke er mulig å be om.
-   */
-  it("tilbyr ikke den valgte foreleseren som assistent", async () => {
-    const { assistent } = await åpneEditoren();
-
-    const valg = Array.from(assistent.querySelectorAll("option")).map((o) => o.value);
-
-    expect(valg).not.toContain("pnikolic");
-    expect(valg).toContain("jjovic");
+    expect((assistant as HTMLSelectElement).value).toBe("");
   });
 
   /**
-   * Den lagrede foreleseren må stå i listen selv om vedkommende ikke er på staben
-   * lenger - ellers ville select-en falt tilbake på første oppføring og en lagring
-   * byttet ut foreleseren uten at noen ba om det.
+   * One cannot also be the other. The server refuses it with a 400, and the lists here
+   * leave out each other's selection so it cannot be asked for.
    */
-  it("holder den lagrede foreleseren valgbar selv om vedkommende er borte fra staben", async () => {
-    hentStaben.mockResolvedValue([oppføring("jjovic")]);
+  it("does not offer the chosen lecturer as the assistant", async () => {
+    const { assistant } = await openEditor();
 
-    const { foreleser } = await åpneEditoren();
+    const options = Array.from(assistant.querySelectorAll("option")).map((o) => o.value);
 
-    expect((foreleser as HTMLSelectElement).value).toBe("pnikolic");
+    expect(options).not.toContain("pnikolic");
+    expect(options).toContain("jjovic");
+  });
+
+  /**
+   * The saved lecturer has to stay in the list even when they are no longer on the roster
+   * - otherwise the select would fall back to its first entry and a save would swap the
+   * lecturer out without anyone asking for it.
+   */
+  it("keeps the saved lecturer selectable even when they are off the roster", async () => {
+    fetchRoster.mockResolvedValue([entry("jjovic")]);
+
+    const { lecturer } = await openEditor();
+
+    expect((lecturer as HTMLSelectElement).value).toBe("pnikolic");
     expect(
-      Array.from(foreleser.querySelectorAll("option")).map((o) => o.value)
+      Array.from(lecturer.querySelectorAll("option")).map((o) => o.value)
     ).toContain("pnikolic");
   });
 
-  it("lagrer valget og leser staben på nytt", async () => {
-    const { foreleser, assistent } = await åpneEditoren();
+  it("saves the selection and reads the staff back", async () => {
+    const { lecturer, assistant } = await openEditor();
 
-    fireEvent.change(foreleser, { target: { value: "jjovic" } });
-    fireEvent.change(assistent, { target: { value: "" } });
+    fireEvent.change(lecturer, { target: { value: "jjovic" } });
+    fireEvent.change(assistant, { target: { value: "" } });
     fireEvent.click(screen.getAllByRole("button")[1]);
 
-    await waitFor(() =>
-      expect(lagreStab).toHaveBeenCalledWith("s-1", "jjovic", null)
-    );
+    await waitFor(() => expect(saveStaff).toHaveBeenCalledWith("s-1", "jjovic", null));
 
     await waitFor(() => expect(screen.queryByRole("combobox")).toBeNull());
   });
 
-  it("legger tilbake det som sto der da redigeringen avbrytes", async () => {
-    const { foreleser } = await åpneEditoren();
+  it("puts back what was there when the edit is cancelled", async () => {
+    const { lecturer } = await openEditor();
 
-    fireEvent.change(foreleser, { target: { value: "jjovic" } });
+    fireEvent.change(lecturer, { target: { value: "jjovic" } });
     fireEvent.click(screen.getAllByRole("button")[0]);
 
     await waitFor(() => expect(screen.queryByRole("combobox")).toBeNull());
-    expect(lagreStab).not.toHaveBeenCalled();
+    expect(saveStaff).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getAllByRole("button")[0]);
 
@@ -323,15 +320,15 @@ describe("SubjectCard i redigeringsmodus", () => {
   });
 
   /**
-   * En mislykket lagring lar editoren stå åpen med valget i behold, så brukeren kan
-   * prøve igjen uten å finne fram til det på nytt.
+   * A failed save leaves the editor open with the selection intact, so the user can try
+   * again without having to find it a second time.
    */
-  it("blir stående åpen med en beskjed når lagringen feiler", async () => {
-    lagreStab.mockRejectedValue(new Error("403"));
+  it("stays open with a message when the save fails", async () => {
+    saveStaff.mockRejectedValue(new Error("403"));
 
-    const { foreleser } = await åpneEditoren();
+    const { lecturer } = await openEditor();
 
-    fireEvent.change(foreleser, { target: { value: "jjovic" } });
+    fireEvent.change(lecturer, { target: { value: "jjovic" } });
     fireEvent.click(screen.getAllByRole("button")[1]);
 
     expect(await screen.findByText("Failed to save changes.")).toBeDefined();
@@ -339,10 +336,10 @@ describe("SubjectCard i redigeringsmodus", () => {
     expect((screen.getAllByRole("combobox")[0] as HTMLSelectElement).value).toBe("jjovic");
   });
 
-  it("sier fra når staben ikke kunne hentes", async () => {
-    hentStaben.mockRejectedValue(new Error("401"));
+  it("says so when the roster could not be fetched", async () => {
+    fetchRoster.mockRejectedValue(new Error("401"));
 
-    await åpneEditoren();
+    await openEditor();
 
     expect(await screen.findByText("Unable to fetch lecturer list.")).toBeDefined();
   });

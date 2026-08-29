@@ -4,50 +4,53 @@ import { makeMaterial } from "../test/fixtures";
 import { newTopic, toMaterials } from "./drafts";
 
 describe("toMaterials", () => {
-  it("dropper rader brukeren lot stå helt tomme", () => {
-    const ut = toMaterials([
+  it("drops the rows the user left entirely blank", () => {
+    const materials = toMaterials([
       { description: "Skripta", link: "https://a" },
       { description: "   ", link: "  " },
       { description: "", link: "https://b" },
     ]);
 
-    expect(ut.map((m) => m.link)).toEqual(["https://a", "https://b"]);
+    expect(materials.map((material) => material.link)).toEqual([
+      "https://a",
+      "https://b",
+    ]);
   });
 
-  it("nummererer på nytt etter at tomme rader er fjernet", () => {
-    const ut = toMaterials([
+  it("renumbers what survives once the blank rows are gone", () => {
+    const materials = toMaterials([
       { description: "a", link: "" },
       { description: "", link: "" },
       { description: "c", link: "" },
     ]);
 
-    expect(ut.map((m) => m.order)).toEqual([0, 1]);
+    expect(materials.map((material) => material.order)).toEqual([0, 1]);
   });
 
-  it("gir nye rader en id og beholder id-en på de som har en", () => {
-    const ut = toMaterials([
-      makeMaterial({ id: "beholdt" }),
-      { description: "ny", link: "https://b" },
+  it("gives new rows an id and keeps the id of the ones that have one", () => {
+    const materials = toMaterials([
+      makeMaterial({ id: "kept" }),
+      { description: "new", link: "https://b" },
     ]);
 
-    expect(ut[0].id).toBe("beholdt");
-    expect(ut[1].id).toMatch(
+    expect(materials[0].id).toBe("kept");
+    expect(materials[1].id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
     );
   });
 
-  it("beholder revisjonsfeltene på et materiale som allerede fantes", () => {
-    const ut = toMaterials([
+  it("keeps the audit fields of a material that already existed", () => {
+    const materials = toMaterials([
       makeMaterial({ createdBy: "pnikolic", createdAt: "2026-01-01T00:00:00Z" }),
     ]);
 
-    expect(ut[0].createdBy).toBe("pnikolic");
-    expect(ut[0].createdAt).toBe("2026-01-01T00:00:00Z");
+    expect(materials[0].createdBy).toBe("pnikolic");
+    expect(materials[0].createdAt).toBe("2026-01-01T00:00:00Z");
   });
 });
 
 describe("newTopic", () => {
-  it("bygger et tema som er komplett nok til å sendes", () => {
+  it("builds a topic complete enough to be sent", () => {
     const topic = newTopic("Naslov", "Opis", [], 3);
 
     expect(topic).toMatchObject({

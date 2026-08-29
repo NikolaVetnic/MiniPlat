@@ -15,8 +15,8 @@ import {
 let fetchMock: FetchMock;
 
 /**
- * API_BASE_URL leses ved import, så miljøet må stå før modulen lastes. session lastes
- * i samme slengen fordi fetchUserInfo dropper økten gjennom den ved 401.
+ * API_BASE_URL is read at import, so the environment has to be in place before the module
+ * loads. session comes along because fetchUserInfo drops the session through it on a 401.
  */
 const load = async () => {
   vi.resetModules();
@@ -45,7 +45,7 @@ describe("login", () => {
     expires_in: 3600,
   };
 
-  it("veksler brukernavn og passord inn i et token", async () => {
+  it("exchanges a username and password for a token", async () => {
     fetchMock.mockResolvedValue(jsonResponse(tokenBody));
 
     const { login } = await load();
@@ -58,7 +58,7 @@ describe("login", () => {
     });
   });
 
-  it("poster mot token-endepunktet med passordflyten", async () => {
+  it("posts to the token endpoint with the password flow", async () => {
     fetchMock.mockResolvedValue(jsonResponse(tokenBody));
 
     const { login } = await load();
@@ -72,10 +72,10 @@ describe("login", () => {
   });
 
   /**
-   * OpenIddict tar imot skjemakodede felter, ikke JSON. Sender vi JSON svarer det
-   * invalid_request, og feilen ser ut som feil passord.
+   * OpenIddict accepts form-encoded fields, not JSON. Sending JSON answers
+   * invalid_request, and the failure looks exactly like a wrong password.
    */
-  it("sender feltene skjemakodet og ikke som json", async () => {
+  it("sends the fields form-encoded rather than as json", async () => {
     fetchMock.mockResolvedValue(jsonResponse(tokenBody));
 
     const { login } = await load();
@@ -89,7 +89,7 @@ describe("login", () => {
     expect(body.get("password")).toBe("he mm&elig");
   });
 
-  it("legger aldri passordet i adressen", async () => {
+  it("never puts the password in the address", async () => {
     fetchMock.mockResolvedValue(jsonResponse(tokenBody));
 
     const { login } = await load();
@@ -99,10 +99,10 @@ describe("login", () => {
   });
 
   /**
-   * Token-endepunktet svarer bare med OAuth2-feltene. Brukernavnet fra skjemaet er alt
-   * økten trenger; resten av profilen kommer fra fetchUserInfo.
+   * The token endpoint answers with the OAuth2 fields only. The username from the form is
+   * all the session needs; the rest of the profile comes from fetchUserInfo.
    */
-  it("bygger brukeren av brukernavnet fra skjemaet", async () => {
+  it("builds the user from the username on the form", async () => {
     fetchMock.mockResolvedValue(jsonResponse(tokenBody));
 
     const { login } = await load();
@@ -112,7 +112,7 @@ describe("login", () => {
     });
   });
 
-  it("gir null levetid når serveren ikke oppgir noen", async () => {
+  it("reports no lifetime when the server does not give one", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({ access_token: "abc123", token_type: "Bearer" })
     );
@@ -123,15 +123,15 @@ describe("login", () => {
   });
 
   /**
-   * En levetid som ikke er et tall ville blitt Date.now() + NaN, altså et utløp som
-   * aldri inntreffer - verre enn ikke å ha noe utløp i det hele tatt.
+   * A lifetime that is not a number would become Date.now() + NaN, an expiry that never
+   * arrives - worse than having no expiry at all.
    */
   it.each([
-    ["en streng", "3600"],
-    ["uendelig", Number.POSITIVE_INFINITY],
+    ["a string", "3600"],
+    ["infinity", Number.POSITIVE_INFINITY],
     ["NaN", Number.NaN],
     ["null", null],
-  ])("gir null levetid når serveren sender %s", async (_navn, expiresIn) => {
+  ])("reports no lifetime when the server sends %s", async (_name, expiresIn) => {
     fetchMock.mockResolvedValue(
       jsonResponse({ access_token: "abc123", token_type: "Bearer", expires_in: expiresIn })
     );
@@ -141,7 +141,7 @@ describe("login", () => {
     expect((await login("pnikolic", "hemmelig")).expiresIn).toBeNull();
   });
 
-  it("løfter fram grunnen serveren oppga", async () => {
+  it("surfaces the reason the server gave", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse(
         { error: "invalid_grant", error_description: "Feil brukernavn eller passord." },
@@ -156,7 +156,7 @@ describe("login", () => {
     );
   });
 
-  it("faller tilbake til en generisk beskjed når svaret ikke er json", async () => {
+  it("falls back to a generic message when the answer is not json", async () => {
     fetchMock.mockResolvedValue(textResponse("<html>502</html>", 502));
 
     const { login } = await load();
@@ -164,7 +164,7 @@ describe("login", () => {
     await expect(login("pnikolic", "hemmelig")).rejects.toThrow("Login failed");
   });
 
-  it("faller tilbake til en generisk beskjed når feilen ikke har noen beskrivelse", async () => {
+  it("falls back to a generic message when the error carries no description", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ error: "invalid_grant" }, 400));
 
     const { login } = await load();
@@ -173,10 +173,10 @@ describe("login", () => {
   });
 
   /**
-   * Innloggingen er kallet som skaffer et token. Sender den et gammelt et, ville en
-   * utløpt økt i lageret kunne forstyrre en ny innlogging.
+   * Signing in is the call that obtains a token. Were it to send an old one, an expired
+   * session in storage could interfere with a fresh sign-in.
    */
-  it("sender ingen autorisasjonsheader", async () => {
+  it("sends no authorization header", async () => {
     fetchMock.mockResolvedValue(jsonResponse(tokenBody));
 
     const { login, storeSession } = await load();
@@ -187,7 +187,7 @@ describe("login", () => {
     expect(headersOf(fetchMock).Authorization).toBeUndefined();
   });
 
-  it("rører ikke den lagrede økten - det gjør den som kalte den", async () => {
+  it("leaves the stored session alone - that is up to the caller", async () => {
     fetchMock.mockResolvedValue(jsonResponse(tokenBody));
 
     const { login, getSession } = await load();
@@ -198,7 +198,7 @@ describe("login", () => {
 });
 
 describe("fetchUserInfo", () => {
-  const profil = {
+  const profile = {
     sub: "1",
     username: "pnikolic",
     email: "pnikolic@example.com",
@@ -208,23 +208,23 @@ describe("fetchUserInfo", () => {
     department: "Psihologija",
   };
 
-  it("henter profilen med tokenet den fikk", async () => {
-    fetchMock.mockResolvedValue(jsonResponse(profil));
+  it("fetches the profile with the token it was handed", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(profile));
 
     const { fetchUserInfo } = await load();
     const result = await fetchUserInfo("abc123");
 
-    expect(result).toEqual(profil);
+    expect(result).toEqual(profile);
     expect(urlOf(fetchMock)).toBe(`${API}/api/Auth/UserInfo`);
     expect(headersOf(fetchMock).Authorization).toBe("Bearer abc123");
   });
 
   /**
-   * Tokenet kommer som argument og ikke fra lageret, fordi innloggingen henter
-   * profilen før den lagrer økten.
+   * The token arrives as an argument rather than from storage, because signing in fetches
+   * the profile before it stores the session.
    */
-  it("bruker tokenet den fikk, ikke det som ligger lagret", async () => {
-    fetchMock.mockResolvedValue(jsonResponse(profil));
+  it("uses the token it was handed, not the one in storage", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(profile));
 
     const { fetchUserInfo, storeSession } = await load();
 
@@ -234,7 +234,7 @@ describe("fetchUserInfo", () => {
     expect(headersOf(fetchMock).Authorization).toBe("Bearer nytt-token");
   });
 
-  it("dropper økten når serveren avviser tokenet", async () => {
+  it("drops the session when the server refuses the token", async () => {
     fetchMock.mockResolvedValue(emptyResponse(401));
 
     const { fetchUserInfo, getSession, storeSession } = await load();
@@ -245,7 +245,7 @@ describe("fetchUserInfo", () => {
     expect(getSession()).toEqual({ token: null, user: null });
   });
 
-  it("beholder økten når svaret er noe annet enn 401", async () => {
+  it("keeps the session when the answer is anything but 401", async () => {
     fetchMock.mockResolvedValue(emptyResponse(500));
 
     const { fetchUserInfo, getSession, storeSession } = await load();
@@ -256,7 +256,7 @@ describe("fetchUserInfo", () => {
     expect(getSession().token).toBe("abc123");
   });
 
-  it("tar med status og kropp i feilen", async () => {
+  it("carries the status and the body into the error", async () => {
     fetchMock.mockResolvedValue(textResponse("noe gikk galt", 500));
 
     const { fetchUserInfo } = await load();
