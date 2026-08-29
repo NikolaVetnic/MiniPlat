@@ -1,0 +1,408 @@
+{
+  "locale": "nb-NO",
+  "languageName": "Norsk",
+  "captions": {
+    "companyName": "Nikola Vetnić",
+    "title": "eVŠOVNS MiniPlat",
+    "titleShort": "eVŠOVNS",
+    "institution": "Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad"
+  },
+  "components": {
+    "cards": {
+      "user": {
+        "firstName": "Fornavn",
+        "lastName": "Etternavn",
+        "email": "E-post",
+        "lecturer": "Lærer",
+        "department": "Avdeling",
+        "loading": "Brukerdataene lastes inn...",
+        "error": "Kunne ikke hente brukerdataene."
+      },
+      "subject": {
+        "active": {
+          "false": "Emnet er for tiden ikke aktivt.",
+          "true": "Emnet er aktivt."
+        },
+        "assistant": "Assistent",
+        "buttons": {
+          "cancel": "Avbryt",
+          "edit": "Oppdater",
+          "ok": "Lagre"
+        },
+        "code": "Emnekode",
+        "level": {
+          "caption": "Studienivå",
+          "undergraduate": "Bachelor i yrkesrettede studier - barnehagelærer",
+          "master": "Master i yrkesrettede studier - barnehagelærer"
+        },
+        "lecturer": "Foreleser",
+        "loading": "Emnedataene lastes inn...",
+        "saveFailed": "Lagring av endringene mislyktes.",
+        "semester": {
+          "caption": "Semester",
+          "summer": "sommersemester",
+          "winter": "vintersemester"
+        },
+        "test": "test",
+        "title": "Tittel",
+        "year": {
+          "caption": "Studieår",
+          "one": "1",
+          "two": "2",
+          "three": "3",
+          "withSemester": "{year} ({semester})"
+        }
+      },
+      "topic": {
+        "buttons": {
+          "addMaterial": "Legg til materiale",
+          "cancel": "Avbryt",
+          "delete": "Slett",
+          "edit": "Oppdater",
+          "hide": "Skjul",
+          "putBack": "Gjenopprett",
+          "save": "Lagre endringer",
+          "show": "Vis"
+        },
+        "description": "Beskrivelse",
+        "link": "Lenke",
+        "materials": "Materialer",
+        "status": {
+          "active": "Temaet er aktivt. Alle publiserte materialer er synlige for alle studenter.",
+          "hidden": "Temaet er skjult. De publiserte materialene er ikke synlige for studentene, men temaet forblir lagret.",
+          "deleted": "Temaet er merket for sletting. De publiserte materialene er ikke synlige for studentene, men temaet kan fortsatt gjenopprettes. Etter slettingen forsvinner temaet for godt.",
+          "hiddenAndDeleted": "Temaet er skjult og merket for sletting. De publiserte materialene er ikke synlige for studentene."
+        },
+        "title": "Tittel",
+        "titles": {
+          "create": "Nytt tema",
+          "update": "Oppdater tema"
+        },
+        "updatedAt": "Sist oppdatert"
+      }
+    },
+    "language": {
+      "label": "Språk"
+    },
+    "modals": {
+      "topic": {
+        "errors": {
+          "titleIsMandatory": "Tittel er påkrevd",
+          "descriptionIsMandatory": "Beskrivelse er påkrevd"
+        }
+      }
+    },
+    "navbar": {
+      "buttons": {
+        "login": "Logg inn",
+        "logout": "Logg ut"
+      },
+      "loggedInAs": "Du er logget inn som"
+    },
+    "sidebar": {
+      "mainMenu": "Hovedmeny",
+      "subjects": "Emner",
+      "home": "Hjem",
+      "levels": [
+        "BA",
+        "MA"
+      ],
+      "semester": [
+        "Sommersemester",
+        "Vintersemester"
+      ],
+      "years": [
+        "1",
+        "2",
+        "3"
+      ],
+      "yearLabel": "{year}. år"
+    }
+  },
+  "pages": {
+    "home": {
+      "adminControlPanel": "Administratorens kontrollpanel",
+      "buttons": {
+        "dumpDatabaseAsYaml": "Last ned dataene fra databasen som YML-fil"
+      },
+      "greetings": {
+        "lecturers": "Kjære forelesere",
+        "students": "Kjære studenter"
+      },
+      "home": "Hjem",
+      "guides": {
+        "students": {
+          "blocks": [
+            { "kind": "h3", "content": ["Kjære studenter,"] },
+            {
+              "kind": "p",
+              "content": [
+                "Velkommen til ",
+                { "text": "MiniPlat", "bold": true },
+                ", en plattform for fjernundervisning utviklet spesielt for Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad. Nedenfor finner du en kort veiledning i video- og tekstform som skal gjøre den daglige bruken av denne enkle applikasjonen lettere."
+              ]
+            },
+            {
+              "kind": "video",
+              "videoId": "lpFrEM2cX7w",
+              "title": "eVŠOVNS MiniPlat: Veiledning for studenter (på serbisk)"
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Plattformen er laget for å være helt åpen og tilgjengelig for alle studenter uten at man må registrere en bruker eller logge inn, med andre ord ",
+                { "text": "helt anonymt", "highlight": "#5cb85c" },
+                ". Applikasjonen er også tilpasset brukere som leser innholdet på mobiltelefon."
+              ]
+            },
+            { "kind": "h2", "content": ["1 Valg av emne"] },
+            {
+              "kind": "p",
+              "content": [
+                "Til venstre på skjermen ligger en meny med lenker til alle emnene på bachelor- og masterstudiene. Emnene er organisert etter semester, og gruppene kan utvides og lukkes for enklere bruk."
+              ]
+            },
+            { "kind": "h2", "content": ["2 Emnesiden"] },
+            {
+              "kind": "p",
+              "content": [
+                "Øverst på emnesiden finner du tittelen og et kort med grunnleggende informasjon om emnet. Under kortet ligger avsnittet med undervisningstemaene."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Et undervisningstema er en enhet der foreleseren samler undervisningsmateriale. Hvert tema har en tittel, en beskrivelse og en liste med materialer. Materialene selv er par av beskrivelse og lenke, og et tema kan inneholde alt fra ingen til vilkårlig mange av dem. Ved å klikke på materiallenkene får du tilgang til innholdet foreleseren har lagt ut."
+              ]
+            }
+          ]
+        },
+        "lecturers": {
+          "blocks": [
+            { "kind": "h3", "content": ["Kjære forelesere,"] },
+            {
+              "kind": "p",
+              "content": [
+                "Velkommen til ",
+                { "text": "MiniPlat", "bold": true },
+                ", en plattform for fjernundervisning utviklet spesielt for Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad. Nedenfor finner du en kort veiledning i video- og tekstform som skal gjøre den daglige bruken av denne enkle applikasjonen lettere."
+              ]
+            },
+            {
+              "kind": "video",
+              "videoId": "WQ5d6BCmv6I",
+              "title": "eVŠOVNS MiniPlat: Veiledning for undervisningspersonalet (på serbisk)"
+            },
+            { "kind": "h2", "content": ["1 Driftsmoduser"] },
+            {
+              "kind": "p",
+              "content": ["Plattformen for fjernundervisning fungerer i to moduser."]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Den første modusen ",
+                { "text": "er beregnet på studentene", "bold": true },
+                " og viser alle emner på alle studienivåer, naturligvis uten mulighet for å legge til, oppdatere eller fjerne innhold. Denne modusen er tilgjengelig for alle som besøker plattformen, og krever ikke innlogging med brukernavn og passord."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Den andre modusen ",
+                { "text": "er beregnet på undervisningspersonalet", "bold": true },
+                " og viser bare de emnene der læreren er foreleser eller assistent, med mulighet for å legge til, oppdatere, skjule og fjerne innhold. Denne modusen er kun tilgjengelig for lærere som logger inn med sitt personlige brukernavn og passord."
+              ]
+            },
+            { "kind": "h2", "content": ["2 Innlogging"] },
+            {
+              "kind": "p",
+              "content": [
+                "Et unikt brukernavn og passord tildeles per e-post av en offisiell representant for institusjonen, og kan foreløpig ikke endres."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Du logger inn på plattformen via innloggingssiden, som du når gjennom den grønne knappen øverst til høyre i applikasjonen. Når brukernavn og passord er fylt inn i de riktige feltene, logger du inn ved å trykke på knappen ",
+                { "text": "Logg inn", "highlight": "#5cb85c" },
+                "."
+              ]
+            },
+            { "kind": "h2", "content": ["3 Valg av emne"] },
+            {
+              "kind": "p",
+              "content": [
+                "Etter innlogging kommer du tilbake til hjemmesiden, men denne gangen med emnene begrenset til dem læreren faktisk underviser i. Ved å velge et emne fra listen får du tilgang til å oppdatere det."
+              ]
+            },
+            { "kind": "h2", "content": ["4 Emnesiden"] },
+            {
+              "kind": "p",
+              "content": [
+                "Øverst på emnesiden finner du tittelen og et kort med grunnleggende informasjon om emnet. Under kortet ligger avsnittet med undervisningstemaene."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Et undervisningstema er en enhet der foreleseren samler undervisningsmateriale. Hvert tema har en tittel, en beskrivelse og en liste med materialer. Materialene selv er par av beskrivelse og lenke, og et tema kan inneholde alt fra ingen til vilkårlig mange av dem."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Hva et tema betyr i semantisk forstand, er opp til den enkelte foreleser. Ett tema kan omfatte én forelesning med materialer som er eksterne lenker til PDF-dokumenter, videoer, ",
+                { "text": "Google Forms", "italic": true },
+                "-skjemaer og lignende. Et tema kan også være en større del av pensum som hører til en kollokvie, og et tema kan like gjerne være en ren beskjed om studentenes forpliktelser (i så fall inneholder det som regel ingen materialer)."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Det er verdt å nevne at det foreløpig ikke er mulig å lagre materialer direkte på plattformen. Av hensyn til ytelsen forventes det at foreleseren legger inn lenker til materialer hos ulike eksterne tjenester som ",
+                { "text": "Google Drive", "italic": true },
+                ", ",
+                { "text": "YouTube", "italic": true },
+                " og lignende."
+              ]
+            },
+            { "kind": "h2", "content": ["5 Arbeid med temaer"] },
+            {
+              "kind": "p",
+              "content": ["Ett emne kan ha vilkårlig mange temaer."]
+            },
+            { "kind": "h3", "content": ["5.1 Nytt tema"] },
+            {
+              "kind": "p",
+              "content": [
+                "Et nytt tema legges til ved å klikke på knappen ",
+                { "text": "Legg til tema", "highlight": "#5cb85c" },
+                ". Da åpnes en dialog for å fylle inn tittel, beskrivelse og materialer. Materialfelter legges til med knappen ",
+                { "text": "Legg til materiale", "highlight": "#5cb85c" },
+                ", og fjernes med knappen med søppelbøtta."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Når opplysningene er fylt inn, legges temaet til ved å trykke på knappen ",
+                { "text": "Lagre endringer", "highlight": "#5cb85c" },
+                ". Du kan også avbryte ved å trykke på knappen ",
+                { "text": "Avbryt", "highlight": "#d9534f" },
+                "."
+              ]
+            },
+            { "kind": "h3", "content": ["5.2 Oppdatering av eksisterende temaer"] },
+            {
+              "kind": "p",
+              "content": [
+                "Når temaet er lagt til, vises det på emnesiden. Derfra kan du endre rekkefølgen på temaene, og også oppdatere, skjule eller slette dem."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Rekkefølgen på temaene endres med den grå knappen ",
+                { "text": "↑", "highlight": "#6c757d" },
+                " eller ",
+                { "text": "↓", "highlight": "#6c757d" },
+                "."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Et tema oppdateres med den blå knappen ",
+                { "text": "Oppdater", "highlight": "#5bc0de" },
+                ". Da åpnes den samme dialogen som ved opprettelse av et nytt tema, og alle knappene har samme funksjon som der."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Et tema skjules med den gule knappen ",
+                { "text": "Skjul", "highlight": "#f0ad4e" },
+                ". Et skjult tema er fortsatt synlig for foreleseren når emnet vises, men anonyme brukere, altså studentene, ser det ikke. Når temaet er skjult, endrer knappen utseende og tekst til ",
+                { "text": "Vis", "highlight": "#3f4b5a" },
+                ", slik at emnet kan gjøres synlig for studentene igjen."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Sletting av et tema fungerer på samme måte, med den røde knappen ",
+                { "text": "Slett", "highlight": "#d9534f" },
+                ". Et slettet tema er fortsatt synlig for foreleseren når emnet vises, men det er merket for sletting og blir permanent slettet i løpet av noen dager. Så lenge foreleseren ser temaet, kan det gjenopprettes med den grå knappen ",
+                { "text": "Gjenopprett", "highlight": "#3f4b5a" },
+                ". Etter at det er slettet, forsvinner det permanent fra emnesiden. Så lenge temaet er merket for sletting, er det ikke synlig for studentene."
+              ]
+            },
+            { "kind": "h3", "content": ["5.3 Status for temaet"] },
+            {
+              "kind": "p",
+              "content": ["Nederst i hvert tema vises temaets status. Et tema kan være:"]
+            },
+            {
+              "kind": "ul",
+              "items": [
+                [
+                  { "text": "Aktivt", "highlight": "#5cb85c" },
+                  ", når alle publiserte materialer er synlige for alle studenter,"
+                ],
+                [
+                  { "text": "Skjult", "highlight": "#f0ad4e" },
+                  ", når de publiserte materialene ikke er synlige for studentene, men temaet forblir lagret,"
+                ],
+                [
+                  { "text": "Merket for sletting", "highlight": "#ff0000" },
+                  ", når de publiserte materialene ikke er synlige for studentene, men temaet fortsatt kan gjenopprettes; etter slettingen forsvinner temaet for godt, og"
+                ],
+                [
+                  { "text": "Skjult og merket for sletting", "highlight": "#880000" },
+                  ", som naturligvis er en kombinasjon av de to foregående statusene."
+                ]
+              ]
+            },
+            { "kind": "h2", "content": ["6 Utlogging"] },
+            {
+              "kind": "p",
+              "content": [
+                "Etter innlogging vises brukernavnet du er logget inn med, øverst til høyre. Ved å trykke på den lysegrå knappen ",
+                { "text": "Logg ut", "highlight": "#f0f0f0", "textColor": "#000" },
+                " kan du avslutte arbeidet på plattformen og logge ut."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "login": {
+      "buttons": {
+        "login": "Logg inn"
+      },
+      "footer": "© 2025 - eVSOVNS-portalen",
+      "error": "Feil brukernavn eller passord",
+      "header": "INNLOGGING",
+      "loading": "Laster inn...",
+      "placeholders": {
+        "username": "Brukernavn (e-post)",
+        "password": "Passord"
+      }
+    },
+    "notFound": {
+      "buttons": {
+        "return": "Tilbake til hjemmesiden"
+      },
+      "description": "Det ser ut til at siden du leter etter, ikke finnes.",
+      "title": "404 - Siden ble ikke funnet"
+    },
+    "subject": {
+      "buttons": {
+        "addTopic": "Legg til tema"
+      },
+      "saveFailed": "Lagring av endringene mislyktes. Oppdater siden og prøv igjen.",
+      "saveConflict": "Noen andre har endret dette emnet i mellomtiden. Oppdater siden for å se den nyeste versjonen, og gjør endringen på nytt."
+    }
+  }
+}

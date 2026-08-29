@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { PiNotePencil, PiListBold } from "react-icons/pi";
 
 import NavItem from "./NavItem/NavItem";
-import sr from "../../locales/sr.json";
 import styles from "./Sidebar.module.css";
 import type { Subject } from "../../types/api";
 import { useUser } from "../../contexts/UserContext";
 import { groupLabel, groupSubjects, visibleSubjects } from "./grouping";
+import { useI18n } from "../../i18n/I18nContext";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
 const LOCAL_STORAGE_KEY = "sidebarExpandedGroups";
@@ -37,7 +37,8 @@ const readExpandedGroups = (): ExpandedGroups => {
 
 const Sidebar = ({ subjects = [], loading = false }: SidebarProps) => {
   const { user } = useUser();
-  const cpt = sr.components.sidebar;
+  const { t } = useI18n();
+  const cpt = t.components.sidebar;
 
   const [expandedGroups, setExpandedGroups] = useState<ExpandedGroups>({});
   const [showMainMenu, setShowMainMenu] = useState(true);

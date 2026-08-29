@@ -5,9 +5,12 @@ import type { IsoDateTime } from "../types/api";
  * ville rendret "1. januar 1970" som om det var en ekte dato. Hvilken tekst som skal
  * stå når feltet mangler er en beslutning som hører hjemme hos den som rendrer.
  */
-export const formatDate = (isoString: IsoDateTime): string => {
+export const formatDate = (
+  isoString: IsoDateTime,
+  locale = "sr-Latn-RS"
+): string => {
   const date = new Date(isoString);
-  return new Intl.DateTimeFormat("sr-Latn-RS", {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",

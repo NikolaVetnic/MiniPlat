@@ -331,7 +331,7 @@ describe("SubjectCard in edit mode", () => {
     fireEvent.change(lecturer, { target: { value: "jjovic" } });
     fireEvent.click(screen.getAllByRole("button")[1]);
 
-    expect(await screen.findByText("Failed to save changes.")).toBeDefined();
+    expect(await screen.findByText(cpt.saveFailed)).toBeDefined();
     expect(screen.getAllByRole("combobox")).toHaveLength(2);
     expect((screen.getAllByRole("combobox")[0] as HTMLSelectElement).value).toBe("jjovic");
   });

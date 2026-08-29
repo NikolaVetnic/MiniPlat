@@ -2,7 +2,6 @@ import { useState } from "react";
 import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 
 import styles from "./SubjectCard.module.css";
-import sr from "../../../locales/sr.json";
 import {
   Level,
   type LecturerDetails,
@@ -13,6 +12,8 @@ import { updateSubjectPeople } from "../../../services/subjectsService";
 import { useSubjectPeople } from "../../../hooks/useSubjectPeople";
 import { useUser } from "../../../contexts/UserContext";
 import { useLecturers } from "../../../hooks/useLecturers";
+import { format } from "../../../i18n/dictionaries";
+import { useI18n } from "../../../i18n/I18nContext";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
 
@@ -40,6 +41,9 @@ const SubjectCard = ({
   isSingleCard = false,
 }: SubjectCardProps) => {
   const { user } = useUser();
+  const { t } = useI18n();
+
+  const cpt = t.components.cards.subject;
 
   const [isEditing, setIsEditing] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -71,11 +75,9 @@ const SubjectCard = ({
       setIsEditing(false);
     } catch (err) {
       console.error(err);
-      setSaveError("Failed to save changes.");
+      setSaveError(cpt.saveFailed);
     }
   };
-
-  const cpt = sr.components.cards.subject;
 
   if (error) return <p>{error}</p>;
   if (loading || !lecturer) return <p>{cpt.loading}</p>;
@@ -173,7 +175,10 @@ const SubjectCard = ({
           </li>
           <li>
             <strong>{cpt.year.caption}:</strong>{" "}
-            {`${year} (${semesterName} semestar)`}
+            {format(cpt.year.withSemester, {
+              year: `${year}`,
+              semester: semesterName,
+            })}
           </li>
           <li>
             <strong>{cpt.semester.caption}:</strong> {`${semester}`}

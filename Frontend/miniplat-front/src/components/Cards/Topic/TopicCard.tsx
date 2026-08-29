@@ -3,7 +3,6 @@ import { useState } from "react";
 
 import { formatDate } from "../../../utils/formatDate";
 import { toMaterials } from "../../../utils/drafts";
-import sr from "../../../locales/sr.json";
 import styles from "./TopicCard.module.css";
 import TopicModal, {
   type MaterialField,
@@ -12,6 +11,7 @@ import type { Material, Topic, Uuid } from "../../../types/api";
 import type { MaterialDraft } from "../../../types/app";
 import { useUser } from "../../../contexts/UserContext";
 import { safeLink } from "../../../utils/safeLink";
+import { useI18n } from "../../../i18n/I18nContext";
 
 interface TopicCardProps {
   topic: Topic;
@@ -44,6 +44,7 @@ const TopicCard = ({
   >(topic.materials);
 
   const { user } = useUser();
+  const { t } = useI18n();
 
   const handleAddMaterial = () => {
     setEditedMaterials((prev) => [...prev, { description: "", link: "" }]);
@@ -81,7 +82,7 @@ const TopicCard = ({
     setShowModal(false);
   };
 
-  const cpt = sr.components.cards.topic;
+  const cpt = t.components.cards.topic;
 
   return (
     <div className={styles.card}>
@@ -148,7 +149,7 @@ const TopicCard = ({
           "Ažurirano 1. januar 1970" ser ut som en ekte dato. */}
       {topic.lastModifiedAt && (
         <p className={styles.cardCreatedAt}>
-          {cpt.updatedAt} {formatDate(topic.lastModifiedAt)}
+          {cpt.updatedAt} {formatDate(topic.lastModifiedAt, t.locale)}
         </p>
       )}
       <p>{topic.description}</p>

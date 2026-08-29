@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
-import sr from "../../locales/sr.json";
 import styles from "./PageNotFound.module.css";
+import { useI18n } from "../../i18n/I18nContext";
 import { useUser } from "../../contexts/UserContext";
 
 interface PageNotFoundProps {
@@ -10,8 +10,9 @@ interface PageNotFoundProps {
 
 const PageNotFound = ({ onLogout }: PageNotFoundProps) => {
   const { user } = useUser();
+  const { t } = useI18n();
 
-  const cpt = sr.pages.notFound;
+  const cpt = t.pages.notFound;
 
   return (
     <div className={styles.container}>

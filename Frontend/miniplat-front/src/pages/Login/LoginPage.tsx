@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { login } from "../../services/authService";
 import Navbar from "../../components/Navbar/Navbar";
-import sr from "../../locales/sr.json";
 import styles from "./LoginPage.module.css";
+import { useI18n } from "../../i18n/I18nContext";
 import { useUser } from "../../contexts/UserContext";
 
 import footerText from "../../utils/footerText";
@@ -23,6 +23,7 @@ const LoginPage = ({ onLogout }: LoginPageProps) => {
   const navigate = useNavigate();
 
   const { user, signIn } = useUser();
+  const { t } = useI18n();
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -56,7 +57,7 @@ const LoginPage = ({ onLogout }: LoginPageProps) => {
     }
   };
 
-  const cpt = sr.pages.login;
+  const cpt = t.pages.login;
 
   return (
     <>
@@ -64,13 +65,13 @@ const LoginPage = ({ onLogout }: LoginPageProps) => {
 
       <div className={styles.container}>
         <div className={styles.loginBox}>
-          <h1 className={styles.title}>{sr.captions.title}</h1>
+          <h1 className={styles.title}>{t.captions.title}</h1>
           <h2 className={styles.subtitle}>{cpt.header}</h2>
 
           {isLoading ? (
             <div className={styles.spinnerContainer}>
               <div className={styles.spinner}></div>
-              <p>Učitavanje...</p>
+              <p>{cpt.loading}</p>
             </div>
           ) : (
             <form onSubmit={(e) => void handleSubmit(e)}>
@@ -99,7 +100,7 @@ const LoginPage = ({ onLogout }: LoginPageProps) => {
           )}
         </div>
 
-        <footer className={styles.footer}>{footerText}</footer>
+        <footer className={styles.footer}>{footerText(t.captions)}</footer>
       </div>
     </>
   );

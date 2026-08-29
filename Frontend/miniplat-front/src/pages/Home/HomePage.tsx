@@ -13,7 +13,7 @@ import UserCard from "../../components/Cards/User/UserCard";
 import { useUser } from "../../contexts/UserContext";
 
 import footerText from "../../utils/footerText";
-import sr from "../../locales/sr.json";
+import { useI18n } from "../../i18n/I18nContext";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
 
@@ -23,6 +23,7 @@ interface HomePageProps {
 
 const HomePage = ({ onLogout }: HomePageProps) => {
   const { user } = useUser();
+  const { t } = useI18n();
   const { username } = useParams();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,9 +65,7 @@ const HomePage = ({ onLogout }: HomePageProps) => {
         <main className={styles.main}>
           <div className={styles.pageHeader}>
             <h1>
-              {isUserAdmin
-                ? sr.pages.home.adminControlPanel
-                : sr.pages.home.home}
+              {isUserAdmin ? t.pages.home.adminControlPanel : t.pages.home.home}
             </h1>
           </div>
 
@@ -84,7 +83,7 @@ const HomePage = ({ onLogout }: HomePageProps) => {
             {user && isUserAdmin && <UserCard />}
           </div>
 
-          <footer className={styles.footer}>{footerText}</footer>
+          <footer className={styles.footer}>{footerText(t.captions)}</footer>
         </main>
       </div>
     </div>

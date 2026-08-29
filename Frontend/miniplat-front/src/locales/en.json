@@ -1,0 +1,408 @@
+{
+  "locale": "en-GB",
+  "languageName": "English",
+  "captions": {
+    "companyName": "Nikola Vetnić",
+    "title": "eVŠOVNS MiniPlat",
+    "titleShort": "eVŠOVNS",
+    "institution": "Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad"
+  },
+  "components": {
+    "cards": {
+      "user": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "lecturer": "Teacher",
+        "department": "Department",
+        "loading": "Loading the user details...",
+        "error": "Could not load the user details."
+      },
+      "subject": {
+        "active": {
+          "false": "The subject is not running at the moment.",
+          "true": "The subject is running."
+        },
+        "assistant": "Assistant",
+        "buttons": {
+          "cancel": "Cancel",
+          "edit": "Update",
+          "ok": "Save"
+        },
+        "code": "Subject code",
+        "level": {
+          "caption": "Study level",
+          "undergraduate": "Undergraduate professional studies - Preschool teacher",
+          "master": "Master's professional studies - Master preschool teacher"
+        },
+        "lecturer": "Lecturer",
+        "loading": "Loading the subject details...",
+        "saveFailed": "Saving the changes failed.",
+        "semester": {
+          "caption": "Semester",
+          "summer": "summer",
+          "winter": "winter"
+        },
+        "test": "test",
+        "title": "Title",
+        "year": {
+          "caption": "Year of study",
+          "one": "1st",
+          "two": "2nd",
+          "three": "3rd",
+          "withSemester": "{year} ({semester} semester)"
+        }
+      },
+      "topic": {
+        "buttons": {
+          "addMaterial": "Add material",
+          "cancel": "Cancel",
+          "delete": "Delete",
+          "edit": "Update",
+          "hide": "Hide",
+          "putBack": "Restore",
+          "save": "Save changes",
+          "show": "Show"
+        },
+        "description": "Description",
+        "link": "Link",
+        "materials": "Materials",
+        "status": {
+          "active": "The topic is active. All published materials are visible to every student.",
+          "hidden": "The topic is hidden. The published materials are not visible to students, but the topic is kept.",
+          "deleted": "The topic is marked for deletion. The published materials are not visible to students, but the topic can still be restored. Once deleted, the topic is gone for good.",
+          "hiddenAndDeleted": "The topic is hidden and marked for deletion. The published materials are not visible to students."
+        },
+        "title": "Title",
+        "titles": {
+          "create": "New topic",
+          "update": "Update topic"
+        },
+        "updatedAt": "Last updated on"
+      }
+    },
+    "language": {
+      "label": "Language"
+    },
+    "modals": {
+      "topic": {
+        "errors": {
+          "titleIsMandatory": "A title is required",
+          "descriptionIsMandatory": "A description is required"
+        }
+      }
+    },
+    "navbar": {
+      "buttons": {
+        "login": "Log in",
+        "logout": "Log out"
+      },
+      "loggedInAs": "You are logged in as"
+    },
+    "sidebar": {
+      "mainMenu": "Main menu",
+      "subjects": "Subjects",
+      "home": "Home",
+      "levels": [
+        "BA",
+        "MA"
+      ],
+      "semester": [
+        "Summer semester",
+        "Winter semester"
+      ],
+      "years": [
+        "1st",
+        "2nd",
+        "3rd"
+      ],
+      "yearLabel": "{year} year"
+    }
+  },
+  "pages": {
+    "home": {
+      "adminControlPanel": "Administrator control panel",
+      "buttons": {
+        "dumpDatabaseAsYaml": "Download the database contents as a YML file"
+      },
+      "greetings": {
+        "lecturers": "Dear lecturers",
+        "students": "Dear students"
+      },
+      "home": "Home",
+      "guides": {
+        "students": {
+          "blocks": [
+            { "kind": "h3", "content": ["Dear students,"] },
+            {
+              "kind": "p",
+              "content": [
+                "Welcome to ",
+                { "text": "MiniPlat", "bold": true },
+                ", a distance learning platform built specifically for Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad. Below is a short guide, in video and written form, meant to make day-to-day use of this simple application easier."
+              ]
+            },
+            {
+              "kind": "video",
+              "videoId": "lpFrEM2cX7w",
+              "title": "eVŠOVNS MiniPlat: Guide for students (in Serbian)"
+            },
+            {
+              "kind": "p",
+              "content": [
+                "The platform is designed to be completely open and available to every student without registering an account or signing in, in other words ",
+                { "text": "completely anonymously", "highlight": "#5cb85c" },
+                ". The application is also suited to readers who reach the content on a mobile phone."
+              ]
+            },
+            { "kind": "h2", "content": ["1 Choosing a subject"] },
+            {
+              "kind": "p",
+              "content": [
+                "On the left of the screen is a menu with links to every subject on the undergraduate and master's programmes. The subjects are grouped by semester, and the groups can be expanded and collapsed for easier use."
+              ]
+            },
+            { "kind": "h2", "content": ["2 The subject page"] },
+            {
+              "kind": "p",
+              "content": [
+                "At the top of the subject page are the title and a card with the basic details of the subject. Below the card is the section holding the teaching topics."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "A teaching topic is a unit in which the lecturer groups teaching material. Every topic has a title, a description and a list of materials. The materials themselves are pairs of a description and a link, and a topic may hold none of them or any number. Clicking the material links takes you to the content the lecturer has published."
+              ]
+            }
+          ]
+        },
+        "lecturers": {
+          "blocks": [
+            { "kind": "h3", "content": ["Dear lecturers,"] },
+            {
+              "kind": "p",
+              "content": [
+                "Welcome to ",
+                { "text": "MiniPlat", "bold": true },
+                ", a distance learning platform built specifically for Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad. Below is a short guide, in video and written form, meant to make day-to-day use of this simple application easier."
+              ]
+            },
+            {
+              "kind": "video",
+              "videoId": "WQ5d6BCmv6I",
+              "title": "eVŠOVNS MiniPlat: Guide for teaching staff (in Serbian)"
+            },
+            { "kind": "h2", "content": ["1 Modes of operation"] },
+            {
+              "kind": "p",
+              "content": ["The distance learning platform works in two modes."]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "The first mode ",
+                { "text": "is meant for students", "bold": true },
+                " and shows every subject at every study level, naturally without any way to add, update or remove content. This mode is available to everyone who visits the platform and needs no username and password."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "The second mode ",
+                { "text": "is meant for teaching staff", "bold": true },
+                " and shows only the subjects where the teacher is the lecturer or the assistant, with the ability to add, update, hide and remove content. This mode is available only to teachers who sign in with their personal username and password."
+              ]
+            },
+            { "kind": "h2", "content": ["2 Signing in"] },
+            {
+              "kind": "p",
+              "content": [
+                "A unique username and password are issued by email by an official of the institution, and cannot be changed for the time being."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "You sign in through the sign-in page, which you reach with the green button in the top right corner of the application. Once the username and password are filled into the right fields, you sign in by pressing the ",
+                { "text": "Log in", "highlight": "#5cb85c" },
+                " button."
+              ]
+            },
+            { "kind": "h2", "content": ["3 Choosing a subject"] },
+            {
+              "kind": "p",
+              "content": [
+                "Signing in takes you back to the home page, but this time with the subjects narrowed down to the ones the teacher actually teaches. Choosing any subject from the list opens it for editing."
+              ]
+            },
+            { "kind": "h2", "content": ["4 The subject page"] },
+            {
+              "kind": "p",
+              "content": [
+                "At the top of the subject page are the title and a card with the basic details of the subject. Below the card is the section holding the teaching topics."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "A teaching topic is a unit in which the lecturer groups teaching material. Every topic has a title, a description and a list of materials. The materials themselves are pairs of a description and a link, and a topic may hold none of them or any number."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "What a topic means in the semantic sense is up to the individual lecturer. One topic may cover a single lecture, with materials that are external links to PDF documents, videos, ",
+                { "text": "Google Forms", "italic": true },
+                " questionnaires and the like. A topic may equally be a larger piece of the syllabus covered by a colloquium, or simply a notice about what is expected of students (in which case it most likely holds no materials at all)."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "It is worth noting that storing materials directly on the platform is not possible for now. For the sake of performance, lecturers are expected to enter links to materials held on external services such as ",
+                { "text": "Google Drive", "italic": true },
+                ", ",
+                { "text": "YouTube", "italic": true },
+                " and the like."
+              ]
+            },
+            { "kind": "h2", "content": ["5 Working with topics"] },
+            {
+              "kind": "p",
+              "content": ["A single subject may have any number of topics."]
+            },
+            { "kind": "h3", "content": ["5.1 A new topic"] },
+            {
+              "kind": "p",
+              "content": [
+                "A new topic is added by clicking the ",
+                { "text": "Add topic", "highlight": "#5cb85c" },
+                " button, which opens a dialog for the title, the description and the materials. Material fields are added with the ",
+                { "text": "Add material", "highlight": "#5cb85c" },
+                " button, and removed with the button carrying the waste basket."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Once the details are filled in, the topic is added by pressing the ",
+                { "text": "Save changes", "highlight": "#5cb85c" },
+                " button. You can also abandon the new topic by pressing the ",
+                { "text": "Cancel", "highlight": "#d9534f" },
+                " button."
+              ]
+            },
+            { "kind": "h3", "content": ["5.2 Updating existing topics"] },
+            {
+              "kind": "p",
+              "content": [
+                "Once added, the topic appears on the subject page, from where you can reorder the topics as well as update, hide or delete them."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "The topics are reordered with the grey ",
+                { "text": "↑", "highlight": "#6c757d" },
+                " and ",
+                { "text": "↓", "highlight": "#6c757d" },
+                " buttons."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "A topic is updated with the blue ",
+                { "text": "Update", "highlight": "#5bc0de" },
+                " button, which opens the same dialog as creating a new topic. Every button there has the same function as it does when creating one."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "A topic is hidden with the yellow ",
+                { "text": "Hide", "highlight": "#f0ad4e" },
+                " button. A hidden topic remains visible to the lecturer viewing the subject, but anonymous visitors, that is the students, do not see it. Once the topic is hidden, the button changes its look and its label to ",
+                { "text": "Show", "highlight": "#3f4b5a" },
+                ", so the subject can be revealed to students again."
+              ]
+            },
+            {
+              "kind": "p",
+              "content": [
+                "Deleting a topic works the same way, through the red ",
+                { "text": "Delete", "highlight": "#d9534f" },
+                " button. A deleted topic remains visible to the lecturer viewing the subject, but it is marked for deletion and will be removed permanently within a few days. For as long as the lecturer can see the topic it can be brought back with the grey ",
+                { "text": "Restore", "highlight": "#3f4b5a" },
+                " button. Once deleted, it disappears from the subject page for good. While a topic is marked for deletion it is not visible to students."
+              ]
+            },
+            { "kind": "h3", "content": ["5.3 The status of a topic"] },
+            {
+              "kind": "p",
+              "content": ["The status of every topic is shown at the bottom of it. A topic can be:"]
+            },
+            {
+              "kind": "ul",
+              "items": [
+                [
+                  { "text": "Active", "highlight": "#5cb85c" },
+                  ", when all published materials are visible to every student,"
+                ],
+                [
+                  { "text": "Hidden", "highlight": "#f0ad4e" },
+                  ", when the published materials are not visible to students but the topic is kept,"
+                ],
+                [
+                  { "text": "Marked for deletion", "highlight": "#ff0000" },
+                  ", when the published materials are not visible to students but the topic can still be restored; once deleted, the topic is gone for good, and"
+                ],
+                [
+                  { "text": "Hidden and marked for deletion", "highlight": "#880000" },
+                  ", which is of course a combination of the two preceding statuses."
+                ]
+              ]
+            },
+            { "kind": "h2", "content": ["6 Signing out"] },
+            {
+              "kind": "p",
+              "content": [
+                "Once you are signed in, the username you are signed in under is shown in the top right corner. Pressing the light grey ",
+                { "text": "Log out", "highlight": "#f0f0f0", "textColor": "#000" },
+                " button ends your work on the platform and signs you out."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "login": {
+      "buttons": {
+        "login": "Log in"
+      },
+      "footer": "© 2025 - eVSOVNS portal",
+      "error": "Incorrect username or password",
+      "header": "SIGN IN",
+      "loading": "Loading...",
+      "placeholders": {
+        "username": "Username (email)",
+        "password": "Password"
+      }
+    },
+    "notFound": {
+      "buttons": {
+        "return": "Back to the home page"
+      },
+      "description": "The page you are looking for does not seem to exist.",
+      "title": "404 - Page not found"
+    },
+    "subject": {
+      "buttons": {
+        "addTopic": "Add topic"
+      },
+      "saveFailed": "Saving the changes failed. Refresh the page and try again.",
+      "saveConflict": "Someone else has changed this subject in the meantime. Refresh the page to see the latest version, then make your change again."
+    }
+  }
+}

@@ -1,8 +1,9 @@
 import { FiBook, FiLogOut, FiLogIn } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
-import sr from "../../locales/sr.json";
 import styles from "./Navbar.module.css";
+import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
+import { useI18n } from "../../i18n/I18nContext";
 import { useUser } from "../../contexts/UserContext";
 import useWindowWidth from "../../hooks/useWindowWidth";
 
@@ -13,8 +14,9 @@ interface NavbarProps {
 const Navbar = ({ onLogout }: NavbarProps) => {
   const { user } = useUser();
   const width = useWindowWidth();
+  const { t } = useI18n();
 
-  const cpt = sr.components.navbar;
+  const cpt = t.components.navbar;
   const isMobile = width < 768;
 
   return (
@@ -25,11 +27,13 @@ const Navbar = ({ onLogout }: NavbarProps) => {
       >
         {isMobile ? <div /> : <FiBook className={styles.logoIcon} />}
         <span className={isMobile ? styles.titleShort : ""}>
-          {isMobile ? sr.captions.titleShort : sr.captions.title}
+          {isMobile ? t.captions.titleShort : t.captions.title}
         </span>
       </Link>
 
       <div className={styles.rightSection}>
+        <LanguageSwitcher />
+
         {user && (
           <>
             <p className={styles.loggedInText}>
