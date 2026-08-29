@@ -1,6 +1,6 @@
 {
   "captions": {
-    "companyName": "MF Solutions",
+    "companyName": "Nikola Vetnić",
     "title": "eVŠOVNS MiniPlat",
     "titleShort": "eVŠOVNS",
     "institution": "Visoka škola strukovnih studija za obrazovanje vaspitača Novi Sad"
@@ -93,19 +93,9 @@
       "mainMenu": "Glavni meni",
       "subjects": "Predmeti",
       "home": "Početna",
-      "levels": [
-        "OSS",
-        "MSS"
-      ],
-      "semester": [
-        "Letnji semestar",
-        "Zimski semestar"
-      ],
-      "years": [
-        "I",
-        "II",
-        "III"
-      ]
+      "levels": ["OSS", "MSS"],
+      "semester": ["Letnji semestar", "Zimski semestar"],
+      "years": ["I", "II", "III"]
     }
   },
   "pages": {
