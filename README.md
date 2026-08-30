@@ -11,8 +11,6 @@ can read, and an editor behind a login for the lecturers who own them.
 .NET 10 · ASP.NET Core · EF Core · PostgreSQL · OpenIddict · React 19 · TypeScript · Vite ·
 Docker Compose · nginx
 
----
-
 ## What it does
 
 Every visitor sees the same catalogue: subjects grouped by level, year and semester, each
@@ -36,8 +34,6 @@ seeder reads back.
 
 The interface is available in Serbian, Norwegian and English; the seed content in the
 screenshots is Serbian, because the fixture is.
-
----
 
 ## Running it
 
@@ -117,8 +113,6 @@ VITE_ADMIN_USERNAME=mp_admin               # who the client treats as the admini
 
 Then sign in as `USRa` / `P@ssw0rd!123`, a lecturer with subjects to edit, or as the
 administrator with the password you just chose.
-
----
 
 ## Architecture
 
@@ -205,8 +199,6 @@ Cross-cutting concerns sit in the pipeline rather than in each handler: validati
 logging are open behaviours registered once, and every exception the domain raises is
 translated to a `ProblemDetails` response by a single `IExceptionHandler`.
 
----
-
 ## Decisions worth explaining
 
 **OpenIddict rather than hand-rolled JWTs.** The usual shortcut — sign a token in the login
@@ -248,8 +240,6 @@ subject, a silent failure on a conflict response.
 files must have, and a test compares their key paths, so a caption added to one language and
 forgotten in another fails the build rather than rendering a blank.
 
----
-
 ## The API
 
 All paths are under `/api`. Authentication is a bearer token from the token endpoint.
@@ -278,8 +268,6 @@ guess. The defaults assume a school behind a single public address, where every 
 shares a partition.
 
 In development the OpenAPI document is served at `/openapi/v1.json`.
-
----
 
 ## Tests
 
@@ -312,8 +300,6 @@ Playwright traces uploaded on failure), and `compose.yml` (validates the compose
 against `.env.template`, which also catches the template drifting from what the files
 reference).
 
----
-
 ## Layout
 
 ```
@@ -336,8 +322,6 @@ docker-compose/              the deployable stack, nginx config, certificate scr
 .github/workflows/           backend, frontend, e2e, compose
 ```
 
----
-
 ## About the data
 
 The catalogue this platform was built for belongs to a real institution, and it is not in
@@ -357,8 +341,6 @@ still be validated in CI.
 
 The administrator's YAML export writes the same shape the seeder reads, so a running
 deployment can produce the fixture that reseeds it.
-
----
 
 ## What I would do next
 
