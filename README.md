@@ -349,9 +349,6 @@ deployment can produce the fixture that reseeds it.
 - **Tighten CORS at the edge.** `nginx.conf` answers `Access-Control-Allow-Origin *` on both
   locations; the API already keeps an explicit origin list and the proxy should not be
   looser than what it fronts.
-- **Remove the swallowing exception handler.** `app.UseExceptionHandler(_ => { })` sits at
-  the end of `Program.cs` with a `ToDo` on it — it eats startup exceptions, which is exactly
-  when a stack trace is most wanted.
 - **Materials as first-class content.** Today a material is a link. Uploads — with storage,
   size limits and virus scanning — are the obvious next feature and the one that changes the
   infrastructure most.

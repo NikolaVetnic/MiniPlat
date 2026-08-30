@@ -29,6 +29,11 @@ builder.Services.AddInterceptors();
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
+// Registering ProblemDetails is what makes the parameterless UseExceptionHandler() legal - without it the
+// middleware demands an explicit handler or path. It also supplies the fallback response for anything
+// CustomExceptionHandler declines to handle.
+builder.Services.AddProblemDetails();
+
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException());
 
@@ -74,6 +79,10 @@ foreach (var cidr in forwardedHeadersSection.GetSection("KnownNetworks").Get<str
 
 var app = builder.Build();
 
+// First in the pipeline on purpose: everything registered below - rate limiter, CORS, authentication -
+// can throw, and only what UseExceptionHandler wraps reaches CustomExceptionHandler as ProblemDetails.
+app.UseExceptionHandler();
+
 app.UseForwardedHeaders(forwardedHeadersOptions);
 
 app.Logger.LogInformation(
@@ -98,8 +107,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 await app.Services.MigrateAndSeedDatabaseAsync();
-
-app.UseExceptionHandler(_ => { }); // ToDo: To be removed as it eats up any exceptions on startup
 
 app.MapHealthChecks("/health").DisableRateLimiting();
 
