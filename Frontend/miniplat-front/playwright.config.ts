@@ -29,6 +29,10 @@ export const LECTURER = { username: "USRa", password: "P@ssw0rd!123" };
 
 export default defineConfig({
   testDir: "./e2e",
+  // screenshots.spec.ts photographs the README's figures against this same stack. It is
+  // not a test, and a smoke run that fails because a caption was reworded would be
+  // reporting on the README rather than on the product - so it runs from its own config.
+  testIgnore: "**/screenshots.spec.ts",
   // One database, shared between the paths, and the last of them writes to it.
   workers: 1,
   fullyParallel: false,
